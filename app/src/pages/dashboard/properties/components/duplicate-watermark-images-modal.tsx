@@ -205,7 +205,15 @@ export function DuplicateWatermarkImagesModal({
                 <Modal.Heading>Duplicate watermarked photos</Modal.Heading>
               </Modal.Header>
               <Modal.Body id={bodyScrollId}>
-                <div className="grid gap-4 pr-1">
+                {/* pb-2: with short content (e.g. a 7-row agency list), Modal.Dialog's
+                    max-h cap means Modal.Body hugs the content with ~zero bottom
+                    buffer, so the last row sits flush against Modal.Body's measured
+                    edge. react-aria's scrollIntoViewport (private/utils/scrollIntoView.js)
+                    re-measures the focused element after nudging it into view and
+                    escalates to recentering the whole dialog if it moved >1px -- with
+                    zero buffer that 1px rounding tolerance trips easily. A little
+                    bottom padding keeps content off that edge. */}
+                <div className="grid gap-4 pb-2 pr-1">
                   {step === "select-agencies" ? (
                     <>
                       <p className="text-sm text-muted">
