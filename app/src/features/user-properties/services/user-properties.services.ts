@@ -47,6 +47,7 @@ import type {
   MigrateIntegrationImagesPayload,
   RemoveWatermarkImagesPayload,
   RemoveWatermarkImagesResponse,
+  CopyNormalizedImagesResponse,
   BulkRemoveWatermarkImagesPayload,
   BulkRemoveWatermarkImagesResponse,
   ProduceUserPropertyContentPayload,
@@ -271,6 +272,25 @@ export const createUserPropertyIntegrationImages = async (
   } catch (error: any) {
     throw new Error(
       error?.response?.data?.message || "Failed to create CMS images.",
+    );
+  }
+};
+
+export const copyUserPropertyNormalizedImages = async (
+  id: string,
+  imageIndexes: number[],
+  removeWatermark?: boolean,
+): Promise<CopyNormalizedImagesResponse> => {
+  try {
+    const response = await axiosInstance.post(
+      ApiRoutes.userProperties.copyNormalizedImages(id),
+      { image_indexes: imageIndexes, remove_watermark: removeWatermark },
+    );
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error?.response?.data?.message ||
+        "Failed to start copying normalized images.",
     );
   }
 };

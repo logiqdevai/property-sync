@@ -8,6 +8,7 @@ import {
   IMAGE_CAP_EXCESS_IMAGES_CLEANUP_QUEUE,
   STALE_CRM_IMAGES_REPLACE_QUEUE,
   CONTENT_PRODUCTION_QUEUE,
+  COPY_NORMALIZED_IMAGES_QUEUE,
   CREATE_INTEGRATION_IMAGES_QUEUE,
   CRM_CLIENT_NOTES_SYNC_QUEUE,
   DELETE_INTEGRATION_IMAGES_QUEUE,
@@ -37,6 +38,7 @@ import { EstateWebSitesUpdateProcessor } from '@/background/estateweb-sites-upda
 import { DeleteIntegrationImagesProcessor } from '@/background/delete-integration-images.processor';
 import { MigrateIntegrationImagesProcessor } from '@/background/migrate-integration-images.processor';
 import { CreateIntegrationImagesProcessor } from '@/background/create-integration-images.processor';
+import { CopyNormalizedImagesProcessor } from '@/background/copy-normalized-images.processor';
 import { GeocodeCoordinatesProcessor } from '@/background/geocode-coordinates.processor';
 import { ResolveEstateWebLocationProcessor } from '@/background/resolve-estateweb-location.processor';
 import { CheckEstateWebRemovalProcessor } from '@/background/check-estateweb-removal.processor';
@@ -56,6 +58,7 @@ import { EstateWebSitesUpdateJobService } from './services/estateweb-sites-updat
 import { DeleteIntegrationImagesJobService } from './services/delete-integration-images-job.service';
 import { MigrateIntegrationImagesJobService } from './services/migrate-integration-images-job.service';
 import { CreateIntegrationImagesJobService } from './services/create-integration-images-job.service';
+import { CopyNormalizedImagesJobService } from './services/copy-normalized-images-job.service';
 import { GeocodeCoordinatesJobService } from './services/geocode-coordinates-job.service';
 import { ResolveEstateWebLocationJobService } from './services/resolve-estateweb-location-job.service';
 import { CheckEstateWebRemovalJobService } from './services/check-estateweb-removal-job.service';
@@ -89,6 +92,7 @@ import { StaleCrmImagesReplaceJobService } from './services/stale-crm-images-rep
       { name: DELETE_INTEGRATION_IMAGES_QUEUE },
       { name: MIGRATE_INTEGRATION_IMAGES_QUEUE },
       { name: CREATE_INTEGRATION_IMAGES_QUEUE },
+      { name: COPY_NORMALIZED_IMAGES_QUEUE },
       { name: GEOCODE_MISSING_COORDINATES_QUEUE },
       { name: RESOLVE_ESTATEWEB_LOCATION_QUEUE },
       { name: CHECK_ESTATEWEB_REMOVAL_QUEUE },
@@ -119,6 +123,8 @@ import { StaleCrmImagesReplaceJobService } from './services/stale-crm-images-rep
     MigrateIntegrationImagesProcessor,
     CreateIntegrationImagesJobService,
     CreateIntegrationImagesProcessor,
+    CopyNormalizedImagesJobService,
+    CopyNormalizedImagesProcessor,
     GeocodeCoordinatesJobService,
     GeocodeCoordinatesProcessor,
     ResolveEstateWebLocationJobService,

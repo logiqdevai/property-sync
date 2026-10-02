@@ -430,6 +430,11 @@ export interface RemoveWatermarkImagesResponse {
   message: string;
 }
 
+export interface CopyNormalizedImagesResponse {
+  job_log_id: string;
+  message: string;
+}
+
 export interface BulkRemoveWatermarkImagesResponse {
   job_log_ids: string[];
   enqueued: number;

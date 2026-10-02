@@ -246,6 +246,8 @@ export const ApiRoutes = {
             `/properties/${id}/delete-integration-images`,
         createIntegrationImages: (id: string) =>
             `/properties/${id}/create-integration-images`,
+        copyNormalizedImages: (id: string) =>
+            `/properties/${id}/copy-normalized-images`,
         updateIntegrationImages: (id: string) =>
             `/properties/${id}/update-integration-images`,
         reorderIntegrationImages: (id: string) =>

@@ -1866,7 +1866,17 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
       });
 
       const sourceFromFilename = options?.sourceByFilename?.get(image.filename);
-      const sourceFromIndex = options?.sourceImageUrls?.[sourceIndex];
+      // Positional fallback is only safe when there's no precise per-image
+      // filename map at all (a full-gallery repair/resync with just an ordered
+      // url list). When sourceByFilename IS provided, sourceImageUrls holds only
+      // the handful of URLs uploaded THIS call, not one-per-remote-image -- so
+      // indexing it by sourceIndex (which counts every remote image, old and
+      // new) would wrongly tag an unrelated pre-existing image with the new
+      // photo's URL the moment its position happens to fall inside that short
+      // list, duplicating the new photo under two CRM image ids.
+      const sourceFromIndex = options?.sourceByFilename
+        ? undefined
+        : options?.sourceImageUrls?.[sourceIndex];
       const sourceFromExisting = existingSourceById.get(image.id);
       const source_image =
         sourceFromFilename ||

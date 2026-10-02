@@ -24,6 +24,7 @@ import {
   deleteUserPropertyIntegrationImages,
   createAdminUserPropertyIntegrationImages,
   createUserPropertyIntegrationImages,
+  copyUserPropertyNormalizedImages,
   updateAdminUserPropertyIntegrationImages,
   reorderUserPropertyIntegrationImages,
   updateUserPropertyIntegrationImages,
@@ -369,6 +370,35 @@ export const useCreateUserPropertyIntegrationImages = () => {
     onError: (error: Error) => {
       toast({
         title: "Could not upload photos",
+        description: error.message,
+        variant: "error",
+      });
+    },
+  });
+};
+
+export const useCopyUserPropertyNormalizedImages = () => {
+  return useMutation({
+    mutationFn: ({
+      id,
+      imageIndexes,
+      removeWatermark,
+    }: {
+      id: string;
+      imageIndexes: number[];
+      removeWatermark?: boolean;
+    }) => copyUserPropertyNormalizedImages(id, imageIndexes, removeWatermark),
+    onSuccess: (data) => {
+      toast({
+        title: "Copy to tracked images started",
+        description: data.message,
+        duration: 4000,
+        variant: "success",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Could not copy photos",
         description: error.message,
         variant: "error",
       });
