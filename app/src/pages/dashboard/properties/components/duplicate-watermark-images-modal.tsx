@@ -186,7 +186,7 @@ export function DuplicateWatermarkImagesModal({
     <>
       <Modal state={state}>
         <Modal.Backdrop isDismissable={!jobIsActive}>
-          <Modal.Container>
+          <Modal.Container placement="top">
             <Modal.Dialog className="max-h-[85vh] w-[calc(100vw-2rem)] max-w-4xl">
               <Modal.Header>
                 <Modal.Heading>Duplicate watermarked photos</Modal.Heading>
