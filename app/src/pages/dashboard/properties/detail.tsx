@@ -27,6 +27,7 @@ import {
   useMigrateUserPropertyIntegrationImages,
   useDeleteUserPropertyIntegrationImages,
   useCreateUserPropertyIntegrationImages,
+  useCopyUserPropertyNormalizedImages,
   useUpdateUserPropertyIntegrationImages,
   useReorderUserPropertyIntegrationImages,
   useRemoveUserPropertyWatermarkImages,
@@ -135,6 +136,7 @@ export default function DashboardPropertyDetailPage() {
   const migrateImages = useMigrateUserPropertyIntegrationImages();
   const deleteIntegrationImages = useDeleteUserPropertyIntegrationImages();
   const createIntegrationImages = useCreateUserPropertyIntegrationImages();
+  const copyNormalizedImages = useCopyUserPropertyNormalizedImages();
   const updateIntegrationImages = useUpdateUserPropertyIntegrationImages();
   const reorderIntegrationImages = useReorderUserPropertyIntegrationImages();
   const removeWatermarkImages = useRemoveUserPropertyWatermarkImages();
@@ -597,6 +599,15 @@ export default function DashboardPropertyDetailPage() {
         }}
         isMigratingIntegrationImages={migrateImages.isPending}
         showSystemImages={isAdmin}
+        canCopyNormalizedImages={isAdmin}
+        onCopyNormalizedImages={async (imageIndexes, removeWatermark) => {
+          await copyNormalizedImages.mutateAsync({
+            id: property.id,
+            imageIndexes,
+            removeWatermark,
+          });
+        }}
+        isCopyingNormalizedImages={copyNormalizedImages.isPending}
         headerActions={
           <BulkActionsMenu
             actions={headerActions}
@@ -607,6 +618,7 @@ export default function DashboardPropertyDetailPage() {
               migrateImages.isPending ||
               deleteIntegrationImages.isPending ||
               createIntegrationImages.isPending ||
+              copyNormalizedImages.isPending ||
               updateIntegrationImages.isPending ||
               reorderIntegrationImages.isPending ||
               removeWatermarkImages.isPending ||

@@ -295,18 +295,21 @@ function PropertyImagesGrid({
   title,
   selectable = false,
   canCreateFromPropertyImages = false,
+  canCopyToTracked = false,
   canUpdateEstateWebImageOptions = false,
   canRemoveWatermark = false,
   canMigrateIntegrationImages = false,
   canReorderIntegrationImages = false,
   onDeleteSelected,
   onCreateSelected,
+  onCopySelected,
   onUpdateEstateWebImageOptions,
   onRemoveWatermark,
   onMigrateIntegrationImages,
   onReorderIntegrationImages,
   isDeletePending = false,
   isCreatePending = false,
+  isCopyToTrackedPending = false,
   isUpdateEstateWebImageOptionsPending = false,
   isRemoveWatermarkPending = false,
   isMigrateIntegrationImagesPending = false,
@@ -317,12 +320,17 @@ function PropertyImagesGrid({
   title: string;
   selectable?: boolean;
   canCreateFromPropertyImages?: boolean;
+  canCopyToTracked?: boolean;
   canUpdateEstateWebImageOptions?: boolean;
   canRemoveWatermark?: boolean;
   canMigrateIntegrationImages?: boolean;
   canReorderIntegrationImages?: boolean;
   onDeleteSelected?: (imageIds: number[]) => Promise<void> | void;
   onCreateSelected?: (imageIndexes: number[]) => Promise<void> | void;
+  onCopySelected?: (
+    imageIndexes: number[],
+    removeWatermark: boolean,
+  ) => Promise<void> | void;
   onUpdateEstateWebImageOptions?: (
     imageIds: number[],
     options: EstateWebImageOptions,
@@ -337,6 +345,7 @@ function PropertyImagesGrid({
   onReorderIntegrationImages?: (imageIds: number[]) => Promise<void> | void;
   isDeletePending?: boolean;
   isCreatePending?: boolean;
+  isCopyToTrackedPending?: boolean;
   isUpdateEstateWebImageOptionsPending?: boolean;
   isRemoveWatermarkPending?: boolean;
   isMigrateIntegrationImagesPending?: boolean;
@@ -349,6 +358,8 @@ function PropertyImagesGrid({
   );
   const deleteConfirm = useOverlayState();
   const createConfirm = useOverlayState();
+  const copyConfirm = useOverlayState();
+  const copyWithWatermarkConfirm = useOverlayState();
   const estateWebOptionsModal = useOverlayState();
   const removeWatermarkModal = useOverlayState();
   const migrateIntegrationImagesModal = useOverlayState();
@@ -356,6 +367,7 @@ function PropertyImagesGrid({
   const isPending =
     isDeletePending ||
     isCreatePending ||
+    isCopyToTrackedPending ||
     isUpdateEstateWebImageOptionsPending ||
     isRemoveWatermarkPending ||
     isMigrateIntegrationImagesPending ||
@@ -381,9 +393,12 @@ function PropertyImagesGrid({
       );
     }
     return (
-      canCreateFromPropertyImages &&
-      Boolean(onCreateSelected) &&
-      image.propertyImageIndex != null
+      (canCreateFromPropertyImages &&
+        Boolean(onCreateSelected) &&
+        image.propertyImageIndex != null) ||
+      (canCopyToTracked &&
+        Boolean(onCopySelected) &&
+        image.propertyImageIndex != null)
     );
   };
   const selectableIndexes = images
@@ -476,6 +491,26 @@ function PropertyImagesGrid({
           },
         ]
       : []),
+    ...(canCopyToTracked && onCopySelected
+      ? [
+          {
+            id: "copy-to-tracked",
+            label: `Copy to tracked${selectedPropertyIndexes.length > 0 ? ` (${selectedPropertyIndexes.length})` : ""}`,
+            variant: "accent" as const,
+            icon: Images,
+            isDisabled: isPending || selectedPropertyIndexes.length === 0,
+            adminOnly: true,
+          },
+          {
+            id: "copy-to-tracked-watermark",
+            label: `Copy to tracked (remove watermark)${selectedPropertyIndexes.length > 0 ? ` (${selectedPropertyIndexes.length})` : ""}`,
+            variant: "accent" as const,
+            icon: Sparkles,
+            isDisabled: isPending || selectedPropertyIndexes.length === 0,
+            adminOnly: true,
+          },
+        ]
+      : []),
     ...(canRemoveWatermark && onRemoveWatermark
       ? [
           {
@@ -512,6 +547,18 @@ function PropertyImagesGrid({
   const handleCreateConfirm = async () => {
     if (!onCreateSelected || selectedPropertyIndexes.length === 0) return;
     await onCreateSelected(selectedPropertyIndexes);
+    setSelectedIndexes(new Set());
+  };
+
+  const handleCopyConfirm = async () => {
+    if (!onCopySelected || selectedPropertyIndexes.length === 0) return;
+    await onCopySelected(selectedPropertyIndexes, false);
+    setSelectedIndexes(new Set());
+  };
+
+  const handleCopyWithWatermarkConfirm = async () => {
+    if (!onCopySelected || selectedPropertyIndexes.length === 0) return;
+    await onCopySelected(selectedPropertyIndexes, true);
     setSelectedIndexes(new Set());
   };
 
@@ -595,6 +642,9 @@ function PropertyImagesGrid({
                   migrateIntegrationImagesModal.open();
                 if (actionId === "delete") deleteConfirm.open();
                 if (actionId === "create-from-property") createConfirm.open();
+                if (actionId === "copy-to-tracked") copyConfirm.open();
+                if (actionId === "copy-to-tracked-watermark")
+                  copyWithWatermarkConfirm.open();
                 if (actionId === "estateweb-options")
                   estateWebOptionsModal.open();
                 if (actionId === "remove-watermark")
@@ -748,6 +798,26 @@ function PropertyImagesGrid({
           isPending={isCreatePending}
         />
       ) : null}
+      {canCopyToTracked && onCopySelected ? (
+        <>
+          <ConfirmationDialog
+            state={copyConfirm}
+            title={`Copy ${selectedPropertyIndexes.length} ${selectedPropertyIndexes.length === 1 ? "photo" : "photos"} to tracked images?`}
+            description="Selected normalized photos will be added to this property's tracked images and uploaded to the linked CRM."
+            confirmLabel="Copy"
+            onConfirm={handleCopyConfirm}
+            isPending={isCopyToTrackedPending}
+          />
+          <ConfirmationDialog
+            state={copyWithWatermarkConfirm}
+            title={`Copy ${selectedPropertyIndexes.length} ${selectedPropertyIndexes.length === 1 ? "photo" : "photos"} to tracked images (remove watermark)?`}
+            description="Each selected photo will be run through Dewatermark, then the clean result will be added to this property's tracked images and uploaded to the linked CRM."
+            confirmLabel="Copy"
+            onConfirm={handleCopyWithWatermarkConfirm}
+            isPending={isCopyToTrackedPending}
+          />
+        </>
+      ) : null}
       {canUpdateEstateWebImageOptions && onUpdateEstateWebImageOptions ? (
         <EstateWebImageOptionsModal
           state={estateWebOptionsModal}
@@ -814,6 +884,12 @@ interface PropertyDetailViewProps {
   onReorderIntegrationImages?: (imageIds: number[]) => Promise<void> | void;
   isReorderingIntegrationImages?: boolean;
   showSystemImages?: boolean;
+  canCopyNormalizedImages?: boolean;
+  onCopyNormalizedImages?: (
+    imageIndexes: number[],
+    removeWatermark: boolean,
+  ) => Promise<void> | void;
+  isCopyingNormalizedImages?: boolean;
 }
 
 export function PropertyDetailView({
@@ -844,6 +920,9 @@ export function PropertyDetailView({
   onReorderIntegrationImages,
   isReorderingIntegrationImages = false,
   showSystemImages = false,
+  canCopyNormalizedImages = false,
+  onCopyNormalizedImages,
+  isCopyingNormalizedImages = false,
 }: PropertyDetailViewProps) {
   const sourceLinks = property.source_links ?? [];
   const cmsFieldEntries = (property.cms_fields ?? []) as CmsPropertyFieldEntry[];
@@ -880,6 +959,10 @@ export function PropertyDetailView({
       Boolean(onCreateIntegrationImages) &&
       Boolean(property.integration_property_id) &&
       fallbackImages.length > 0);
+  const canCopyNormalizedImagesToTracked =
+    canCopyNormalizedImages &&
+    Boolean(onCopyNormalizedImages) &&
+    Boolean(property.integration_property_id);
   const primaryLink =
     sourceLinks.find((link) => link.is_primary_source) ?? sourceLinks[0] ?? null;
   const agencyName = primaryLink?.source_property.source_agency?.name ?? null;
@@ -1392,6 +1475,10 @@ export function PropertyDetailView({
                   images={toPlainDisplayImages(normalizedImages, "normalized")}
                   fallbackImages={[]}
                   title={`${property.title} (normalized)`}
+                  selectable={canCopyNormalizedImagesToTracked}
+                  canCopyToTracked={canCopyNormalizedImagesToTracked}
+                  onCopySelected={onCopyNormalizedImages}
+                  isCopyToTrackedPending={isCopyingNormalizedImages}
                 />
               )}
             </Tabs.Panel>

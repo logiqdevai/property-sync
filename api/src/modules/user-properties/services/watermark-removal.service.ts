@@ -237,6 +237,61 @@ export class WatermarkRemovalService {
     return true;
   }
 
+  // Single-image "download, run Dewatermark, upload the clean result to GCS"
+  // step shared by copyNormalizedImages() (UserPropertiesService): a selection
+  // from the canonical/normalized gallery that should be cleaned before it's
+  // added to tracked images and pushed to the CRM. Unlike
+  // applyTrackerWatermarkPipeline() this never touches UserProperty.images or
+  // the CRM itself -- it only returns the processed GCS url, or null if this
+  // one image couldn't be processed, so the caller can skip it and keep going
+  // instead of failing the whole selection.
+  async removeWatermarkFromSourceUrl(params: {
+    userId: string;
+    userPropertyId: string;
+    sourceUrl: string;
+    index: number;
+  }): Promise<string | null> {
+    const sourceBuffer = await this.downloadImage(params.sourceUrl);
+    if (!sourceBuffer?.length) {
+      this.logger.warn(
+        `removeWatermarkFromSourceUrl: failed download for user_property=${params.userPropertyId} url=${params.sourceUrl}`,
+      );
+      return null;
+    }
+
+    const dewatermarkResult =
+      await this.dewatermarkOrchestrator.eraseWatermarkForUser(params.userId, {
+        originalPreviewImage: sourceBuffer,
+      });
+    const processedBuffer = Buffer.from(
+      dewatermarkResult.imageBase64,
+      'base64',
+    );
+    if (!processedBuffer.length) {
+      this.logger.warn(
+        `removeWatermarkFromSourceUrl: empty dewatermark result for user_property=${params.userPropertyId} url=${params.sourceUrl}`,
+      );
+      return null;
+    }
+
+    await this.recordDewatermarkCost({
+      userId: params.userId,
+      userPropertyId: params.userPropertyId,
+    });
+
+    const sourceIdentityHash = hashSourceIdentity(
+      normalizeSourceImageIdentity(params.sourceUrl),
+    );
+    const filename = `watermark-removed-${params.userPropertyId}-${params.index}-${Date.now()}-src-${sourceIdentityHash}.jpg`;
+    const gcsUpload = await this.gcsService.uploadImageFromBuffer(
+      processedBuffer,
+      filename,
+      'image/jpeg',
+      GcsFolders.propertyImages,
+    );
+    return gcsUpload.url;
+  }
+
   async processSingleImage(
     data: WatermarkRemovalJobData,
     imageId: string,

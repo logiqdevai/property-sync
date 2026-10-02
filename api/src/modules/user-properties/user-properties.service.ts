@@ -12,6 +12,7 @@ import {
   CHECK_ESTATEWEB_REMOVAL_QUEUE,
   FIX_ESTATEWEB_REMOVAL_QUEUE,
   CONTENT_PRODUCTION_QUEUE,
+  COPY_NORMALIZED_IMAGES_QUEUE,
   CREATE_INTEGRATION_IMAGES_QUEUE,
   CRM_CLIENT_NOTES_SYNC_QUEUE,
   DELETE_INTEGRATION_IMAGES_QUEUE,
@@ -138,12 +139,17 @@ import {
   RenormalizationJobData,
   RenormalizationJobResult,
 } from './interfaces/renormalization-job.interface';
+import {
+  CopyNormalizedImagesJobData,
+  CopyNormalizedImagesJobResult,
+} from './interfaces/copy-normalized-images-job.interface';
 import { WatermarkRemovalService } from './services/watermark-removal.service';
 import {
   extractIntegrationImageIds,
   resolveIntegrationImageProcessUrl,
 } from './utils/integration-property-images.util';
 import { buildUserPropertySearchOr } from './utils/user-property-search.util';
+import { normalizeSourceImageIdentity } from './utils/duplicate-watermark-detection.util';
 
 export type PropertySyncChangeType = 'created' | 'updated' | 'removed' | 'sold';
 
@@ -203,6 +209,8 @@ export class UserPropertiesService {
     private readonly checkEstateWebRemovalQueue: Queue<CheckEstateWebRemovalJobData>,
     @InjectQueue(FIX_ESTATEWEB_REMOVAL_QUEUE)
     private readonly fixEstateWebRemovalQueue: Queue<FixEstateWebRemovalJobData>,
+    @InjectQueue(COPY_NORMALIZED_IMAGES_QUEUE)
+    private readonly copyNormalizedImagesQueue: Queue<CopyNormalizedImagesJobData>,
   ) {}
 
   // Fire-and-forget: queues a single-entity Google-based EstateWeb location
@@ -2518,6 +2526,186 @@ export class UserPropertiesService {
     return this.findOne(userId, id);
   }
 
+  // Copies a selection of images from the canonical Property's full normalized
+  // scrape (the "Normalized" tab) onto this UserProperty's own tracked `images`
+  // -- which a tracker's max_image_count would otherwise have trimmed them out
+  // of -- and uploads the same selection to the linked CRM.
+  // Validates and resolves the selection synchronously (so a bad request fails
+  // fast), then hands the slow part -- optional per-image Dewatermark calls and
+  // the CRM upload -- to a background job, so the admin isn't stuck waiting on
+  // this request while working through other images or properties.
+  async enqueueCopyNormalizedImages(
+    userId: string,
+    id: string,
+    imageIndexes: number[],
+    removeWatermark = false,
+  ): Promise<{ job_log_id: string; message: string }> {
+    const userProperty = await this.prisma.userProperty.findFirst({
+      where: { id, user_id: userId },
+      select: {
+        id: true,
+        user_id: true,
+        canonical_property_id: true,
+        integration_property_id: true,
+        images: true,
+        canonical_property: { select: { images: true } },
+      },
+    });
+
+    if (!userProperty) {
+      throw new NotFoundException('Property not found');
+    }
+
+    if (!userProperty.integration_property_id) {
+      throw new BadRequestException('Property is not linked to a CMS');
+    }
+
+    if (removeWatermark) {
+      const dewatermarkIntegration =
+        await this.dewatermarkOrchestrator.findActiveForUser(userId);
+      if (!dewatermarkIntegration) {
+        throw new BadRequestException(
+          'No active Dewatermark integration configured for this user',
+        );
+      }
+    }
+
+    const normalizedImages = Array.isArray(
+      userProperty.canonical_property.images,
+    )
+      ? userProperty.canonical_property.images.filter(
+          (item): item is string => typeof item === 'string' && item.length > 0,
+        )
+      : [];
+
+    const uniqueIndexes = [
+      ...new Set(
+        imageIndexes.filter(
+          (index) =>
+            Number.isInteger(index) &&
+            index >= 0 &&
+            index < normalizedImages.length,
+        ),
+      ),
+    ].sort((a, b) => a - b);
+
+    if (uniqueIndexes.length === 0) {
+      throw new BadRequestException(
+        'No valid normalized image indexes provided',
+      );
+    }
+
+    const existingImages = Array.isArray(userProperty.images)
+      ? userProperty.images.filter(
+          (item): item is string => typeof item === 'string' && item.length > 0,
+        )
+      : [];
+    const existingIdentities = new Set(
+      existingImages.map(normalizeSourceImageIdentity),
+    );
+
+    const sourceUrls: string[] = [];
+    for (const index of uniqueIndexes) {
+      const url = normalizedImages[index];
+      const identity = normalizeSourceImageIdentity(url);
+      if (existingIdentities.has(identity)) continue;
+      existingIdentities.add(identity);
+      sourceUrls.push(url);
+    }
+
+    if (sourceUrls.length === 0) {
+      throw new BadRequestException(
+        'Selected images are already tracked for this property',
+      );
+    }
+
+    const initialResult: CopyNormalizedImagesJobResult = {
+      total: sourceUrls.length,
+      processed: 0,
+      copied: 0,
+      failed: 0,
+      items: [],
+      logs: [
+        `enqueued images=${sourceUrls.length} remove_watermark=${removeWatermark}`,
+      ],
+    };
+
+    const jobLog = await this.prisma.jobLog.create({
+      data: {
+        queue_name: COPY_NORMALIZED_IMAGES_QUEUE,
+        job_name: 'copy-normalized-images',
+        status: JobStatus.WAITING,
+        payload: {
+          user_property_id: userProperty.id,
+          total: sourceUrls.length,
+          remove_watermark: removeWatermark,
+        } as object,
+        result: initialResult as object,
+      },
+    });
+
+    const jobData: CopyNormalizedImagesJobData = {
+      job_log_id: jobLog.id,
+      user_id: userId,
+      user_property_id: userProperty.id,
+      source_urls: sourceUrls,
+      remove_watermark: removeWatermark,
+    };
+
+    await this.copyNormalizedImagesQueue.add('copy-normalized-images', jobData, {
+      jobId: jobLog.id,
+      attempts: 2,
+      backoff: { type: 'exponential', delay: 5000 },
+      removeOnComplete: 100,
+      removeOnFail: 200,
+    });
+
+    return {
+      job_log_id: jobLog.id,
+      message: removeWatermark
+        ? 'Watermark removal and copy to tracked images has started in the background. Track progress in Job queue.'
+        : 'Copying images to tracked images and the CMS has started in the background. Track progress in Job queue.',
+    };
+  }
+
+  // Called by CopyNormalizedImagesJobService once it has the final set of
+  // image urls for a copy job (after any Dewatermark step). Reloads the
+  // property fresh since time has passed since enqueueCopyNormalizedImages()
+  // validated the selection, then pushes to the CRM and appends locally --
+  // mirrors the synchronous copyNormalizedImages() flow this replaced.
+  async finalizeCopyNormalizedImages(params: {
+    userPropertyId: string;
+    finalImageUrls: string[];
+  }): Promise<void> {
+    const userProperty = await this.prisma.userProperty.findUnique({
+      where: { id: params.userPropertyId },
+      select: {
+        id: true,
+        user_id: true,
+        canonical_property_id: true,
+        integration_property_id: true,
+        images: true,
+      },
+    });
+
+    if (!userProperty) {
+      throw new NotFoundException('Property not found');
+    }
+
+    await this.pushIntegrationImages(userProperty, params.finalImageUrls);
+
+    const existingImages = Array.isArray(userProperty.images)
+      ? userProperty.images.filter(
+          (item): item is string => typeof item === 'string' && item.length > 0,
+        )
+      : [];
+
+    await this.prisma.userProperty.update({
+      where: { id: userProperty.id },
+      data: { images: [...existingImages, ...params.finalImageUrls] },
+    });
+  }
+
   // Pushes every scraped Property.images entry (no per-image selection) --
   // used by the quick "Push images to CRM" action on the properties list
   // and detail pages, as opposed to createIntegrationImages() which uploads
@@ -3073,6 +3261,26 @@ export class UserPropertiesService {
     const sourceImageUrls = uniqueIndexes.map(
       (index) => propertyImages[index],
     );
+
+    await this.pushIntegrationImages(userProperty, sourceImageUrls);
+  }
+
+  // Shared by runCreateIntegrationImages() (uploads a selection already in
+  // UserProperty.images) and copyNormalizedImages() (uploads a selection from
+  // the canonical Property.images before it's even saved onto UserProperty) --
+  // the CRM only needs the raw URLs, not where they came from.
+  private async pushIntegrationImages(
+    userProperty: {
+      id: string;
+      user_id: string;
+      canonical_property_id: string;
+      integration_property_id: string | null;
+    },
+    sourceImageUrls: string[],
+  ) {
+    if (!userProperty.integration_property_id) {
+      throw new BadRequestException('Property is not linked to a CMS');
+    }
 
     const { userIntegrationId, integrationType } =
       await this.resolveCmsIntegrationForProperty(userProperty);

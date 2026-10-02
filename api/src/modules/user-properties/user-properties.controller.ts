@@ -31,6 +31,7 @@ import { DeleteUserPropertiesDto } from './dto/delete-user-properties.dto';
 import { ResolveEstateWebLocationsDto } from './dto/resolve-estateweb-locations.dto';
 import { DeleteIntegrationImagesDto } from './dto/delete-integration-images.dto';
 import { CreateIntegrationImagesDto } from './dto/create-integration-images.dto';
+import { CopyNormalizedImagesDto } from './dto/copy-normalized-images.dto';
 import { ReorderIntegrationImagesDto } from './dto/reorder-integration-images.dto';
 import { UpdateIntegrationImagesDto } from './dto/update-integration-images.dto';
 import {
@@ -38,6 +39,7 @@ import {
   RemoveWatermarkImagesDto,
 } from './dto/remove-watermark-images.dto';
 import { RemoveWatermarkImagesResponseEntity } from './entities/remove-watermark-images-response.entity';
+import { CopyNormalizedImagesResponseEntity } from './entities/copy-normalized-images-response.entity';
 import { BulkRemoveWatermarkImagesResponseEntity } from './entities/bulk-remove-watermark-images-response.entity';
 import { TruncateUserPropertyDescriptionsDto } from './dto/truncate-user-property-descriptions.dto';
 import { UpdateEstateWebSitesDto } from './dto/update-estateweb-sites.dto';
@@ -715,6 +717,31 @@ export class UserPropertiesController {
       userId,
       id,
       dto.image_indexes,
+    );
+  }
+
+  @Audited({ action: 'user_property.copy_normalized_images', entity: 'UserProperty', ids: { param: 'id' } })
+  @Post(':id/copy-normalized-images')
+  @UseGuards(JwtGuard, RolesGuard)
+  @Roles(AuthRole.ADMIN)
+  @ApiOperation({
+    summary:
+      'Enqueue a background job that copies selected images from the canonical Property into this tracked UserProperty and uploads them to the linked CMS (admin only)',
+  })
+  @ApiResponse({ status: 200, type: CopyNormalizedImagesResponseEntity })
+  @ApiResponse({ status: 400, description: 'Cannot enqueue copy' })
+  @ApiResponse({ status: 403, description: 'Admin only' })
+  @ApiResponse({ status: 404, description: 'Saved property not found' })
+  copyNormalizedImages(
+    @CurrentUser('id') userId: string,
+    @Param('id') id: string,
+    @Body() dto: CopyNormalizedImagesDto,
+  ) {
+    return this.userPropertiesService.enqueueCopyNormalizedImages(
+      userId,
+      id,
+      dto.image_indexes,
+      dto.remove_watermark,
     );
   }
 
