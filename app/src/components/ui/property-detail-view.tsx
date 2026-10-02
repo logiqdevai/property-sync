@@ -6,6 +6,7 @@ import {
   Chip,
   ListBox,
   Select,
+  Tabs,
   Tooltip,
   useOverlayState,
 } from "@heroui/react";
@@ -103,6 +104,7 @@ export interface PropertyDetailViewData extends Partial<PropertyCmsFields> {
   renovation_year?: number | null;
   features: string[] | null;
   images: string[] | null;
+  canonical_images?: string[];
   integration_property?: IntegrationProperty | null;
   localized_contents?: PropertyLocalizedContent[];
   duplicate_group_id?: string | null;
@@ -173,6 +175,29 @@ function buildLocalizedContentRows(property: PropertyDetailViewData): Array<{
     title: values.title,
     description: values.description,
     source: "generated" as const,
+  }));
+}
+
+const SYSTEM_IMAGES_TABS = {
+  normalized: "normalized",
+  tracked: "tracked",
+} as const;
+
+type SystemImagesTab =
+  (typeof SYSTEM_IMAGES_TABS)[keyof typeof SYSTEM_IMAGES_TABS];
+
+function toPlainDisplayImages(
+  urls: string[],
+  keyPrefix: string,
+): PropertyDisplayImage[] {
+  return urls.map((url, index) => ({
+    key: `${keyPrefix}-${index}`,
+    crmImageId: null,
+    propertyImageIndex: index,
+    url,
+    show_on_site: false,
+    show_on_groups: false,
+    show_on_foreign_agents: false,
   }));
 }
 
@@ -788,6 +813,7 @@ interface PropertyDetailViewProps {
   canReorderIntegrationImages?: boolean;
   onReorderIntegrationImages?: (imageIds: number[]) => Promise<void> | void;
   isReorderingIntegrationImages?: boolean;
+  showSystemImages?: boolean;
 }
 
 export function PropertyDetailView({
@@ -817,6 +843,7 @@ export function PropertyDetailView({
   canReorderIntegrationImages = false,
   onReorderIntegrationImages,
   isReorderingIntegrationImages = false,
+  showSystemImages = false,
 }: PropertyDetailViewProps) {
   const sourceLinks = property.source_links ?? [];
   const cmsFieldEntries = (property.cms_fields ?? []) as CmsPropertyFieldEntry[];
@@ -828,6 +855,12 @@ export function PropertyDetailView({
   });
   const fallbackImages = (property.images ?? []).filter(
     (url): url is string => typeof url === "string" && url.length > 0,
+  );
+  const normalizedImages = (property.canonical_images ?? []).filter(
+    (url): url is string => typeof url === "string" && url.length > 0,
+  );
+  const [systemImagesTab, setSystemImagesTab] = useState<SystemImagesTab>(
+    SYSTEM_IMAGES_TABS.normalized,
   );
   const heroImage = displayImages[0] ?? null;
   const heroFallback = fallbackImages[0] ?? null;
@@ -1311,6 +1344,81 @@ export function PropertyDetailView({
           />
         )}
       </section>
+
+      {showSystemImages ? (
+        <section className="flex min-w-0 flex-col gap-4 rounded-xl border border-border bg-surface p-4 sm:p-5">
+          <div className="flex min-w-0 flex-col gap-0.5">
+            <h2 className="text-sm font-semibold text-foreground">
+              System images
+            </h2>
+            <p className="text-xs text-muted">
+              Images stored in our system for this property — separate from
+              the CRM/integration images shown above.
+            </p>
+          </div>
+          <Tabs
+            className="relative w-full"
+            variant="secondary"
+            selectedKey={systemImagesTab}
+            onSelectionChange={(key) =>
+              setSystemImagesTab(String(key) as SystemImagesTab)
+            }
+          >
+            <Tabs.ListContainer className="relative z-10">
+              <Tabs.List aria-label="System images">
+                <Tabs.Tab id={SYSTEM_IMAGES_TABS.normalized}>
+                  Normalized ({normalizedImages.length})
+                  <Tabs.Indicator />
+                </Tabs.Tab>
+                <Tabs.Tab id={SYSTEM_IMAGES_TABS.tracked}>
+                  Tracked ({fallbackImages.length})
+                  <Tabs.Indicator />
+                </Tabs.Tab>
+              </Tabs.List>
+            </Tabs.ListContainer>
+
+            <Tabs.Panel
+              id={SYSTEM_IMAGES_TABS.normalized}
+              className="pt-4 data-[exiting]:pointer-events-none"
+            >
+              <p className="mb-3 text-xs text-muted">
+                All images from the latest normalized scrape, before any
+                per-agency image limit is applied.
+              </p>
+              {normalizedImages.length === 0 ? (
+                <p className="text-sm text-muted">No normalized images found.</p>
+              ) : (
+                <PropertyImagesGrid
+                  images={toPlainDisplayImages(normalizedImages, "normalized")}
+                  fallbackImages={[]}
+                  title={`${property.title} (normalized)`}
+                />
+              )}
+            </Tabs.Panel>
+
+            <Tabs.Panel
+              id={SYSTEM_IMAGES_TABS.tracked}
+              className="pt-4 data-[exiting]:pointer-events-none"
+            >
+              <p className="mb-3 text-xs text-muted">
+                The images kept for this tracked property, after any
+                per-agency image limit.
+              </p>
+              {fallbackImages.length === 0 ? (
+                <p className="text-sm text-muted">
+                  No images stored in our system.
+                </p>
+              ) : (
+                <PropertyImagesGrid
+                  images={toPlainDisplayImages(fallbackImages, "system")}
+                  fallbackImages={[]}
+                  title={`${property.title} (system)`}
+                />
+              )}
+            </Tabs.Panel>
+          </Tabs>
+        </section>
+      ) : null}
 
       <section className="flex min-w-0 flex-col gap-4 rounded-xl border border-border bg-surface p-4 sm:p-5">
         <h2 className="text-sm font-semibold text-foreground">Features</h2>

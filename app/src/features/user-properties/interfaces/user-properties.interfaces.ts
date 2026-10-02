@@ -74,6 +74,9 @@ export interface UserPropertyDetail extends UserProperty {
   localized_contents?: PropertyLocalizedContent[];
   text_truncate_pieces?: string[];
   integration_email?: string | null;
+  // The full normalized scrape result (canonical Property.images), before any
+  // per-tracker max_image_count trim is applied to this UserProperty's own `images`.
+  canonical_images?: string[];
 }
 
 export interface UpdateUserPropertyPayload {

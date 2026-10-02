@@ -727,6 +727,13 @@ export class UserPropertiesService {
       source_agency: resolveSourceAgency(canonical_property.source_links),
       source_links: canonical_property.source_links,
       history: canonical_property.history,
+      // The full normalized scrape result, before any per-tracker
+      // max_image_count trim is applied to this UserProperty's own `images`.
+      canonical_images: Array.isArray(canonical_property.images)
+        ? canonical_property.images.filter(
+            (url): url is string => typeof url === 'string' && url.length > 0,
+          )
+        : [],
       localized_contents: this.resolveLocalizedContentsForDisplay(
         { id: rest.id, title: rest.title, description: rest.description },
         localized_contents,

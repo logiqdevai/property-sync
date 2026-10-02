@@ -596,6 +596,7 @@ export default function DashboardPropertyDetailPage() {
           await migrateImages.mutateAsync({ id: property.id, mode });
         }}
         isMigratingIntegrationImages={migrateImages.isPending}
+        showSystemImages={isAdmin}
         headerActions={
           <BulkActionsMenu
             actions={headerActions}
