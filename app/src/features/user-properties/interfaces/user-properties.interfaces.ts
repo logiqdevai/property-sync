@@ -517,6 +517,7 @@ export interface AgencyWatermarkSettings {
 export interface ImageCapExcessImageCandidate {
   id: number;
   source_image: string | null;
+  url: string | null;
   filename: string | null;
 }
 

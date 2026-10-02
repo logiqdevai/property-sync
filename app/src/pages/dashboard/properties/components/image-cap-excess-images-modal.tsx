@@ -322,33 +322,40 @@ export function ImageCapExcessImagesModal({
                               </div>
 
                               <div className="flex gap-2 overflow-x-auto pb-1">
-                                {c.excess_images.map((img) => (
-                                  <div key={img.id} className="flex w-28 flex-shrink-0 flex-col gap-1">
-                                    <span className="w-fit rounded bg-danger/10 px-1.5 py-0.5 text-[0.65rem] font-semibold uppercase tracking-wide text-danger">
-                                      Remove
-                                    </span>
-                                    <button
-                                      type="button"
-                                      className="h-20 w-28 cursor-zoom-in overflow-hidden rounded-md border-2 border-danger/50 bg-surface-secondary"
-                                      onClick={() =>
-                                        img.source_image && setExpandedImage(img.source_image)
-                                      }
-                                      disabled={!img.source_image}
-                                    >
-                                      {img.source_image ? (
-                                        <img
-                                          src={img.source_image}
-                                          alt={`Excess CRM image ${img.id}`}
-                                          loading="lazy"
-                                          className="h-full w-full object-cover"
-                                        />
-                                      ) : null}
-                                    </button>
-                                    <span className="font-mono text-[0.65rem] text-muted">
-                                      CRM img #{img.id}
-                                    </span>
-                                  </div>
-                                ))}
+                                {c.excess_images.map((img) => {
+                                  // source_image is our matched local copy; when a CRM
+                                  // image can't be matched to one (uploaded outside our
+                                  // pipeline, or a stale cache entry -- see the comment
+                                  // on ImageCapExcessImageCandidate.url), fall back to
+                                  // the live EstateWeb-hosted url so the admin can still
+                                  // see what they're about to delete instead of a blank box.
+                                  const previewUrl = img.source_image || img.url;
+                                  return (
+                                    <div key={img.id} className="flex w-28 flex-shrink-0 flex-col gap-1">
+                                      <span className="w-fit rounded bg-danger/10 px-1.5 py-0.5 text-[0.65rem] font-semibold uppercase tracking-wide text-danger">
+                                        Remove
+                                      </span>
+                                      <button
+                                        type="button"
+                                        className="h-20 w-28 cursor-zoom-in overflow-hidden rounded-md border-2 border-danger/50 bg-surface-secondary"
+                                        onClick={() => previewUrl && setExpandedImage(previewUrl)}
+                                        disabled={!previewUrl}
+                                      >
+                                        {previewUrl ? (
+                                          <img
+                                            src={previewUrl}
+                                            alt={`Excess CRM image ${img.id}`}
+                                            loading="lazy"
+                                            className="h-full w-full object-cover"
+                                          />
+                                        ) : null}
+                                      </button>
+                                      <span className="font-mono text-[0.65rem] text-muted">
+                                        CRM img #{img.id}
+                                      </span>
+                                    </div>
+                                  );
+                                })}
                               </div>
                             </div>
                           ))}

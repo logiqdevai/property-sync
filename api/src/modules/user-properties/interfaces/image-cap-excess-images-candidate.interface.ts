@@ -1,6 +1,12 @@
 export interface ImageCapExcessImageCandidate {
   id: number;
   source_image: string | null;
+  // Live EstateWeb-hosted url for this image, always present. Used by the
+  // UI as a thumbnail fallback when source_image is null -- i.e. this CRM
+  // image couldn't be matched to one of our own local copies (uploaded
+  // outside our pipeline, or a stale/never-populated cache entry) -- so the
+  // admin can still see what they're about to delete instead of a blank box.
+  url: string | null;
   filename: string | null;
 }
 

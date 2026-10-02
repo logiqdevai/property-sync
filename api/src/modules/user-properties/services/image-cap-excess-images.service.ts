@@ -15,6 +15,7 @@ import { normalizeSourceImageIdentity } from '../utils/duplicate-watermark-detec
 interface RawIntegrationImage {
   id?: unknown;
   source_image?: unknown;
+  url?: unknown;
   filename?: unknown;
 }
 
@@ -165,6 +166,7 @@ export class ImageCapExcessImagesService {
           id: img.id as number,
           source_image:
             typeof img.source_image === 'string' ? img.source_image : null,
+          url: typeof img.url === 'string' ? img.url : null,
           filename: typeof img.filename === 'string' ? img.filename : null,
         })),
         kept_local_images: localImages,
