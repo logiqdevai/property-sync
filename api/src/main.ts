@@ -13,6 +13,14 @@ async function bootstrap() {
   });
   app.enableShutdownHooks();
 
+  // Express/body-parser's default JSON limit is 100kb. Bulk admin actions
+  // (e.g. stale-crm-images/replace, image-cap-excess-images/cleanup) send one
+  // POST with an item per selected image -- a few hundred selected images
+  // across many properties comfortably exceeds that default, returning 413
+  // before the request even reaches the controller. Raise it generously.
+  app.useBodyParser('json', { limit: '20mb' });
+  app.useBodyParser('urlencoded', { limit: '20mb', extended: true });
+
   const config = new DocumentBuilder()
     .setTitle('Property Sync API')
     .setDescription(

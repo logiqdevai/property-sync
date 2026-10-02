@@ -146,6 +146,10 @@ export const ApiRoutes = {
                 "/admin/user-properties/image-cap-excess-images/calculate",
             cleanupImageCapExcessImages:
                 "/admin/user-properties/image-cap-excess-images/cleanup",
+            calculateStaleCrmImages:
+                "/admin/user-properties/stale-crm-images/calculate",
+            replaceStaleCrmImages:
+                "/admin/user-properties/stale-crm-images/replace",
         },
         notifications: {
             prefix: "/admin/notifications",

@@ -38,6 +38,7 @@ import { EstateWebDuplicatePropertiesModal } from "./components/estateweb-duplic
 import { EstateWebOrphanSitesModal } from "./components/estateweb-orphan-sites-modal";
 import { DuplicateWatermarkImagesModal } from "./components/duplicate-watermark-images-modal";
 import { ImageCapExcessImagesModal } from "./components/image-cap-excess-images-modal";
+import { StaleCrmImagesModal } from "./components/stale-crm-images-modal";
 import { RemoveWatermarkByCountModal } from "./components/remove-watermark-by-count-modal";
 import { ProduceContentModal } from "./components/produce-content-modal";
 import { ChangePropertyStatusModal } from "./components/change-property-status-modal";
@@ -344,6 +345,7 @@ export default function DashboardPropertiesListPage() {
   const manageOrphanSitesModal = useOverlayState();
   const duplicateWatermarkImagesModal = useOverlayState();
   const imageCapExcessImagesModal = useOverlayState();
+  const staleCrmImagesModal = useOverlayState();
   const geocodeModal = useOverlayState();
   const resolveEstateWebLocationsModal = useOverlayState();
   const [manageSitesPropertyIds, setManageSitesPropertyIds] = useState<string[]>([]);
@@ -691,6 +693,12 @@ export default function DashboardPropertiesListPage() {
           adminOnly: true,
         },
         {
+          id: "find-stale-crm-images",
+          label: "Find stale CRM images (content changed)",
+          icon: RefreshCw,
+          adminOnly: true,
+        },
+        {
           id: "check-estateweb-removal",
           label: "Check EstateWeb removal sync",
           icon: Search,
@@ -985,6 +993,10 @@ export default function DashboardPropertiesListPage() {
     }
     if (actionId === "find-image-cap-excess-images") {
       imageCapExcessImagesModal.open();
+      return;
+    }
+    if (actionId === "find-stale-crm-images") {
+      staleCrmImagesModal.open();
       return;
     }
     if (actionId === "geocode-missing-coordinates") {
@@ -1940,6 +1952,7 @@ export default function DashboardPropertiesListPage() {
           <EstateWebOrphanSitesModal state={manageOrphanSitesModal} />
           <DuplicateWatermarkImagesModal state={duplicateWatermarkImagesModal} />
           <ImageCapExcessImagesModal state={imageCapExcessImagesModal} />
+          <StaleCrmImagesModal state={staleCrmImagesModal} />
           <CheckEstateWebRemovalModal
             state={checkEstateWebRemovalModal}
             propertyIds={checkEstateWebRemovalPropertyIds}

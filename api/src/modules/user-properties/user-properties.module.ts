@@ -6,6 +6,7 @@ import {
   FIX_ESTATEWEB_REMOVAL_QUEUE,
   DUPLICATE_WATERMARK_CLEANUP_QUEUE,
   IMAGE_CAP_EXCESS_IMAGES_CLEANUP_QUEUE,
+  STALE_CRM_IMAGES_REPLACE_QUEUE,
   CONTENT_PRODUCTION_QUEUE,
   CREATE_INTEGRATION_IMAGES_QUEUE,
   CRM_CLIENT_NOTES_SYNC_QUEUE,
@@ -42,6 +43,7 @@ import { CheckEstateWebRemovalProcessor } from '@/background/check-estateweb-rem
 import { FixEstateWebRemovalProcessor } from '@/background/fix-estateweb-removal.processor';
 import { DuplicateWatermarkCleanupProcessor } from '@/background/duplicate-watermark-cleanup.processor';
 import { ImageCapExcessImagesCleanupProcessor } from '@/background/image-cap-excess-images-cleanup.processor';
+import { StaleCrmImagesReplaceProcessor } from '@/background/stale-crm-images-replace.processor';
 import { UserPropertiesController } from './user-properties.controller';
 import { AdminUserPropertiesController } from './admin-user-properties.controller';
 import { UserPropertiesService } from './user-properties.service';
@@ -62,6 +64,8 @@ import { DuplicateWatermarkImagesService } from './services/duplicate-watermark-
 import { DuplicateWatermarkCleanupJobService } from './services/duplicate-watermark-cleanup-job.service';
 import { ImageCapExcessImagesService } from './services/image-cap-excess-images.service';
 import { ImageCapExcessImagesCleanupJobService } from './services/image-cap-excess-images-cleanup-job.service';
+import { StaleCrmImagesService } from './services/stale-crm-images.service';
+import { StaleCrmImagesReplaceJobService } from './services/stale-crm-images-replace-job.service';
 
 @Module({
   imports: [
@@ -91,6 +95,7 @@ import { ImageCapExcessImagesCleanupJobService } from './services/image-cap-exce
       { name: FIX_ESTATEWEB_REMOVAL_QUEUE },
       { name: DUPLICATE_WATERMARK_CLEANUP_QUEUE },
       { name: IMAGE_CAP_EXCESS_IMAGES_CLEANUP_QUEUE },
+      { name: STALE_CRM_IMAGES_REPLACE_QUEUE },
     ),
   ],
   controllers: [UserPropertiesController, AdminUserPropertiesController],
@@ -128,6 +133,9 @@ import { ImageCapExcessImagesCleanupJobService } from './services/image-cap-exce
     ImageCapExcessImagesService,
     ImageCapExcessImagesCleanupJobService,
     ImageCapExcessImagesCleanupProcessor,
+    StaleCrmImagesService,
+    StaleCrmImagesReplaceJobService,
+    StaleCrmImagesReplaceProcessor,
   ],
   exports: [UserPropertiesService],
 })

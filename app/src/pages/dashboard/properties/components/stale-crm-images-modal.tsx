@@ -8,17 +8,17 @@ import { Routes } from "@/routes/routes";
 import { useAgencies } from "@/features/agencies/hooks/use-agencies";
 import {
   useAgencyWatermarkSettings,
-  useCalculateImageCapExcessImages,
-  useEnqueueImageCapExcessImagesCleanup,
+  useCalculateStaleCrmImages,
+  useEnqueueStaleCrmImagesReplace,
 } from "@/features/user-properties/hooks/use-user-properties";
 import { useJob } from "@/features/jobs/hooks/use-jobs";
 import type {
   AgencyWatermarkSettings,
-  ImageCapExcessImagesCleanupJobResult,
-  ImageCapExcessPropertyCandidate,
+  StaleCrmImagePropertyCandidate,
+  StaleCrmImagesReplaceJobResult,
 } from "@/features/user-properties/interfaces/user-properties.interfaces";
 
-export type ImageCapExcessImagesModalState = ReturnType<typeof useOverlayState>;
+export type StaleCrmImagesModalState = ReturnType<typeof useOverlayState>;
 
 type Step = "select-agencies" | "review" | "running";
 
@@ -41,41 +41,24 @@ function describeImageCap(settings: AgencyWatermarkSettings[] | undefined): {
   return { text: `${keepPart}${extra}`, isActive: true };
 }
 
-export function ImageCapExcessImagesModal({
-  state,
-}: {
-  state: ImageCapExcessImagesModalState;
-}) {
+export function StaleCrmImagesModal({ state }: { state: StaleCrmImagesModalState }) {
   const [step, setStep] = useState<Step>("select-agencies");
   const [selectedAgencyIds, setSelectedAgencyIds] = useState<Set<string>>(new Set());
-  const [candidates, setCandidates] = useState<ImageCapExcessPropertyCandidate[]>([]);
+  const [candidates, setCandidates] = useState<StaleCrmImagePropertyCandidate[]>([]);
   const [approvedIds, setApprovedIds] = useState<Set<string>>(new Set());
   const [jobLogId, setJobLogId] = useState<string | null>(null);
   const [expandedImage, setExpandedImage] = useState<string | null>(null);
   const deleteConfirm = useOverlayState();
   const bodyContentRef = useRef<HTMLDivElement>(null);
 
-  // Escape also closes the lightbox (see the render below for why it's a
-  // plain child of Modal.Dialog, not a portal, and still sits above the
-  // modal backdrop's z-50 via z-[60] without being clipped).
-  useEffect(() => {
-    if (!expandedImage) return;
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setExpandedImage(null);
-    };
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [expandedImage]);
-
-  // Modal.Body is the single scroll container (see the 85vh/nested-scroll fix
-  // above). It doesn't reset on its own when the step changes, so scrolling
-  // down to reach a bottom agency/property in one step leaves the next
-  // step's content opening at that same scroll offset -- the header and
-  // summary line end up scrolled out of view, looking "cut off". Must be
-  // useLayoutEffect, not useEffect: useEffect fires after the browser has
-  // already painted the new step at the old (carried-over) scroll position,
-  // so the cut-off state is visible for a frame before snapping back --
-  // useLayoutEffect runs before paint, so the reset is never visible.
+  // See image-cap-excess-images-modal.tsx for the full history of why both
+  // of these fixes are load-bearing (overflow-clip on Modal.Dialog, this
+  // useLayoutEffect scroll reset): Modal.Dialog's own content can exceed its
+  // max-h-[85vh] box even though Modal.Body separately handles its own
+  // overflow, so without overflow-clip the browser's native
+  // scroll-into-view can scroll Dialog itself and clip its Header; and
+  // useEffect (vs useLayoutEffect) here would paint one frame at the old
+  // step's scroll position before resetting, visible as a jump.
   useLayoutEffect(() => {
     const scrollEl = bodyContentRef.current?.parentElement;
     if (scrollEl) scrollEl.scrollTop = 0;
@@ -90,6 +73,15 @@ export function ImageCapExcessImagesModal({
     setJobLogId(null);
     setExpandedImage(null);
   }, [state.isOpen]);
+
+  useEffect(() => {
+    if (!expandedImage) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setExpandedImage(null);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [expandedImage]);
 
   // The admin agencies endpoint takes `limit` literally (Prisma `take`), unlike
   // the trackable-agencies endpoint elsewhere in the app -- 0 means "zero rows",
@@ -113,32 +105,28 @@ export function ImageCapExcessImagesModal({
     return map;
   }, [watermarkSettings]);
 
-  const calculate = useCalculateImageCapExcessImages();
-  const cleanup = useEnqueueImageCapExcessImagesCleanup();
+  const calculate = useCalculateStaleCrmImages();
+  const replace = useEnqueueStaleCrmImagesReplace();
   const { data: job } = useJob(jobLogId ?? "");
-  const jobResult = job?.result as ImageCapExcessImagesCleanupJobResult | undefined;
+  const jobResult = job?.result as StaleCrmImagesReplaceJobResult | undefined;
   const jobIsActive = !!job && ACTIVE_JOB_STATUSES.has(job.status);
 
-  const highConfidence = useMemo(
-    () => candidates.filter((c) => c.is_high_confidence),
-    [candidates],
-  );
-  const needsReview = useMemo(
-    () => candidates.filter((c) => !c.is_high_confidence),
-    [candidates],
-  );
   const byAgency = useMemo(() => {
-    const map = new Map<string, ImageCapExcessPropertyCandidate[]>();
-    for (const c of highConfidence) {
+    const map = new Map<string, StaleCrmImagePropertyCandidate[]>();
+    for (const c of candidates) {
       const list = map.get(c.agency_name) ?? [];
       list.push(c);
       map.set(c.agency_name, list);
     }
     return [...map.entries()].sort((a, b) => b[1].length - a[1].length);
-  }, [highConfidence]);
+  }, [candidates]);
 
-  const approvedCandidates = highConfidence.filter((c) => approvedIds.has(c.user_property_id));
-  const approvedImageCount = approvedCandidates.reduce((sum, c) => sum + c.excess_count, 0);
+  const approvedCandidates = candidates.filter((c) => approvedIds.has(c.user_property_id));
+  const approvedImageCount = approvedCandidates.reduce(
+    (sum, c) => sum + c.mismatches.length,
+    0,
+  );
+  const totalImageCount = candidates.reduce((sum, c) => sum + c.mismatches.length, 0);
 
   const toggleAgency = (id: string) => {
     setSelectedAgencyIds((current) => {
@@ -156,26 +144,27 @@ export function ImageCapExcessImagesModal({
       {
         onSuccess: (result) => {
           setCandidates(result);
-          setApprovedIds(
-            new Set(
-              result.filter((c) => c.is_high_confidence).map((c) => c.user_property_id),
-            ),
-          );
+          setApprovedIds(new Set(result.map((c) => c.user_property_id)));
           setStep("review");
         },
       },
     );
   };
 
-  const handleConfirmDelete = () => {
+  const handleConfirmReplace = () => {
     const items = approvedCandidates.flatMap((c) =>
-      c.excess_images.map((img) => ({
+      c.mismatches.map((m) => ({
         user_property_id: c.user_property_id,
-        crm_image_id: img.id,
+        crm_image_id: m.crm_image_id,
+        new_source_image: m.new_source_image,
+        position: m.position,
+        show_on_site: m.show_on_site,
+        show_on_groups: m.show_on_groups,
+        show_on_foreign_agents: m.show_on_foreign_agents,
       })),
     );
     if (items.length === 0) return;
-    cleanup.mutate(
+    replace.mutate(
       { items },
       {
         onSuccess: (result) => {
@@ -191,24 +180,9 @@ export function ImageCapExcessImagesModal({
       <Modal state={state}>
         <Modal.Backdrop isDismissable={!jobIsActive}>
           <Modal.Container>
-            {/* overflow-clip (not the library's default overflow-hidden) is load-bearing:
-                Modal.Dialog's own content (header+body+footer) can exceed its max-h-[85vh]
-                box even though Modal.Body internally scrolls its overflow via its own
-                overflow-y-auto -- Dialog itself still measures a scrollHeight taller than
-                its clientHeight. With overflow-hidden, Dialog is still a valid scroll
-                container, so the browser's native "scroll the focused element into view"
-                (triggered by clicking a checkbox near the bottom of a list) can target
-                Dialog as well as Body, scrolling Dialog and clipping its own Header out of
-                view -- the "header disappears / gap before footer" bug. overflow-clip
-                keeps the same visual clipping but is explicitly a non-scroll-container per
-                spec, so Dialog can no longer be scrolled by anything, native or otherwise;
-                Modal.Body remains the only element that actually scrolls. Verified live by
-                reproducing the bug, confirming dialog.scrollTop was non-zero, then
-                confirming overflow-clip makes dialog.scrollTop stay 0 even after the same
-                scrollIntoView call that used to move it. */}
             <Modal.Dialog className="w-[calc(100vw-2rem)] max-w-4xl max-h-[85vh] overflow-clip">
               <Modal.Header>
-                <Modal.Heading>Excess CRM images (image cap)</Modal.Heading>
+                <Modal.Heading>Stale CRM images (content changed)</Modal.Heading>
               </Modal.Header>
               <Modal.Body>
                 <div ref={bodyContentRef} className="flex min-w-0 flex-col gap-4 pb-2 pr-1">
@@ -216,9 +190,11 @@ export function ImageCapExcessImagesModal({
                     <>
                       <p className="text-sm text-muted">
                         Pick the agencies to scan. For each property, this finds CRM images
-                        still live on EstateWeb beyond what the local image cap keeps — e.g. the
-                        cap was lowered and the trim never reached the CRM. The clean, already-kept
-                        images on the property are left untouched.
+                        whose content no longer matches the local image we now have at the
+                        same position — e.g. a photo was dewatermarked locally but the push
+                        to EstateWeb was skipped or never ran. Replacing deletes the old CRM
+                        image by its known id and uploads the current local one in its place
+                        — never a fuzzy text match, so it can't create a duplicate.
                       </p>
                       {agenciesPending ? (
                         <p className="text-sm text-muted">Loading agencies…</p>
@@ -259,12 +235,9 @@ export function ImageCapExcessImagesModal({
                   {step === "review" ? (
                     <>
                       <p className="text-sm text-muted">
-                        {highConfidence.length} properties / {approvedImageCount} of{" "}
-                        {highConfidence.reduce((s, c) => s + c.excess_count, 0)} images selected
-                        for deletion. Uncheck any property you're not sure about.
-                        {needsReview.length > 0
-                          ? ` ${needsReview.length} more properties had an ambiguous image order and are not shown here — they need individual review.`
-                          : ""}
+                        {candidates.length} properties / {approvedImageCount} of{" "}
+                        {totalImageCount} images selected for replacement. Uncheck any
+                        property you're not sure about.
                       </p>
 
                       {byAgency.map(([agencyName, items]) => (
@@ -278,7 +251,7 @@ export function ImageCapExcessImagesModal({
                             </span>
                             <span className="shrink-0 whitespace-nowrap font-mono text-xs text-muted">
                               {items.length} properties ·{" "}
-                              {items.reduce((s, c) => s + c.excess_count, 0)} images
+                              {items.reduce((s, c) => s + c.mismatches.length, 0)} images
                             </span>
                           </div>
 
@@ -290,7 +263,7 @@ export function ImageCapExcessImagesModal({
                               <div className="flex items-start gap-3">
                                 <label className="flex shrink-0 items-center gap-2 text-xs text-muted">
                                   <Checkbox
-                                    aria-label="Approve for deletion"
+                                    aria-label="Approve for replacement"
                                     isSelected={approvedIds.has(c.user_property_id)}
                                     onChange={(isSelected) =>
                                       setApprovedIds((current) => {
@@ -315,38 +288,59 @@ export function ImageCapExcessImagesModal({
                                     source id <b className="text-foreground">{c.property_id}</b>
                                     {" · "}CRM property{" "}
                                     <b className="text-foreground">{c.crm_property_id}</b>
-                                    {" · "}local {c.local_image_count} vs CRM{" "}
-                                    {c.crm_image_count}
                                   </p>
                                 </div>
                               </div>
 
-                              <div className="flex gap-2 overflow-x-auto pb-1">
-                                {c.excess_images.map((img) => (
-                                  <div key={img.id} className="flex w-28 flex-shrink-0 flex-col gap-1">
-                                    <span className="w-fit rounded bg-danger/10 px-1.5 py-0.5 text-[0.65rem] font-semibold uppercase tracking-wide text-danger">
-                                      Remove
-                                    </span>
-                                    <button
-                                      type="button"
-                                      className="h-20 w-28 cursor-zoom-in overflow-hidden rounded-md border-2 border-danger/50 bg-surface-secondary"
-                                      onClick={() =>
-                                        img.source_image && setExpandedImage(img.source_image)
-                                      }
-                                      disabled={!img.source_image}
-                                    >
-                                      {img.source_image ? (
+                              <div className="flex gap-3 overflow-x-auto pb-1">
+                                {c.mismatches.map((m) => (
+                                  <div key={m.crm_image_id} className="flex flex-shrink-0 gap-2">
+                                    <div className="flex w-28 flex-col gap-1">
+                                      <span className="w-fit rounded bg-danger/10 px-1.5 py-0.5 text-[0.65rem] font-semibold uppercase tracking-wide text-danger">
+                                        Remove
+                                      </span>
+                                      <button
+                                        type="button"
+                                        className="h-20 w-28 cursor-zoom-in overflow-hidden rounded-md border-2 border-danger/50 bg-surface-secondary"
+                                        onClick={() =>
+                                          m.old_source_image &&
+                                          setExpandedImage(m.old_source_image)
+                                        }
+                                        disabled={!m.old_source_image}
+                                      >
+                                        {m.old_source_image ? (
+                                          <img
+                                            src={m.old_source_image}
+                                            alt={`Stale, CRM image ${m.crm_image_id}`}
+                                            loading="lazy"
+                                            className="h-full w-full object-cover"
+                                          />
+                                        ) : null}
+                                      </button>
+                                      <span className="font-mono text-[0.65rem] text-muted">
+                                        CRM img #{m.crm_image_id}
+                                      </span>
+                                    </div>
+                                    <div className="flex w-28 flex-col gap-1">
+                                      <span className="w-fit rounded bg-success/10 px-1.5 py-0.5 text-[0.65rem] font-semibold uppercase tracking-wide text-success">
+                                        Upload
+                                      </span>
+                                      <button
+                                        type="button"
+                                        className="h-20 w-28 cursor-zoom-in overflow-hidden rounded-md border-2 border-success/50 bg-surface-secondary"
+                                        onClick={() => setExpandedImage(m.new_source_image)}
+                                      >
                                         <img
-                                          src={img.source_image}
-                                          alt={`Excess CRM image ${img.id}`}
+                                          src={m.new_source_image}
+                                          alt="Current local image"
                                           loading="lazy"
                                           className="h-full w-full object-cover"
                                         />
-                                      ) : null}
-                                    </button>
-                                    <span className="font-mono text-[0.65rem] text-muted">
-                                      CRM img #{img.id}
-                                    </span>
+                                      </button>
+                                      <span className="font-mono text-[0.65rem] text-muted">
+                                        position {m.position + 1}
+                                      </span>
+                                    </div>
                                   </div>
                                 ))}
                               </div>
@@ -361,7 +355,7 @@ export function ImageCapExcessImagesModal({
                     <div className="flex flex-col gap-3 rounded-xl border border-border p-3">
                       <div className="flex items-center justify-between gap-2">
                         <span className="text-sm font-medium text-foreground">
-                          {jobIsActive ? "Deleting in the background…" : "Finished"}
+                          {jobIsActive ? "Replacing in the background…" : "Finished"}
                         </span>
                         {jobLogId ? (
                           <Link
@@ -378,7 +372,7 @@ export function ImageCapExcessImagesModal({
                         <>
                           <p className="text-sm text-muted">
                             {jobResult.processed} of {jobResult.total} processed —{" "}
-                            {jobResult.deleted} deleted, {jobResult.failed} failed
+                            {jobResult.replaced} replaced, {jobResult.failed} failed
                           </p>
                           <div className="flex max-h-64 flex-col gap-1 overflow-y-auto">
                             {jobResult.items.map((item) => (
@@ -391,10 +385,10 @@ export function ImageCapExcessImagesModal({
                                 </span>
                                 <span
                                   className={
-                                    item.status === "deleted" ? "text-success" : "text-danger"
+                                    item.status === "replaced" ? "text-success" : "text-danger"
                                   }
                                 >
-                                  {item.status === "deleted" ? "Deleted" : item.error || "Failed"}
+                                  {item.status === "replaced" ? "Replaced" : item.error || "Failed"}
                                 </span>
                               </div>
                             ))}
@@ -444,29 +438,28 @@ export function ImageCapExcessImagesModal({
                       onPress={() => deleteConfirm.open()}
                       isDisabled={approvedCandidates.length === 0}
                     >
-                      Delete {approvedImageCount} approved image
+                      Replace {approvedImageCount} approved image
                       {approvedImageCount === 1 ? "" : "s"}
                     </ActionButtonWithPending>
                   </>
                 ) : null}
               </Modal.Footer>
 
-              {/* Deliberately NOT a React portal to document.body: HeroUI's
-                  outside-press dismiss logic for Modal.Backdrop (isDismissable)
-                  checks real DOM containment against the dialog's own subtree.
-                  A document.body portal is a DOM sibling, not a descendant, so
-                  a real (trusted) click on it was being treated as "outside
-                  the modal" and closing the whole modal underneath, losing
-                  all review progress -- reproduced live, not just reasoned
-                  about: synthetic dispatchEvent clicks didn't trigger it
-                  (untrusted events are ignored by the dismiss logic), only a
-                  real computer-driven click did. Rendering this as a plain
-                  child of Modal.Dialog instead keeps it a genuine descendant,
-                  so outside-press no longer fires. It still renders as a
-                  full-viewport overlay unclipped by Dialog's overflow-clip:
-                  position:fixed is positioned against the viewport regardless
-                  of DOM nesting depth, as long as no ancestor has its own
-                  transform/filter/perspective (Dialog has none). */}
+              {/* Deliberately NOT a React portal to document.body -- see
+                  image-cap-excess-images-modal.tsx for the full writeup.
+                  Short version: HeroUI's outside-press dismiss checks real
+                  DOM containment against the dialog's own subtree. A
+                  document.body portal is a DOM sibling, not a descendant, so
+                  a real click on it was being treated as "outside the
+                  modal" and closing the whole modal underneath, losing all
+                  review progress -- reproduced live with a real (trusted)
+                  click, not just reasoned about. Rendering this as a plain
+                  child of Modal.Dialog keeps it a genuine descendant, and it
+                  still renders as a full-viewport overlay unclipped by
+                  Dialog's overflow-clip since position:fixed ignores
+                  ancestor overflow regardless of DOM nesting depth (as long
+                  as no ancestor has its own transform/filter/perspective --
+                  Dialog has none). */}
               {expandedImage ? (
                 <div
                   className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 p-6"
@@ -495,11 +488,11 @@ export function ImageCapExcessImagesModal({
 
       <ConfirmationDialog
         state={deleteConfirm}
-        title={`Delete ${approvedImageCount} excess CRM image${approvedImageCount === 1 ? "" : "s"}?`}
-        description="This permanently deletes each approved image from EstateWeb. The images already kept on the property are left untouched. This cannot be undone."
-        confirmLabel="Delete"
-        onConfirm={handleConfirmDelete}
-        isPending={cleanup.isPending}
+        title={`Replace ${approvedImageCount} stale CRM image${approvedImageCount === 1 ? "" : "s"}?`}
+        description="This deletes each approved old image from EstateWeb and uploads the current local image in its place. This cannot be undone."
+        confirmLabel="Replace"
+        onConfirm={handleConfirmReplace}
+        isPending={replace.isPending}
       />
     </>
   );

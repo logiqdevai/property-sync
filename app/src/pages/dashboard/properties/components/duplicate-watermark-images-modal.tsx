@@ -1,5 +1,4 @@
 import { useEffect, useLayoutEffect, useMemo, useState, type SyntheticEvent } from "react";
-import { createPortal } from "react-dom";
 import { Link } from "react-router-dom";
 import { X } from "lucide-react";
 import { Button, Checkbox, Modal, useOverlayState } from "@heroui/react";
@@ -109,9 +108,9 @@ export function DuplicateWatermarkImagesModal({
     setExpandedImage(null);
   }, [state.isOpen]);
 
-  // Portaled to document.body (not rendered inside Modal.Dialog) so it isn't
-  // clipped by the dialog's own overflow-clip, and sits above the modal
-  // backdrop's z-50 via z-[60].
+  // Escape also closes the lightbox (see the render below for why it's a
+  // plain child of Modal.Dialog, not a portal, and still sits above the
+  // modal backdrop's z-50 via z-[60] without being clipped).
   useEffect(() => {
     if (!expandedImage) return;
     const onKeyDown = (e: KeyboardEvent) => {
@@ -532,6 +531,44 @@ export function DuplicateWatermarkImagesModal({
                   </>
                 ) : null}
               </Modal.Footer>
+
+              {/* Deliberately NOT a React portal to document.body: HeroUI's
+                  outside-press dismiss logic for Modal.Backdrop (isDismissable)
+                  checks real DOM containment against the dialog's own subtree.
+                  A document.body portal is a DOM sibling, not a descendant, so
+                  a real (trusted) click on it was being treated as "outside
+                  the modal" and closing the whole modal underneath, losing
+                  all review progress -- reproduced live with a real click,
+                  not just reasoned about (synthetic dispatchEvent clicks
+                  didn't trigger it; the dismiss logic ignores untrusted
+                  events). Rendering this as a plain child of Modal.Dialog
+                  keeps it a genuine descendant, so outside-press no longer
+                  fires. It still renders as a full-viewport overlay unclipped
+                  by Dialog's overflow-clip: position:fixed is positioned
+                  against the viewport regardless of DOM nesting depth, as
+                  long as no ancestor has its own transform/filter/perspective
+                  (Dialog has none). */}
+              {expandedImage ? (
+                <div
+                  className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 p-6"
+                  onClick={() => setExpandedImage(null)}
+                >
+                  <button
+                    type="button"
+                    className="absolute right-4 top-4 rounded-full bg-black/40 p-2 text-white hover:bg-black/60"
+                    onClick={() => setExpandedImage(null)}
+                    aria-label="Close"
+                  >
+                    <X className="size-5" />
+                  </button>
+                  <img
+                    src={expandedImage}
+                    alt="Expanded preview"
+                    className="max-h-full max-w-full rounded-lg object-contain"
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                </div>
+              ) : null}
             </Modal.Dialog>
           </Modal.Container>
         </Modal.Backdrop>
@@ -545,31 +582,6 @@ export function DuplicateWatermarkImagesModal({
         onConfirm={handleConfirmDelete}
         isPending={cleanup.isPending}
       />
-
-      {expandedImage
-        ? createPortal(
-            <div
-              className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 p-6"
-              onClick={() => setExpandedImage(null)}
-            >
-              <button
-                type="button"
-                className="absolute right-4 top-4 rounded-full bg-black/40 p-2 text-white hover:bg-black/60"
-                onClick={() => setExpandedImage(null)}
-                aria-label="Close"
-              >
-                <X className="size-5" />
-              </button>
-              <img
-                src={expandedImage}
-                alt="Expanded preview"
-                className="max-h-full max-w-full rounded-lg object-contain"
-                onClick={(e) => e.stopPropagation()}
-              />
-            </div>,
-            document.body,
-          )
-        : null}
     </>
   );
 }

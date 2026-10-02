@@ -53,6 +53,8 @@ import {
   getAgencyWatermarkSettings,
   calculateImageCapExcessImages,
   enqueueImageCapExcessImagesCleanup,
+  calculateStaleCrmImages,
+  enqueueStaleCrmImagesReplace,
 } from "../services/user-properties.services";
 import type {
   AdminUserPropertyCountQuery,
@@ -63,6 +65,8 @@ import type {
   EnqueueDuplicateWatermarkCleanupPayload,
   CalculateImageCapExcessImagesPayload,
   EnqueueImageCapExcessImagesCleanupPayload,
+  CalculateStaleCrmImagesPayload,
+  EnqueueStaleCrmImagesReplacePayload,
   PushUserPropertiesToCrmPayload,
   PushUserPropertiesToCrmResult,
   PushUserPropertiesImagesToCrmPayload,
@@ -1185,6 +1189,34 @@ export const useEnqueueImageCapExcessImagesCleanup = () => {
     onError: (error: Error) => {
       toast({
         title: "Could not start image cap cleanup",
+        description: error.message,
+        variant: "error",
+      });
+    },
+  });
+};
+
+export const useCalculateStaleCrmImages = () => {
+  return useMutation({
+    mutationFn: (payload: CalculateStaleCrmImagesPayload) =>
+      calculateStaleCrmImages(payload),
+    onError: (error: Error) => {
+      toast({
+        title: "Could not find stale CRM images",
+        description: error.message,
+        variant: "error",
+      });
+    },
+  });
+};
+
+export const useEnqueueStaleCrmImagesReplace = () => {
+  return useMutation({
+    mutationFn: (payload: EnqueueStaleCrmImagesReplacePayload) =>
+      enqueueStaleCrmImagesReplace(payload),
+    onError: (error: Error) => {
+      toast({
+        title: "Could not start stale CRM image replacement",
         description: error.message,
         variant: "error",
       });

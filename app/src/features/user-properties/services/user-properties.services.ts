@@ -62,6 +62,10 @@ import type {
   ImageCapExcessPropertyCandidate,
   EnqueueImageCapExcessImagesCleanupPayload,
   EnqueueImageCapExcessImagesCleanupResponse,
+  CalculateStaleCrmImagesPayload,
+  StaleCrmImagePropertyCandidate,
+  EnqueueStaleCrmImagesReplacePayload,
+  EnqueueStaleCrmImagesReplaceResponse,
 } from "../interfaces/user-properties.interfaces";
 
 export const getUserProperties = async (
@@ -778,6 +782,38 @@ export const enqueueImageCapExcessImagesCleanup = async (
   } catch (error: any) {
     throw new Error(
       error?.response?.data?.message || "Failed to start image cap cleanup.",
+    );
+  }
+};
+
+export const calculateStaleCrmImages = async (
+  payload: CalculateStaleCrmImagesPayload,
+): Promise<StaleCrmImagePropertyCandidate[]> => {
+  try {
+    const response = await axiosInstance.post(
+      ApiRoutes.admin.userProperties.calculateStaleCrmImages,
+      payload,
+    );
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error?.response?.data?.message || "Failed to find stale CRM images.",
+    );
+  }
+};
+
+export const enqueueStaleCrmImagesReplace = async (
+  payload: EnqueueStaleCrmImagesReplacePayload,
+): Promise<EnqueueStaleCrmImagesReplaceResponse> => {
+  try {
+    const response = await axiosInstance.post(
+      ApiRoutes.admin.userProperties.replaceStaleCrmImages,
+      payload,
+    );
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error?.response?.data?.message || "Failed to start stale CRM image replacement.",
     );
   }
 };

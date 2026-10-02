@@ -1949,7 +1949,9 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
     return `${propertyId}-${stamp}${ext}`;
   }
 
-  private async downloadImage(url: string): Promise<Buffer | null> {
+  // Public: reused by StaleCrmImagesReplaceJobService to download the local
+  // (already-processed) image before calling replaceImageAfterWatermark.
+  async downloadImage(url: string): Promise<Buffer | null> {
     try {
       const response = await fetch(url);
       if (!response.ok) {

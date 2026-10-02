@@ -47,6 +47,9 @@ import { DuplicateWatermarkImagesService } from './services/duplicate-watermark-
 import { CalculateImageCapExcessImagesDto } from './dto/calculate-image-cap-excess-images.dto';
 import { EnqueueImageCapExcessImagesCleanupDto } from './dto/enqueue-image-cap-excess-images-cleanup.dto';
 import { ImageCapExcessImagesService } from './services/image-cap-excess-images.service';
+import { CalculateStaleCrmImagesDto } from './dto/calculate-stale-crm-images.dto';
+import { EnqueueStaleCrmImagesReplaceDto } from './dto/enqueue-stale-crm-images-replace.dto';
+import { StaleCrmImagesService } from './services/stale-crm-images.service';
 
 @ApiTags('Admin User Properties')
 @ApiBearerAuth()
@@ -58,6 +61,7 @@ export class AdminUserPropertiesController {
     private readonly userPropertiesService: UserPropertiesService,
     private readonly duplicateWatermarkImagesService: DuplicateWatermarkImagesService,
     private readonly imageCapExcessImagesService: ImageCapExcessImagesService,
+    private readonly staleCrmImagesService: StaleCrmImagesService,
   ) {}
 
   @Get()
@@ -275,6 +279,31 @@ export class AdminUserPropertiesController {
     @Body() dto: EnqueueImageCapExcessImagesCleanupDto,
   ) {
     return this.imageCapExcessImagesService.enqueueCleanup(dto.items);
+  }
+
+  @SkipAudit()
+  @Post('stale-crm-images/calculate')
+  @Roles(AuthRole.ADMIN)
+  @ApiOperation({
+    summary:
+      'Find CRM images whose content no longer matches the local (already-updated) image at the same position, for the given source agencies',
+  })
+  calculateStaleCrmImages(@Body() dto: CalculateStaleCrmImagesDto) {
+    return this.staleCrmImagesService.calculateCandidates(dto.source_agency_ids);
+  }
+
+  @Audited({
+    action: 'user_property.stale_crm_images_replace',
+    entity: 'UserProperty',
+  })
+  @Post('stale-crm-images/replace')
+  @Roles(AuthRole.ADMIN)
+  @ApiOperation({
+    summary:
+      'Enqueue background replacement of confirmed stale CRM images with the current local image, by known EstateWeb image id',
+  })
+  enqueueStaleCrmImagesReplace(@Body() dto: EnqueueStaleCrmImagesReplaceDto) {
+    return this.staleCrmImagesService.enqueueReplace(dto.items);
   }
 
   @Get(':id')

@@ -22,3 +22,4 @@ export const CHECK_ESTATEWEB_REMOVAL_QUEUE = 'check-estateweb-removal';
 export const FIX_ESTATEWEB_REMOVAL_QUEUE = 'fix-estateweb-removal';
 export const DUPLICATE_WATERMARK_CLEANUP_QUEUE = 'duplicate-watermark-cleanup';
 export const IMAGE_CAP_EXCESS_IMAGES_CLEANUP_QUEUE = 'image-cap-excess-images-cleanup';
+export const STALE_CRM_IMAGES_REPLACE_QUEUE = 'stale-crm-images-replace';

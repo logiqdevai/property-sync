@@ -3,48 +3,52 @@ import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Job } from 'bullmq';
 import { Prisma } from 'generated/prisma';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
-import { IMAGE_CAP_EXCESS_IMAGES_CLEANUP_QUEUE } from '@/core/queues/queues.constants';
+import { STALE_CRM_IMAGES_REPLACE_QUEUE } from '@/core/queues/queues.constants';
 import { JobStatus } from 'generated/prisma';
-import { ImageCapExcessImagesCleanupJobService } from '@/modules/user-properties/services/image-cap-excess-images-cleanup-job.service';
+import { StaleCrmImagesReplaceJobService } from '@/modules/user-properties/services/stale-crm-images-replace-job.service';
 import {
-  ImageCapExcessImagesCleanupItemResult,
-  ImageCapExcessImagesCleanupJobData,
-  ImageCapExcessImagesCleanupJobResult,
-} from '@/modules/user-properties/interfaces/image-cap-excess-images-cleanup-job.interface';
+  StaleCrmImagesReplaceItemResult,
+  StaleCrmImagesReplaceJobData,
+  StaleCrmImagesReplaceJobResult,
+} from '@/modules/user-properties/interfaces/stale-crm-images-replace-job.interface';
 
-const IMAGE_CAP_EXCESS_IMAGES_CLEANUP_WORKER_CONCURRENCY = 5;
+// Lower than the delete-only cleanup processors (5): each item here does a
+// download + upload + delete round trip against EstateWeb, not just one
+// delete call, so it's both slower per item and heavier on the shared DB
+// transaction below.
+const STALE_CRM_IMAGES_REPLACE_WORKER_CONCURRENCY = 3;
 
-// Prisma's default interactive-transaction timeout (5000ms) was too short
-// under concurrency: in production, 11 of 73 items in one run had their
-// underlying EstateWeb delete succeed but got marked "failed" here because
-// the FOR UPDATE row lock + jobLog read/update round trip exceeded 5s while
-// the connection pool was busy with the other concurrent workers. The
-// delete itself was fine; only this bookkeeping transaction was timing out.
+// The sibling delete-only processors use Prisma's default 5000ms interactive
+// transaction timeout. Under concurrency, holding a FOR UPDATE row lock plus
+// a round trip was observed to exceed that default in production (see
+// docs/CLIENT-ISSUES-2026-10-01.md's image-cap-excess-images incident: 11 of
+// 73 items got marked "failed" by a transaction timeout even though the
+// underlying EstateWeb delete had already succeeded). This job's per-item
+// work is slower still, so the timeout needs to be generous here from the
+// start rather than discovered the same way again.
 const JOB_LOG_TRANSACTION_TIMEOUT_MS = 20000;
 
-@Processor(IMAGE_CAP_EXCESS_IMAGES_CLEANUP_QUEUE, {
-  concurrency: IMAGE_CAP_EXCESS_IMAGES_CLEANUP_WORKER_CONCURRENCY,
+@Processor(STALE_CRM_IMAGES_REPLACE_QUEUE, {
+  concurrency: STALE_CRM_IMAGES_REPLACE_WORKER_CONCURRENCY,
 })
-export class ImageCapExcessImagesCleanupProcessor
+export class StaleCrmImagesReplaceProcessor
   extends WorkerHost
   implements OnModuleInit
 {
-  private readonly logger = new Logger(
-    ImageCapExcessImagesCleanupProcessor.name,
-  );
+  private readonly logger = new Logger(StaleCrmImagesReplaceProcessor.name);
 
   constructor(
     private readonly prisma: PrismaService,
-    private readonly imageCapExcessImagesCleanupJobService: ImageCapExcessImagesCleanupJobService,
+    private readonly staleCrmImagesReplaceJobService: StaleCrmImagesReplaceJobService,
   ) {
     super();
   }
 
   async onModuleInit(): Promise<void> {
-    this.worker.concurrency = IMAGE_CAP_EXCESS_IMAGES_CLEANUP_WORKER_CONCURRENCY;
+    this.worker.concurrency = STALE_CRM_IMAGES_REPLACE_WORKER_CONCURRENCY;
   }
 
-  async process(job: Job<ImageCapExcessImagesCleanupJobData>): Promise<void> {
+  async process(job: Job<StaleCrmImagesReplaceJobData>): Promise<void> {
     const { job_log_id, crm_image_id, total } = job.data;
     this.logger.log(
       `[process] job_log=${job_log_id} crm_image=${crm_image_id} attempt=${job.attemptsMade + 1}`,
@@ -53,9 +57,7 @@ export class ImageCapExcessImagesCleanupProcessor
     await this.ensureJobActive(job_log_id, job, total);
 
     try {
-      const item = await this.imageCapExcessImagesCleanupJobService.processItem(
-        job.data,
-      );
+      const item = await this.staleCrmImagesReplaceJobService.processItem(job.data);
       await this.recordItemResult(job_log_id, item, total);
       this.logger.log(
         `[process] job_log=${job_log_id} crm_image=${crm_image_id} status=${item.status}`,
@@ -80,11 +82,11 @@ export class ImageCapExcessImagesCleanupProcessor
     }
   }
 
-  private emptyResult(total: number): ImageCapExcessImagesCleanupJobResult {
+  private emptyResult(total: number): StaleCrmImagesReplaceJobResult {
     return {
       total,
       processed: 0,
-      deleted: 0,
+      replaced: 0,
       failed: 0,
       items: [],
       logs: [],
@@ -93,7 +95,7 @@ export class ImageCapExcessImagesCleanupProcessor
 
   private async ensureJobActive(
     logId: string,
-    job: Job<ImageCapExcessImagesCleanupJobData>,
+    job: Job<StaleCrmImagesReplaceJobData>,
     total: number,
   ): Promise<void> {
     await this.prisma.$transaction(
@@ -105,7 +107,7 @@ export class ImageCapExcessImagesCleanupProcessor
         if (!log) return;
 
         const result =
-          (log.result as unknown as ImageCapExcessImagesCleanupJobResult | null) ??
+          (log.result as unknown as StaleCrmImagesReplaceJobResult | null) ??
           this.emptyResult(total);
         if (!result.logs) result.logs = [];
         result.logs.push(
@@ -132,7 +134,7 @@ export class ImageCapExcessImagesCleanupProcessor
 
   private async recordItemResult(
     logId: string,
-    item: ImageCapExcessImagesCleanupItemResult,
+    item: StaleCrmImagesReplaceItemResult,
     total: number,
   ): Promise<void> {
     await this.prisma.$transaction(
@@ -144,7 +146,7 @@ export class ImageCapExcessImagesCleanupProcessor
         if (!log) return;
 
         const result =
-          (log.result as unknown as ImageCapExcessImagesCleanupJobResult | null) ??
+          (log.result as unknown as StaleCrmImagesReplaceJobResult | null) ??
           this.emptyResult(total);
 
         const already = result.items.some((row) => row.crm_image_id === item.crm_image_id);
@@ -157,7 +159,7 @@ export class ImageCapExcessImagesCleanupProcessor
           result.processed += 1;
         }
 
-        result.deleted = result.items.filter((row) => row.status === 'deleted').length;
+        result.replaced = result.items.filter((row) => row.status === 'replaced').length;
         result.failed = result.items.filter((row) => row.status === 'failed').length;
 
         if (!result.logs) result.logs = [];
@@ -168,7 +170,7 @@ export class ImageCapExcessImagesCleanupProcessor
         const finished = result.processed >= result.total;
         const finishedAt = finished ? new Date() : null;
         const hardFailed =
-          finished && result.deleted === 0 && result.failed === result.total;
+          finished && result.replaced === 0 && result.failed === result.total;
 
         await tx.jobLog.update({
           where: { id: logId },
@@ -182,7 +184,7 @@ export class ImageCapExcessImagesCleanupProcessor
                     ? finishedAt!.getTime() - log.started_at.getTime()
                     : null,
                   error_message: hardFailed
-                    ? `Image cap cleanup failed for all ${result.total} images`
+                    ? `Stale CRM image replace failed for all ${result.total} images`
                     : result.failed > 0
                       ? `Completed with ${result.failed} failures`
                       : null,
