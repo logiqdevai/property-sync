@@ -67,6 +67,7 @@ export function DuplicateWatermarkImagesModal({
   state: DuplicateWatermarkImagesModalState;
 }) {
   const [step, setStep] = useState<Step>("select-agencies");
+  const bodyScrollId = "duplicate-watermark-images-modal-body";
   const [selectedAgencyIds, setSelectedAgencyIds] = useState<Set<string>>(new Set());
   const [candidates, setCandidates] = useState<DuplicateWatermarkPropertyCandidate[]>([]);
   const [approvedIds, setApprovedIds] = useState<Set<string>>(new Set());
@@ -81,6 +82,18 @@ export function DuplicateWatermarkImagesModal({
     setApprovedIds(new Set());
     setJobLogId(null);
   }, [state.isOpen]);
+
+  // Modal.Body is one persistent DOM node across both steps -- only its
+  // children swap, its scrollTop does not reset on its own. Selecting a
+  // checkbox near the bottom of the agency list can scroll Modal.Body down
+  // a little (native focus-into-view), and without this, that leftover
+  // scroll position carries straight into the review step's completely
+  // different content next render, making it look like everything -- up to
+  // and including the heading text above the agency-group cards -- shifted
+  // upward with dead space appearing before the footer.
+  useEffect(() => {
+    document.getElementById(bodyScrollId)?.scrollTo({ top: 0 });
+  }, [step]);
 
   // The admin agencies endpoint takes `limit` literally (Prisma `take`), unlike
   // the trackable-agencies endpoint elsewhere in the app -- 0 means "zero rows",
@@ -191,7 +204,7 @@ export function DuplicateWatermarkImagesModal({
               <Modal.Header>
                 <Modal.Heading>Duplicate watermarked photos</Modal.Heading>
               </Modal.Header>
-              <Modal.Body>
+              <Modal.Body id={bodyScrollId}>
                 <div className="grid gap-4 pr-1">
                   {step === "select-agencies" ? (
                     <>
