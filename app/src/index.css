@@ -22,6 +22,20 @@ body {
 }
 
 :root {
+  /* HeroUI's Modal/AlertDialog/Drawer backdrop and centering container size
+     themselves off this custom property (h-(--visual-viewport-height) in
+     their own CSS) but never define it -- it was undefined everywhere in
+     this project and in @heroui itself, so that height declaration was
+     silently invalid and fell back to height: auto. That made the
+     centering container's size purely content-driven, recomputed on every
+     reflow, which could visibly shift a centered dialog's position when
+     content inside it changed (e.g. focusing a checkbox near a scroll
+     boundary). html/body are already position: fixed; inset: 0 here, so
+     the real viewport never resizes dynamically -- a static value is
+     correct and sufficient, no JS visualViewport listener needed.
+  */
+  --visual-viewport-height: 100dvh;
+
   --sans: "Roboto Flex", system-ui, sans-serif;
   --mono: "Roboto Mono", ui-monospace, monospace;
 
