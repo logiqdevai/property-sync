@@ -40,7 +40,10 @@ import { RemoveWatermarkImagesResponseEntity } from './entities/remove-watermark
 import { TruncateUserPropertyDescriptionsDto } from './dto/truncate-user-property-descriptions.dto';
 import { MigrateIntegrationImagesDto } from './dto/migrate-integration-images.dto';
 import { UserPropertyEntity } from './entities/user-property.entity';
-import { Audited } from '@/modules/activity-logs/decorators/audited.decorator';
+import { Audited, SkipAudit } from '@/modules/activity-logs/decorators/audited.decorator';
+import { CalculateDuplicateWatermarkImagesDto } from './dto/calculate-duplicate-watermark-images.dto';
+import { EnqueueDuplicateWatermarkCleanupDto } from './dto/enqueue-duplicate-watermark-cleanup.dto';
+import { DuplicateWatermarkImagesService } from './services/duplicate-watermark-images.service';
 
 @ApiTags('Admin User Properties')
 @ApiBearerAuth()
@@ -48,7 +51,10 @@ import { Audited } from '@/modules/activity-logs/decorators/audited.decorator';
 @UseGuards(JwtGuard, RolesGuard)
 @Roles(AuthRole.ADMIN, AuthRole.SUPPORT)
 export class AdminUserPropertiesController {
-  constructor(private readonly userPropertiesService: UserPropertiesService) {}
+  constructor(
+    private readonly userPropertiesService: UserPropertiesService,
+    private readonly duplicateWatermarkImagesService: DuplicateWatermarkImagesService,
+  ) {}
 
   @Get()
   @ApiOperation({ summary: 'List all user properties (paginated, filterable)' })
@@ -195,6 +201,36 @@ export class AdminUserPropertiesController {
   @ApiResponse({ status: 404, description: 'One or more user properties not found' })
   splitMany(@Body() dto: DeleteUserPropertiesDto) {
     return this.userPropertiesService.adminSplitMany(dto.ids);
+  }
+
+  @SkipAudit()
+  @Post('duplicate-watermark-images/calculate')
+  @Roles(AuthRole.ADMIN)
+  @ApiOperation({
+    summary:
+      'Find CRM images that are stale watermarked duplicates of an already-produced clean copy, for the given source agencies',
+  })
+  calculateDuplicateWatermarkImages(
+    @Body() dto: CalculateDuplicateWatermarkImagesDto,
+  ) {
+    return this.duplicateWatermarkImagesService.calculateCandidates(
+      dto.source_agency_ids,
+    );
+  }
+
+  @Audited({
+    action: 'user_property.duplicate_watermark_images_cleanup',
+    entity: 'UserProperty',
+  })
+  @Post('duplicate-watermark-images/cleanup')
+  @Roles(AuthRole.ADMIN)
+  @ApiOperation({
+    summary: 'Enqueue background deletion of confirmed stale watermarked duplicate CRM images',
+  })
+  enqueueDuplicateWatermarkImagesCleanup(
+    @Body() dto: EnqueueDuplicateWatermarkCleanupDto,
+  ) {
+    return this.duplicateWatermarkImagesService.enqueueCleanup(dto.items);
   }
 
   @Get(':id')

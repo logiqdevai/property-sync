@@ -1,5 +1,10 @@
 import { HttpStatus, Injectable, Logger } from '@nestjs/common';
-import { NotificationType, Prisma, UserProperty } from 'generated/prisma';
+import {
+  IntegrationType,
+  NotificationType,
+  Prisma,
+  UserProperty,
+} from 'generated/prisma';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
 import { isLikelyImageBuffer } from '@/shared/utils/images/image-signature.utils';
 import {
@@ -13,6 +18,7 @@ import {
   CmsSyncUpdateImagesParams,
 } from '@/modules/cms-sync/interfaces/cms-sync-adapter.interface';
 import { CmsPropertyFieldEntry } from '@/modules/properties/interfaces/cms-property.interface';
+import { parseIntegrationPropertyImages } from '@/modules/user-properties/utils/integration-property-images.util';
 import { coerceCmsFieldValueForEstateWeb } from '@/modules/properties/utils/property-cms-field-mapper.util';
 import { sanitizeEstateWebDistance } from '@/modules/properties/utils/property-normalization.utils';
 import {
@@ -963,6 +969,59 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
         }),
       `user_property_id=${params.userPropertyId}`,
     );
+  }
+
+  // Used by the automatic per-tracker watermark pipeline: it only knows the
+  // OLD source URL it just replaced locally, not a CRM image id. Finds the
+  // cached CRM image whose source_image matches that URL by normalized
+  // identity (same matching used by the image top-up path) and -- if found --
+  // replaces it in place via replaceImageAfterWatermark instead of letting
+  // the generic top-up logic treat the processed image as a brand new one and
+  // append a duplicate. Returns false (no-op) when there's nothing cached yet
+  // to replace -- the caller's normal image push still picks it up as new.
+  async replaceCachedImageBySourceUrl(params: {
+    userIntegrationId: string;
+    userPropertyId: string;
+    crmPropertyId: string;
+    oldSourceUrl: string;
+    processedBuffer: Buffer;
+    gcsUrl: string;
+  }): Promise<boolean> {
+    const cachedRow = await this.loadCachedIntegrationPropertyRow(
+      params.userIntegrationId,
+      params.userPropertyId,
+    );
+    const images = parseIntegrationPropertyImages(
+      cachedRow?.images,
+      IntegrationType.ESTATEWEB,
+    );
+    if (images.length === 0) return false;
+
+    const targetIdentity = this.normalizeSourceImageIdentity(
+      params.oldSourceUrl,
+    );
+    const matchIndex = images.findIndex(
+      (image) =>
+        typeof image.source_image === 'string' &&
+        image.source_image.length > 0 &&
+        this.normalizeSourceImageIdentity(image.source_image) ===
+          targetIdentity,
+    );
+    if (matchIndex === -1) return false;
+
+    const oldImage = images[matchIndex];
+    await this.replaceImageAfterWatermark({
+      userIntegrationId: params.userIntegrationId,
+      userPropertyId: params.userPropertyId,
+      crmPropertyId: params.crmPropertyId,
+      oldImageId: oldImage.id,
+      processedBuffer: params.processedBuffer,
+      gcsUrl: params.gcsUrl,
+      oldImage,
+      zindex: matchIndex + 1,
+      deleteOldImage: true,
+    });
+    return true;
   }
 
   private async resolvePushSitesForSync(

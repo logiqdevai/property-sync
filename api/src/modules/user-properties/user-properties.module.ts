@@ -4,6 +4,7 @@ import { PrismaModule } from '@/core/databases/prisma/prisma.module';
 import {
   CHECK_ESTATEWEB_REMOVAL_QUEUE,
   FIX_ESTATEWEB_REMOVAL_QUEUE,
+  DUPLICATE_WATERMARK_CLEANUP_QUEUE,
   CONTENT_PRODUCTION_QUEUE,
   CREATE_INTEGRATION_IMAGES_QUEUE,
   CRM_CLIENT_NOTES_SYNC_QUEUE,
@@ -38,6 +39,7 @@ import { GeocodeCoordinatesProcessor } from '@/background/geocode-coordinates.pr
 import { ResolveEstateWebLocationProcessor } from '@/background/resolve-estateweb-location.processor';
 import { CheckEstateWebRemovalProcessor } from '@/background/check-estateweb-removal.processor';
 import { FixEstateWebRemovalProcessor } from '@/background/fix-estateweb-removal.processor';
+import { DuplicateWatermarkCleanupProcessor } from '@/background/duplicate-watermark-cleanup.processor';
 import { UserPropertiesController } from './user-properties.controller';
 import { AdminUserPropertiesController } from './admin-user-properties.controller';
 import { UserPropertiesService } from './user-properties.service';
@@ -54,6 +56,8 @@ import { GeocodeCoordinatesJobService } from './services/geocode-coordinates-job
 import { ResolveEstateWebLocationJobService } from './services/resolve-estateweb-location-job.service';
 import { CheckEstateWebRemovalJobService } from './services/check-estateweb-removal-job.service';
 import { FixEstateWebRemovalJobService } from './services/fix-estateweb-removal-job.service';
+import { DuplicateWatermarkImagesService } from './services/duplicate-watermark-images.service';
+import { DuplicateWatermarkCleanupJobService } from './services/duplicate-watermark-cleanup-job.service';
 
 @Module({
   imports: [
@@ -81,6 +85,7 @@ import { FixEstateWebRemovalJobService } from './services/fix-estateweb-removal-
       { name: RESOLVE_ESTATEWEB_LOCATION_QUEUE },
       { name: CHECK_ESTATEWEB_REMOVAL_QUEUE },
       { name: FIX_ESTATEWEB_REMOVAL_QUEUE },
+      { name: DUPLICATE_WATERMARK_CLEANUP_QUEUE },
     ),
   ],
   controllers: [UserPropertiesController, AdminUserPropertiesController],
@@ -112,6 +117,9 @@ import { FixEstateWebRemovalJobService } from './services/fix-estateweb-removal-
     CheckEstateWebRemovalProcessor,
     FixEstateWebRemovalJobService,
     FixEstateWebRemovalProcessor,
+    DuplicateWatermarkImagesService,
+    DuplicateWatermarkCleanupJobService,
+    DuplicateWatermarkCleanupProcessor,
   ],
   exports: [UserPropertiesService],
 })

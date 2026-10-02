@@ -20,3 +20,4 @@ export const GEOCODE_MISSING_COORDINATES_QUEUE = 'geocode-missing-coordinates';
 export const RESOLVE_ESTATEWEB_LOCATION_QUEUE = 'resolve-estateweb-location';
 export const CHECK_ESTATEWEB_REMOVAL_QUEUE = 'check-estateweb-removal';
 export const FIX_ESTATEWEB_REMOVAL_QUEUE = 'fix-estateweb-removal';
+export const DUPLICATE_WATERMARK_CLEANUP_QUEUE = 'duplicate-watermark-cleanup';

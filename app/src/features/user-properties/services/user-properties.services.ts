@@ -51,6 +51,10 @@ import type {
   BulkRemoveWatermarkImagesResponse,
   ProduceUserPropertyContentPayload,
   ProduceUserPropertyContentResponse,
+  CalculateDuplicateWatermarkImagesPayload,
+  DuplicateWatermarkPropertyCandidate,
+  EnqueueDuplicateWatermarkCleanupPayload,
+  EnqueueDuplicateWatermarkCleanupResponse,
   UpdateUserPropertyStatusPayload,
   UpdateUserPropertyStatusResult,
 } from "../interfaces/user-properties.interfaces";
@@ -705,6 +709,38 @@ export const splitAdminUserProperties = async (
   } catch (error: any) {
     throw new Error(
       error?.response?.data?.message || "Failed to split user properties from groups.",
+    );
+  }
+};
+
+export const calculateDuplicateWatermarkImages = async (
+  payload: CalculateDuplicateWatermarkImagesPayload,
+): Promise<DuplicateWatermarkPropertyCandidate[]> => {
+  try {
+    const response = await axiosInstance.post(
+      ApiRoutes.admin.userProperties.calculateDuplicateWatermarkImages,
+      payload,
+    );
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error?.response?.data?.message || "Failed to find duplicate watermarked images.",
+    );
+  }
+};
+
+export const enqueueDuplicateWatermarkCleanup = async (
+  payload: EnqueueDuplicateWatermarkCleanupPayload,
+): Promise<EnqueueDuplicateWatermarkCleanupResponse> => {
+  try {
+    const response = await axiosInstance.post(
+      ApiRoutes.admin.userProperties.cleanupDuplicateWatermarkImages,
+      payload,
+    );
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error?.response?.data?.message || "Failed to start duplicate image cleanup.",
     );
   }
 };

@@ -48,12 +48,16 @@ import {
   syncUserPropertyCrmClientNotes,
   checkEstateWebRemoval,
   fixEstateWebRemoval,
+  calculateDuplicateWatermarkImages,
+  enqueueDuplicateWatermarkCleanup,
 } from "../services/user-properties.services";
 import type {
   AdminUserPropertyCountQuery,
   AdminUserPropertyListQuery,
   DeleteUserPropertiesPayload,
   DedupeUserPropertiesPayload,
+  CalculateDuplicateWatermarkImagesPayload,
+  EnqueueDuplicateWatermarkCleanupPayload,
   PushUserPropertiesToCrmPayload,
   PushUserPropertiesToCrmResult,
   PushUserPropertiesImagesToCrmPayload,
@@ -1112,6 +1116,34 @@ export const useSplitAdminUserProperties = () => {
     onError: (error: Error) => {
       toast({
         title: "Could not split from group",
+        description: error.message,
+        variant: "error",
+      });
+    },
+  });
+};
+
+export const useCalculateDuplicateWatermarkImages = () => {
+  return useMutation({
+    mutationFn: (payload: CalculateDuplicateWatermarkImagesPayload) =>
+      calculateDuplicateWatermarkImages(payload),
+    onError: (error: Error) => {
+      toast({
+        title: "Could not find duplicate watermarked images",
+        description: error.message,
+        variant: "error",
+      });
+    },
+  });
+};
+
+export const useEnqueueDuplicateWatermarkCleanup = () => {
+  return useMutation({
+    mutationFn: (payload: EnqueueDuplicateWatermarkCleanupPayload) =>
+      enqueueDuplicateWatermarkCleanup(payload),
+    onError: (error: Error) => {
+      toast({
+        title: "Could not start duplicate image cleanup",
         description: error.message,
         variant: "error",
       });

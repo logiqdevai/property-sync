@@ -3843,6 +3843,7 @@ export class UserPropertiesService {
         await this.watermarkRemovalService.applyTrackerWatermarkPipeline({
           userPropertyId: created.id,
           userId: tracker.user_id,
+          userTrackedAgencyId: tracker.id,
           removeWatermark: tracker.remove_watermark,
           watermarkManualSelection: tracker.watermark_manual_selection,
           watermarkImageCount: tracker.watermark_image_count,
@@ -3892,6 +3893,7 @@ export class UserPropertiesService {
         await this.watermarkRemovalService.applyTrackerWatermarkPipeline({
           userPropertyId: created.id,
           userId: tracker.user_id,
+          userTrackedAgencyId: tracker.id,
           removeWatermark: tracker.remove_watermark,
           watermarkManualSelection: tracker.watermark_manual_selection,
           watermarkImageCount: tracker.watermark_image_count,
@@ -3988,6 +3990,7 @@ export class UserPropertiesService {
         ? await this.watermarkRemovalService.applyTrackerWatermarkPipeline({
             userPropertyId: existing.id,
             userId: tracker.user_id,
+            userTrackedAgencyId: tracker.id,
             removeWatermark: tracker.remove_watermark,
             watermarkManualSelection: tracker.watermark_manual_selection,
             watermarkImageCount: tracker.watermark_image_count,

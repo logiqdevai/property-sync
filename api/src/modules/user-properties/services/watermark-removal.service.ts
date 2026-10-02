@@ -7,6 +7,7 @@ import {
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
 import { DewatermarkOrchestratorService } from '@/integrations/dewatermark/services/dewatermark-orchestrator.service';
 import { EstateWebCmsSyncAdapter } from '@/integrations/estateweb/services/estateweb-cms-sync-adapter.service';
+import { EstateWebIntegrationResolverService } from '@/integrations/estateweb/services/estateweb-integration-resolver.service';
 import { GcsService } from '@/integrations/storage/gcs/services/gcs.service';
 import { GcsFolders } from '@/shared/config/gcs-folders';
 import { isLikelyImageBuffer } from '@/shared/utils/images/image-signature.utils';
@@ -49,6 +50,7 @@ export class WatermarkRemovalService {
     private readonly dewatermarkOrchestrator: DewatermarkOrchestratorService,
     private readonly gcsService: GcsService,
     private readonly estateWebCmsSyncAdapter: EstateWebCmsSyncAdapter,
+    private readonly estateWebIntegrationResolver: EstateWebIntegrationResolverService,
     private readonly platformConfigService: PlatformConfigService,
     private readonly costLogsService: CostLogsService,
   ) {}
@@ -78,6 +80,7 @@ export class WatermarkRemovalService {
   async applyTrackerWatermarkPipeline(params: {
     userPropertyId: string;
     userId: string;
+    userTrackedAgencyId: string;
     removeWatermark: boolean;
     watermarkManualSelection: boolean;
     watermarkImageCount: number;
@@ -86,7 +89,12 @@ export class WatermarkRemovalService {
 
     const userProperty = await this.prisma.userProperty.findUnique({
       where: { id: params.userPropertyId },
-      select: { id: true, user_id: true, images: true },
+      select: {
+        id: true,
+        user_id: true,
+        images: true,
+        integration_property_id: true,
+      },
     });
     if (!userProperty || userProperty.user_id !== params.userId) return false;
 
@@ -107,6 +115,28 @@ export class WatermarkRemovalService {
       Math.min(params.watermarkImageCount, sourceUrls.length),
     );
     if (limit === 0) return false;
+
+    // Resolved once, not per image: lets a processed image replace the
+    // matching image already on the CRM instead of the generic image push
+    // treating it as unrecognized and appending a duplicate at the end (see
+    // docs/CLIENT-ISSUES-2026-10-01.md #1 follow-up). Not having a CRM link
+    // yet is normal for a brand new property -- it just falls back to the
+    // existing top-up-as-new behavior for that property.
+    let estateWebIntegrationId: string | null = null;
+    if (userProperty.integration_property_id) {
+      try {
+        const integration =
+          await this.estateWebIntegrationResolver.resolveForUserTrackedAgencyId(
+            params.userTrackedAgencyId,
+            params.userId,
+          );
+        estateWebIntegrationId = integration.userIntegrationId;
+      } catch (error) {
+        this.logger.warn(
+          `Watermark pipeline: could not resolve EstateWeb integration for user_property=${params.userPropertyId}: ${formatError(error)}`,
+        );
+      }
+    }
 
     const nextUrls = [...sourceUrls];
     let changed = false;
@@ -153,6 +183,23 @@ export class WatermarkRemovalService {
           'image/jpeg',
           GcsFolders.propertyImages,
         );
+
+        if (estateWebIntegrationId && userProperty.integration_property_id) {
+          try {
+            await this.estateWebCmsSyncAdapter.replaceCachedImageBySourceUrl({
+              userIntegrationId: estateWebIntegrationId,
+              userPropertyId: params.userPropertyId,
+              crmPropertyId: userProperty.integration_property_id,
+              oldSourceUrl: sourceUrl,
+              processedBuffer,
+              gcsUrl: gcsUpload.url,
+            });
+          } catch (error) {
+            this.logger.warn(
+              `Watermark pipeline: failed to replace CRM image in place for user_property=${params.userPropertyId} index=${index}: ${formatError(error)}`,
+            );
+          }
+        }
 
         nextUrls[index] = gcsUpload.url;
         changed = true;

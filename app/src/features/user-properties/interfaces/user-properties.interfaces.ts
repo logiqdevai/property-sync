@@ -449,3 +449,58 @@ export interface ProduceUserPropertyContentResponse {
   message: string;
   skipped?: Array<{ user_property_id: string; error: string }>;
 }
+
+export interface DuplicateWatermarkImageCandidate {
+  id: number;
+  source_image: string;
+  filename: string | null;
+}
+
+export interface DuplicateWatermarkPropertyCandidate {
+  user_property_id: string;
+  user_id: string;
+  property_id: string;
+  title: string;
+  agency_id: string;
+  agency_name: string;
+  user_integration_id: string;
+  crm_property_id: string;
+  kept_gcs_count: number;
+  genuine_duplicate_count: number;
+  excess_left_alone_count: number;
+  is_high_confidence: boolean;
+  genuine_duplicates: DuplicateWatermarkImageCandidate[];
+  kept_gcs_images: string[];
+}
+
+export interface CalculateDuplicateWatermarkImagesPayload {
+  source_agency_ids: string[];
+}
+
+export interface DuplicateWatermarkCleanupItem {
+  user_property_id: string;
+  crm_image_id: number;
+}
+
+export interface EnqueueDuplicateWatermarkCleanupPayload {
+  items: DuplicateWatermarkCleanupItem[];
+}
+
+export interface EnqueueDuplicateWatermarkCleanupResponse {
+  job_log_id: string;
+  enqueued: number;
+  message: string;
+}
+
+export interface DuplicateWatermarkCleanupJobResult {
+  total: number;
+  processed: number;
+  deleted: number;
+  failed: number;
+  items: Array<{
+    user_property_id: string;
+    crm_image_id: number;
+    status: "deleted" | "failed";
+    error?: string;
+  }>;
+}

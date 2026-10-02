@@ -36,6 +36,7 @@ import { ManageEstateWebSitesModal } from "./components/manage-estateweb-sites-m
 import { CheckEstateWebRemovalModal } from "./components/check-estateweb-removal-modal";
 import { EstateWebDuplicatePropertiesModal } from "./components/estateweb-duplicate-properties-modal";
 import { EstateWebOrphanSitesModal } from "./components/estateweb-orphan-sites-modal";
+import { DuplicateWatermarkImagesModal } from "./components/duplicate-watermark-images-modal";
 import { RemoveWatermarkByCountModal } from "./components/remove-watermark-by-count-modal";
 import { ProduceContentModal } from "./components/produce-content-modal";
 import { ChangePropertyStatusModal } from "./components/change-property-status-modal";
@@ -340,6 +341,7 @@ export default function DashboardPropertiesListPage() {
   const migrateCmsImagesModal = useOverlayState();
   const checkCrmDuplicatesModal = useOverlayState();
   const manageOrphanSitesModal = useOverlayState();
+  const duplicateWatermarkImagesModal = useOverlayState();
   const geocodeModal = useOverlayState();
   const resolveEstateWebLocationsModal = useOverlayState();
   const [manageSitesPropertyIds, setManageSitesPropertyIds] = useState<string[]>([]);
@@ -675,6 +677,12 @@ export default function DashboardPropertiesListPage() {
           adminOnly: true,
         },
         {
+          id: "find-duplicate-watermarked-photos",
+          label: "Find duplicate watermarked photos",
+          icon: Images,
+          adminOnly: true,
+        },
+        {
           id: "check-estateweb-removal",
           label: "Check EstateWeb removal sync",
           icon: Search,
@@ -961,6 +969,10 @@ export default function DashboardPropertiesListPage() {
     }
     if (actionId === "manage-crm-sites-by-code") {
       manageOrphanSitesModal.open();
+      return;
+    }
+    if (actionId === "find-duplicate-watermarked-photos") {
+      duplicateWatermarkImagesModal.open();
       return;
     }
     if (actionId === "geocode-missing-coordinates") {
@@ -1914,6 +1926,7 @@ export default function DashboardPropertiesListPage() {
         <>
           <EstateWebDuplicatePropertiesModal state={checkCrmDuplicatesModal} />
           <EstateWebOrphanSitesModal state={manageOrphanSitesModal} />
+          <DuplicateWatermarkImagesModal state={duplicateWatermarkImagesModal} />
           <CheckEstateWebRemovalModal
             state={checkEstateWebRemovalModal}
             propertyIds={checkEstateWebRemovalPropertyIds}

@@ -136,6 +136,10 @@ export const ApiRoutes = {
             truncateDescriptions: "/admin/user-properties/truncate-descriptions",
             dedupeGroups: "/admin/user-properties/dedupe-groups",
             bulkSplit: "/admin/user-properties/bulk-split",
+            calculateDuplicateWatermarkImages:
+                "/admin/user-properties/duplicate-watermark-images/calculate",
+            cleanupDuplicateWatermarkImages:
+                "/admin/user-properties/duplicate-watermark-images/cleanup",
         },
         notifications: {
             prefix: "/admin/notifications",
