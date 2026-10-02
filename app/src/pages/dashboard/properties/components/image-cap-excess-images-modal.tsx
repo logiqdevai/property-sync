@@ -196,7 +196,7 @@ export function ImageCapExcessImagesModal({
                 <Modal.Heading>Excess CRM images (image cap)</Modal.Heading>
               </Modal.Header>
               <Modal.Body>
-                <div ref={bodyContentRef} className="grid gap-4 pb-2 pr-1">
+                <div ref={bodyContentRef} className="flex min-w-0 flex-col gap-4 pb-2 pr-1">
                   {step === "select-agencies" ? (
                     <>
                       <p className="text-sm text-muted">
@@ -255,13 +255,13 @@ export function ImageCapExcessImagesModal({
                       {byAgency.map(([agencyName, items]) => (
                         <div
                           key={agencyName}
-                          className="flex flex-col gap-3 rounded-xl border border-border p-3"
+                          className="flex min-w-0 flex-col gap-3 rounded-xl border border-border p-3"
                         >
                           <div className="flex items-center justify-between gap-2">
-                            <span className="text-sm font-semibold text-foreground">
+                            <span className="min-w-0 flex-1 truncate text-sm font-semibold text-foreground">
                               {agencyName}
                             </span>
-                            <span className="font-mono text-xs text-muted">
+                            <span className="shrink-0 whitespace-nowrap font-mono text-xs text-muted">
                               {items.length} properties ·{" "}
                               {items.reduce((s, c) => s + c.excess_count, 0)} images
                             </span>
@@ -270,22 +270,10 @@ export function ImageCapExcessImagesModal({
                           {items.map((c) => (
                             <div
                               key={c.user_property_id}
-                              className="flex flex-col gap-2 rounded-lg border border-border p-2.5"
+                              className="flex min-w-0 flex-col gap-2 rounded-lg border border-border p-2.5"
                             >
-                              <div className="flex flex-wrap items-start justify-between gap-2">
-                                <div className="min-w-0">
-                                  <p className="break-words text-sm font-medium text-foreground">
-                                    {c.title}
-                                  </p>
-                                  <p className="font-mono text-xs text-muted">
-                                    source id <b className="text-foreground">{c.property_id}</b>
-                                    {" · "}CRM property{" "}
-                                    <b className="text-foreground">{c.crm_property_id}</b>
-                                    {" · "}local {c.local_image_count} vs CRM{" "}
-                                    {c.crm_image_count}
-                                  </p>
-                                </div>
-                                <label className="flex items-center gap-2 text-xs text-muted">
+                              <div className="flex items-start gap-3">
+                                <label className="flex shrink-0 items-center gap-2 text-xs text-muted">
                                   <Checkbox
                                     aria-label="Approve for deletion"
                                     isSelected={approvedIds.has(c.user_property_id)}
@@ -304,6 +292,18 @@ export function ImageCapExcessImagesModal({
                                   </Checkbox>
                                   Approve
                                 </label>
+                                <div className="min-w-0 flex-1">
+                                  <p className="break-words text-sm font-medium text-foreground">
+                                    {c.title}
+                                  </p>
+                                  <p className="font-mono text-xs text-muted">
+                                    source id <b className="text-foreground">{c.property_id}</b>
+                                    {" · "}CRM property{" "}
+                                    <b className="text-foreground">{c.crm_property_id}</b>
+                                    {" · "}local {c.local_image_count} vs CRM{" "}
+                                    {c.crm_image_count}
+                                  </p>
+                                </div>
                               </div>
 
                               <div className="flex gap-2 overflow-x-auto pb-1">
