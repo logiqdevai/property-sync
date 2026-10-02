@@ -187,12 +187,12 @@ export function DuplicateWatermarkImagesModal({
       <Modal state={state}>
         <Modal.Backdrop isDismissable={!jobIsActive}>
           <Modal.Container>
-            <Modal.Dialog className="w-[calc(100vw-2rem)] max-w-4xl">
+            <Modal.Dialog className="max-h-[85vh] w-[calc(100vw-2rem)] max-w-4xl">
               <Modal.Header>
                 <Modal.Heading>Duplicate watermarked photos</Modal.Heading>
               </Modal.Header>
               <Modal.Body>
-                <div className="grid max-h-[70vh] gap-4 overflow-y-auto pr-1">
+                <div className="grid gap-4 pr-1">
                   {step === "select-agencies" ? (
                     <>
                       <p className="text-sm text-muted">
@@ -204,7 +204,7 @@ export function DuplicateWatermarkImagesModal({
                       {agenciesPending ? (
                         <p className="text-sm text-muted">Loading agencies…</p>
                       ) : (
-                        <div className="flex max-h-[45vh] flex-col gap-1 overflow-y-auto rounded-xl border border-border p-2">
+                        <div className="flex flex-col gap-1 rounded-xl border border-border p-2">
                           {agencies.map((agency) => {
                             const summary = describeWatermarkSettings(
                               watermarkSettingsByAgency.get(agency.id),
