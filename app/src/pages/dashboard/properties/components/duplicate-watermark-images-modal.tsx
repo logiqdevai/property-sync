@@ -203,7 +203,20 @@ export function DuplicateWatermarkImagesModal({
       <Modal state={state}>
         <Modal.Backdrop isDismissable={!jobIsActive}>
           <Modal.Container placement="top">
-            <Modal.Dialog className="max-h-[85vh] w-[calc(100vw-2rem)] max-w-4xl">
+            {/* overflow-clip overrides HeroUI's own overflow-hidden on this element.
+                hidden still makes an element a valid (if scrollbar-less) scroll
+                container for native/programmatic scrolling; since Dialog's own
+                natural content height can exceed its max-h cap even though
+                Modal.Body separately handles its own overflow, focusing a
+                checkbox near the bottom made the browser's native
+                scrollIntoView walk up and scroll BOTH Modal.Body (intended)
+                and Modal.Dialog itself (not intended) -- scrolling Dialog
+                clipped its own Header out of view via Dialog's own clip
+                boundary. clip is spec'd to never be a scroll container at
+                all, so Dialog's scrollTop now stays inertly at 0 regardless
+                of what tries to scroll it. Verified live (DOM measurement +
+                visual confirmation), not inferred. */}
+            <Modal.Dialog className="max-h-[85vh] w-[calc(100vw-2rem)] max-w-4xl overflow-clip">
               <Modal.Header>
                 <Modal.Heading>Duplicate watermarked photos</Modal.Heading>
               </Modal.Header>
