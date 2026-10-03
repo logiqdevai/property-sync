@@ -425,6 +425,7 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
       where: { id: userPropertyId },
       select: {
         user_id: true,
+        images_curated_at: true,
         canonical_property_id: true,
         canonical_property: {
           select: {
@@ -437,6 +438,9 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
         },
       },
     });
+    // A hand-edited selection doesn't come from the source gallery, so a
+    // shrunken source can't have corrupted it.
+    if (property?.images_curated_at != null) return false;
     const canonical = property?.canonical_property;
     const agencyId = canonical?.source_links[0]?.source_property.source_agency_id;
     if (!property || !canonical || !agencyId) return false;
@@ -719,9 +723,20 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
       params.userPropertyId,
     );
     const sourceById = this.buildExistingSourceImageById(cachedRow?.images);
+    // Deleting a duplicate copy is not deleting the photo: only remember a
+    // photo as deliberately removed when no other image on the listing still
+    // shows it. Otherwise the sync would also remove the remaining copy and
+    // never upload the photo again.
+    const deleted = new Set(uniqueIds);
+    const stillShown = new Set(
+      [...sourceById.entries()]
+        .filter(([id]) => !deleted.has(id))
+        .map(([, url]) => this.normalizeSourceImageIdentity(url)),
+    );
     const deletedSourceUrls = uniqueIds
       .map((id) => sourceById.get(id))
-      .filter((url): url is string => typeof url === 'string');
+      .filter((url): url is string => typeof url === 'string')
+      .filter((url) => !stillShown.has(this.normalizeSourceImageIdentity(url)));
 
     for (const imageId of uniqueIds) {
       await this.estateWebPropertyService.deletePropertyImage(
@@ -860,20 +875,37 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
   }
 
   async createImages(params: CmsSyncCreateImagesParams): Promise<void> {
-    const sourceImageUrls = [
+    const requested = [
       ...new Set(
         params.sourceImageUrls.filter(
           (url): url is string => typeof url === 'string' && url.length > 0,
         ),
       ),
     ];
-    if (sourceImageUrls.length === 0) {
+    if (requested.length === 0) {
       throw new EstateWebException(
         'No source image urls provided',
         NotificationType.ESTATEWEB_VALIDATION_FAILED,
         HttpStatus.BAD_REQUEST,
       );
     }
+
+    // Never upload a photo the listing already shows: "Push images to CRM"
+    // re-sends every image we track, and uploading the ones already there
+    // created duplicate copies.
+    const cachedRow = await this.loadCachedIntegrationPropertyRow(
+      params.userIntegrationId,
+      params.userPropertyId,
+    );
+    const alreadyShown = new Set(
+      [...this.buildExistingSourceImageById(cachedRow?.images).values()].map(
+        (url) => this.normalizeSourceImageIdentity(url),
+      ),
+    );
+    const sourceImageUrls = requested.filter(
+      (url) => !alreadyShown.has(this.normalizeSourceImageIdentity(url)),
+    );
+    if (sourceImageUrls.length === 0) return;
 
     const propertyId = Number(params.crmPropertyId);
     const sourceByFilename = new Map<string, string>();

@@ -52,6 +52,9 @@ export interface UserProperty extends PropertyCmsFields {
   renovation_year: number | null;
   features: string[] | null;
   images: string[] | null;
+  // Set once the photos were edited by hand; the crawl then keeps that
+  // selection (still capped by the agency's "images to keep").
+  images_curated_at: string | null;
   duplicate_group_id: string | null;
   source_agency: { id: string; name: string } | null;
   source_url: string | null;

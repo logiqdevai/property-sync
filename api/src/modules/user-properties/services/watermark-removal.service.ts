@@ -21,13 +21,13 @@ import {
 } from '../interfaces/watermark-removal-job.interface';
 import {
   parseIntegrationPropertyImages,
-  patchIntegrationPropertyImageSource,
   resolveIntegrationImageProcessUrl,
 } from '../utils/integration-property-images.util';
 import {
   hashSourceIdentity,
   normalizeSourceImageIdentity,
 } from '../utils/duplicate-watermark-detection.util';
+import { UserPropertyImagesCurationService } from './user-property-images-curation.service';
 
 function formatError(error: unknown): string {
   if (!(error instanceof Error)) {
@@ -57,6 +57,7 @@ export class WatermarkRemovalService {
     private readonly estateWebIntegrationResolver: EstateWebIntegrationResolverService,
     private readonly platformConfigService: PlatformConfigService,
     private readonly costLogsService: CostLogsService,
+    private readonly imagesCuration: UserPropertyImagesCurationService,
   ) {}
 
   private async recordDewatermarkCost(params: {
@@ -515,55 +516,61 @@ export class WatermarkRemovalService {
       `crm_property_id=${params.crmPropertyId} old_image_id=${params.imageId} zindex=${zindex} delete_old=${params.replaceCrmImages} has_gcs=${Boolean(gcsUrl)} bytes=${processedBuffer.length}`,
     );
 
-    if (!params.replaceCrmImages) {
-      await params.runStep(
-        'patch_source_image',
-        () =>
-          this.patchIntegrationPropertyImageSource({
-            integrationPropertyId: params.integrationPropertyId,
-            integrationType: params.integrationType,
-            imageId: params.imageId,
-            sourceImage: gcsUrl,
-          }),
-        `source_image=${gcsUrl}`,
-      );
-    }
+    await params.runStep(
+      'update_own_images',
+      () =>
+        this.applyCleanedCopyToOwnImages({
+          userPropertyId: params.userPropertyId,
+          originalSourceUrl: params.image.source_image ?? null,
+          cleanedUrl: gcsUrl,
+          keepOriginal: !params.replaceCrmImages,
+        }),
+      `keep_original=${!params.replaceCrmImages}`,
+    );
   }
 
-  private async patchIntegrationPropertyImageSource(params: {
-    integrationPropertyId: string;
-    integrationType: IntegrationType;
-    imageId: number;
-    sourceImage: string;
+  // The CRM gallery is kept equal to UserProperty.images on every push, so a
+  // photo cleaned directly on the CRM must be reflected in our own list too --
+  // otherwise the next push deletes the paid-for clean copy and re-uploads the
+  // watermarked original. Replacing in place keeps the photo's slot (the
+  // crawl keeps an already-processed copy in its slot); keeping both copies is
+  // a deliberate addition, so that pins the selection as hand-edited.
+  private async applyCleanedCopyToOwnImages(params: {
+    userPropertyId: string;
+    originalSourceUrl: string | null;
+    cleanedUrl: string;
+    keepOriginal: boolean;
   }): Promise<void> {
-    const integrationProperty =
-      await this.prisma.integrationProperty.findUnique({
-        where: { id: params.integrationPropertyId },
-        select: { images: true },
-      });
-
-    if (!integrationProperty) {
-      throw new NotFoundException('Integration property not found');
-    }
-
-    const images = patchIntegrationPropertyImageSource(
-      integrationProperty.images,
-      params.integrationType,
-      params.imageId,
-      params.sourceImage,
-    );
-    if (!images) {
-      throw new NotFoundException(
-        'CRM image not found in integration property',
-      );
-    }
-
-    await this.prisma.integrationProperty.update({
-      where: { id: params.integrationPropertyId },
-      data: {
-        images: images as unknown as Prisma.InputJsonValue,
-      },
+    const property = await this.prisma.userProperty.findUnique({
+      where: { id: params.userPropertyId },
+      select: { images: true, images_curated_at: true },
     });
+    if (!property) return;
+
+    const images = this.parseSourceImageUrls(property.images);
+    const originalIdentity = params.originalSourceUrl
+      ? normalizeSourceImageIdentity(params.originalSourceUrl)
+      : null;
+    const index = originalIdentity
+      ? images.findIndex((url) => normalizeSourceImageIdentity(url) === originalIdentity)
+      : -1;
+
+    if (!params.keepOriginal && index >= 0) {
+      images[index] = params.cleanedUrl;
+      if (property.images_curated_at != null) {
+        await this.imagesCuration.saveCuratedImages(params.userPropertyId, images);
+      } else {
+        await this.prisma.userProperty.update({
+          where: { id: params.userPropertyId },
+          data: { images: images as unknown as Prisma.InputJsonValue },
+        });
+      }
+      return;
+    }
+
+    if (index >= 0) images.splice(index + 1, 0, params.cleanedUrl);
+    else images.push(params.cleanedUrl);
+    await this.imagesCuration.saveCuratedImages(params.userPropertyId, images);
   }
 
   parseIntegrationImages(

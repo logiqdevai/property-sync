@@ -202,6 +202,21 @@ export class AdminUserPropertiesController {
     return this.userPropertiesService.adminSplitMany(dto.ids);
   }
 
+  @Audited({
+    action: 'user_property.reset_images',
+    entity: 'UserProperty',
+    ids: { param: 'id' },
+  })
+  @Post(':id/reset-images')
+  @Roles(AuthRole.ADMIN)
+  @ApiOperation({
+    summary:
+      "Undo hand-edited photos: follow the agency's photos again (cut to the image limit) and update the CRM to match",
+  })
+  resetImages(@Param('id') id: string) {
+    return this.userPropertiesService.resetImagesToAutomatic(null, id);
+  }
+
   @Get('crm-image-sync/agency-settings')
   @Roles(AuthRole.ADMIN)
   @ApiOperation({

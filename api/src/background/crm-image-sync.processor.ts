@@ -20,7 +20,9 @@ const CRM_IMAGE_SYNC_WORKER_CONCURRENCY = 3;
 // transaction generous.
 const JOB_LOG_TRANSACTION_TIMEOUT_MS = 20000;
 
-@Processor(CRM_IMAGE_SYNC_QUEUE, { concurrency: CRM_IMAGE_SYNC_WORKER_CONCURRENCY })
+@Processor(CRM_IMAGE_SYNC_QUEUE, {
+  concurrency: CRM_IMAGE_SYNC_WORKER_CONCURRENCY,
+})
 export class CrmImageSyncProcessor extends WorkerHost implements OnModuleInit {
   private readonly logger = new Logger(CrmImageSyncProcessor.name);
 
@@ -42,7 +44,8 @@ export class CrmImageSyncProcessor extends WorkerHost implements OnModuleInit {
     await this.markActive(job_log_id, total);
 
     try {
-      const item = await this.crmImageSyncService.processProperty(user_property_id);
+      const item =
+        await this.crmImageSyncService.processProperty(user_property_id);
       await this.recordItemResult(job_log_id, item, total);
       this.logger.log(
         `[process] job_log=${job_log_id} user_property=${user_property_id} status=${item.status} deleted=${item.deleted} uploaded=${item.uploaded}`,
@@ -104,7 +107,8 @@ export class CrmImageSyncProcessor extends WorkerHost implements OnModuleInit {
           where: { id: logId },
           data: {
             status:
-              log.status === JobStatus.WAITING || log.status === JobStatus.DELAYED
+              log.status === JobStatus.WAITING ||
+              log.status === JobStatus.DELAYED
                 ? JobStatus.ACTIVE
                 : log.status,
             started_at: log.started_at ?? new Date(),
@@ -141,12 +145,26 @@ export class CrmImageSyncProcessor extends WorkerHost implements OnModuleInit {
           result.processed += 1;
         }
 
-        result.reconciled = result.items.filter((row) => row.status === 'reconciled').length;
-        result.in_sync = result.items.filter((row) => row.status === 'in_sync').length;
-        result.skipped = result.items.filter((row) => row.status === 'skipped').length;
-        result.failed = result.items.filter((row) => row.status === 'failed').length;
-        result.deleted = result.items.reduce((sum, row) => sum + row.deleted, 0);
-        result.uploaded = result.items.reduce((sum, row) => sum + row.uploaded, 0);
+        result.reconciled = result.items.filter(
+          (row) => row.status === 'reconciled',
+        ).length;
+        result.in_sync = result.items.filter(
+          (row) => row.status === 'in_sync',
+        ).length;
+        result.skipped = result.items.filter(
+          (row) => row.status === 'skipped',
+        ).length;
+        result.failed = result.items.filter(
+          (row) => row.status === 'failed',
+        ).length;
+        result.deleted = result.items.reduce(
+          (sum, row) => sum + row.deleted,
+          0,
+        );
+        result.uploaded = result.items.reduce(
+          (sum, row) => sum + row.uploaded,
+          0,
+        );
         if (item.status !== 'in_sync') {
           result.logs.push(
             `user_property=${item.user_property_id} status=${item.status}${item.skip_reason ? ` reason=${item.skip_reason}` : ''} crm ${item.crm_before}->${item.crm_after} deleted=${item.deleted} uploaded=${item.uploaded}${item.upload_failed ? ` upload_failed=${item.upload_failed}` : ''}${item.error ? ` error=${item.error}` : ''}`,
@@ -167,7 +185,9 @@ export class CrmImageSyncProcessor extends WorkerHost implements OnModuleInit {
                     ? finishedAt!.getTime() - log.started_at.getTime()
                     : null,
                   error_message:
-                    result.failed > 0 ? `Completed with ${result.failed} failures` : null,
+                    result.failed > 0
+                      ? `Completed with ${result.failed} failures`
+                      : null,
                 }
               : { status: JobStatus.ACTIVE }),
           },

@@ -34146,6 +34146,7 @@ export namespace Prisma {
     bathrooms: number | null
     construction_year: number | null
     renovation_year: number | null
+    images_curated_cap: number | null
     estateweb_type_id: number | null
     estateweb_location_id: number | null
     estateweb_scope_id: number | null
@@ -34162,6 +34163,7 @@ export namespace Prisma {
     bathrooms: number | null
     construction_year: number | null
     renovation_year: number | null
+    images_curated_cap: number | null
     estateweb_type_id: number | null
     estateweb_location_id: number | null
     estateweb_scope_id: number | null
@@ -34196,6 +34198,8 @@ export namespace Prisma {
     floor: string | null
     construction_year: number | null
     renovation_year: number | null
+    images_curated_at: Date | null
+    images_curated_cap: number | null
     estateweb_type_id: number | null
     estateweb_location_id: number | null
     estateweb_scope_id: number | null
@@ -34240,6 +34244,8 @@ export namespace Prisma {
     floor: string | null
     construction_year: number | null
     renovation_year: number | null
+    images_curated_at: Date | null
+    images_curated_cap: number | null
     estateweb_type_id: number | null
     estateweb_location_id: number | null
     estateweb_scope_id: number | null
@@ -34286,6 +34292,8 @@ export namespace Prisma {
     renovation_year: number
     features: number
     images: number
+    images_curated_at: number
+    images_curated_cap: number
     normalized_data: number
     estateweb_type_id: number
     estateweb_location_id: number
@@ -34317,6 +34325,7 @@ export namespace Prisma {
     bathrooms?: true
     construction_year?: true
     renovation_year?: true
+    images_curated_cap?: true
     estateweb_type_id?: true
     estateweb_location_id?: true
     estateweb_scope_id?: true
@@ -34333,6 +34342,7 @@ export namespace Prisma {
     bathrooms?: true
     construction_year?: true
     renovation_year?: true
+    images_curated_cap?: true
     estateweb_type_id?: true
     estateweb_location_id?: true
     estateweb_scope_id?: true
@@ -34367,6 +34377,8 @@ export namespace Prisma {
     floor?: true
     construction_year?: true
     renovation_year?: true
+    images_curated_at?: true
+    images_curated_cap?: true
     estateweb_type_id?: true
     estateweb_location_id?: true
     estateweb_scope_id?: true
@@ -34411,6 +34423,8 @@ export namespace Prisma {
     floor?: true
     construction_year?: true
     renovation_year?: true
+    images_curated_at?: true
+    images_curated_cap?: true
     estateweb_type_id?: true
     estateweb_location_id?: true
     estateweb_scope_id?: true
@@ -34457,6 +34471,8 @@ export namespace Prisma {
     renovation_year?: true
     features?: true
     images?: true
+    images_curated_at?: true
+    images_curated_cap?: true
     normalized_data?: true
     estateweb_type_id?: true
     estateweb_location_id?: true
@@ -34593,6 +34609,8 @@ export namespace Prisma {
     renovation_year: number | null
     features: JsonValue | null
     images: JsonValue | null
+    images_curated_at: Date | null
+    images_curated_cap: number | null
     normalized_data: JsonValue | null
     estateweb_type_id: number | null
     estateweb_location_id: number | null
@@ -34661,6 +34679,8 @@ export namespace Prisma {
     renovation_year?: boolean
     features?: boolean
     images?: boolean
+    images_curated_at?: boolean
+    images_curated_cap?: boolean
     normalized_data?: boolean
     estateweb_type_id?: boolean
     estateweb_location_id?: boolean
@@ -34716,6 +34736,8 @@ export namespace Prisma {
     renovation_year?: boolean
     features?: boolean
     images?: boolean
+    images_curated_at?: boolean
+    images_curated_cap?: boolean
     normalized_data?: boolean
     estateweb_type_id?: boolean
     estateweb_location_id?: boolean
@@ -34767,6 +34789,8 @@ export namespace Prisma {
     renovation_year?: boolean
     features?: boolean
     images?: boolean
+    images_curated_at?: boolean
+    images_curated_cap?: boolean
     normalized_data?: boolean
     estateweb_type_id?: boolean
     estateweb_location_id?: boolean
@@ -34818,6 +34842,8 @@ export namespace Prisma {
     renovation_year?: boolean
     features?: boolean
     images?: boolean
+    images_curated_at?: boolean
+    images_curated_cap?: boolean
     normalized_data?: boolean
     estateweb_type_id?: boolean
     estateweb_location_id?: boolean
@@ -34838,7 +34864,7 @@ export namespace Prisma {
     updated_at?: boolean
   }
 
-  export type UserPropertyOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "user_id" | "canonical_property_id" | "property_id" | "internal_id" | "integration_property_id" | "title" | "description" | "listing_type" | "property_type" | "status" | "price" | "currency" | "city" | "district" | "address" | "postal_code" | "country" | "latitude" | "longitude" | "square_meters" | "bedrooms" | "bathrooms" | "floor" | "construction_year" | "renovation_year" | "features" | "images" | "normalized_data" | "estateweb_type_id" | "estateweb_location_id" | "estateweb_scope_id" | "cms_fields" | "cms_metadata" | "video_url" | "distance_airport" | "distance_port" | "distance_beach" | "price_start" | "price_web" | "duplicate_group_id" | "is_modified" | "pending_crm_update" | "last_synced_at" | "created_at" | "updated_at", ExtArgs["result"]["userProperty"]>
+  export type UserPropertyOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "user_id" | "canonical_property_id" | "property_id" | "internal_id" | "integration_property_id" | "title" | "description" | "listing_type" | "property_type" | "status" | "price" | "currency" | "city" | "district" | "address" | "postal_code" | "country" | "latitude" | "longitude" | "square_meters" | "bedrooms" | "bathrooms" | "floor" | "construction_year" | "renovation_year" | "features" | "images" | "images_curated_at" | "images_curated_cap" | "normalized_data" | "estateweb_type_id" | "estateweb_location_id" | "estateweb_scope_id" | "cms_fields" | "cms_metadata" | "video_url" | "distance_airport" | "distance_port" | "distance_beach" | "price_start" | "price_web" | "duplicate_group_id" | "is_modified" | "pending_crm_update" | "last_synced_at" | "created_at" | "updated_at", ExtArgs["result"]["userProperty"]>
   export type UserPropertyInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
     canonical_property?: boolean | PropertyDefaultArgs<ExtArgs>
@@ -34894,6 +34920,8 @@ export namespace Prisma {
       renovation_year: number | null
       features: Prisma.JsonValue | null
       images: Prisma.JsonValue | null
+      images_curated_at: Date | null
+      images_curated_cap: number | null
       normalized_data: Prisma.JsonValue | null
       estateweb_type_id: number | null
       estateweb_location_id: number | null
@@ -35368,6 +35396,8 @@ export namespace Prisma {
     readonly renovation_year: FieldRef<"UserProperty", 'Int'>
     readonly features: FieldRef<"UserProperty", 'Json'>
     readonly images: FieldRef<"UserProperty", 'Json'>
+    readonly images_curated_at: FieldRef<"UserProperty", 'DateTime'>
+    readonly images_curated_cap: FieldRef<"UserProperty", 'Int'>
     readonly normalized_data: FieldRef<"UserProperty", 'Json'>
     readonly estateweb_type_id: FieldRef<"UserProperty", 'Int'>
     readonly estateweb_location_id: FieldRef<"UserProperty", 'Int'>
@@ -49586,6 +49616,8 @@ export namespace Prisma {
     renovation_year: 'renovation_year',
     features: 'features',
     images: 'images',
+    images_curated_at: 'images_curated_at',
+    images_curated_cap: 'images_curated_cap',
     normalized_data: 'normalized_data',
     estateweb_type_id: 'estateweb_type_id',
     estateweb_location_id: 'estateweb_location_id',
@@ -52864,6 +52896,8 @@ export namespace Prisma {
     renovation_year?: IntNullableFilter<"UserProperty"> | number | null
     features?: JsonNullableFilter<"UserProperty">
     images?: JsonNullableFilter<"UserProperty">
+    images_curated_at?: DateTimeNullableFilter<"UserProperty"> | Date | string | null
+    images_curated_cap?: IntNullableFilter<"UserProperty"> | number | null
     normalized_data?: JsonNullableFilter<"UserProperty">
     estateweb_type_id?: IntNullableFilter<"UserProperty"> | number | null
     estateweb_location_id?: IntNullableFilter<"UserProperty"> | number | null
@@ -52918,6 +52952,8 @@ export namespace Prisma {
     renovation_year?: SortOrderInput | SortOrder
     features?: SortOrderInput | SortOrder
     images?: SortOrderInput | SortOrder
+    images_curated_at?: SortOrderInput | SortOrder
+    images_curated_cap?: SortOrderInput | SortOrder
     normalized_data?: SortOrderInput | SortOrder
     estateweb_type_id?: SortOrderInput | SortOrder
     estateweb_location_id?: SortOrderInput | SortOrder
@@ -52976,6 +53012,8 @@ export namespace Prisma {
     renovation_year?: IntNullableFilter<"UserProperty"> | number | null
     features?: JsonNullableFilter<"UserProperty">
     images?: JsonNullableFilter<"UserProperty">
+    images_curated_at?: DateTimeNullableFilter<"UserProperty"> | Date | string | null
+    images_curated_cap?: IntNullableFilter<"UserProperty"> | number | null
     normalized_data?: JsonNullableFilter<"UserProperty">
     estateweb_type_id?: IntNullableFilter<"UserProperty"> | number | null
     estateweb_location_id?: IntNullableFilter<"UserProperty"> | number | null
@@ -53030,6 +53068,8 @@ export namespace Prisma {
     renovation_year?: SortOrderInput | SortOrder
     features?: SortOrderInput | SortOrder
     images?: SortOrderInput | SortOrder
+    images_curated_at?: SortOrderInput | SortOrder
+    images_curated_cap?: SortOrderInput | SortOrder
     normalized_data?: SortOrderInput | SortOrder
     estateweb_type_id?: SortOrderInput | SortOrder
     estateweb_location_id?: SortOrderInput | SortOrder
@@ -53087,6 +53127,8 @@ export namespace Prisma {
     renovation_year?: IntNullableWithAggregatesFilter<"UserProperty"> | number | null
     features?: JsonNullableWithAggregatesFilter<"UserProperty">
     images?: JsonNullableWithAggregatesFilter<"UserProperty">
+    images_curated_at?: DateTimeNullableWithAggregatesFilter<"UserProperty"> | Date | string | null
+    images_curated_cap?: IntNullableWithAggregatesFilter<"UserProperty"> | number | null
     normalized_data?: JsonNullableWithAggregatesFilter<"UserProperty">
     estateweb_type_id?: IntNullableWithAggregatesFilter<"UserProperty"> | number | null
     estateweb_location_id?: IntNullableWithAggregatesFilter<"UserProperty"> | number | null
@@ -57036,6 +57078,8 @@ export namespace Prisma {
     renovation_year?: number | null
     features?: NullableJsonNullValueInput | InputJsonValue
     images?: NullableJsonNullValueInput | InputJsonValue
+    images_curated_at?: Date | string | null
+    images_curated_cap?: number | null
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
     estateweb_type_id?: number | null
     estateweb_location_id?: number | null
@@ -57090,6 +57134,8 @@ export namespace Prisma {
     renovation_year?: number | null
     features?: NullableJsonNullValueInput | InputJsonValue
     images?: NullableJsonNullValueInput | InputJsonValue
+    images_curated_at?: Date | string | null
+    images_curated_cap?: number | null
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
     estateweb_type_id?: number | null
     estateweb_location_id?: number | null
@@ -57140,6 +57186,8 @@ export namespace Prisma {
     renovation_year?: NullableIntFieldUpdateOperationsInput | number | null
     features?: NullableJsonNullValueInput | InputJsonValue
     images?: NullableJsonNullValueInput | InputJsonValue
+    images_curated_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    images_curated_cap?: NullableIntFieldUpdateOperationsInput | number | null
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
     estateweb_type_id?: NullableIntFieldUpdateOperationsInput | number | null
     estateweb_location_id?: NullableIntFieldUpdateOperationsInput | number | null
@@ -57194,6 +57242,8 @@ export namespace Prisma {
     renovation_year?: NullableIntFieldUpdateOperationsInput | number | null
     features?: NullableJsonNullValueInput | InputJsonValue
     images?: NullableJsonNullValueInput | InputJsonValue
+    images_curated_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    images_curated_cap?: NullableIntFieldUpdateOperationsInput | number | null
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
     estateweb_type_id?: NullableIntFieldUpdateOperationsInput | number | null
     estateweb_location_id?: NullableIntFieldUpdateOperationsInput | number | null
@@ -57246,6 +57296,8 @@ export namespace Prisma {
     renovation_year?: number | null
     features?: NullableJsonNullValueInput | InputJsonValue
     images?: NullableJsonNullValueInput | InputJsonValue
+    images_curated_at?: Date | string | null
+    images_curated_cap?: number | null
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
     estateweb_type_id?: number | null
     estateweb_location_id?: number | null
@@ -57293,6 +57345,8 @@ export namespace Prisma {
     renovation_year?: NullableIntFieldUpdateOperationsInput | number | null
     features?: NullableJsonNullValueInput | InputJsonValue
     images?: NullableJsonNullValueInput | InputJsonValue
+    images_curated_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    images_curated_cap?: NullableIntFieldUpdateOperationsInput | number | null
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
     estateweb_type_id?: NullableIntFieldUpdateOperationsInput | number | null
     estateweb_location_id?: NullableIntFieldUpdateOperationsInput | number | null
@@ -57342,6 +57396,8 @@ export namespace Prisma {
     renovation_year?: NullableIntFieldUpdateOperationsInput | number | null
     features?: NullableJsonNullValueInput | InputJsonValue
     images?: NullableJsonNullValueInput | InputJsonValue
+    images_curated_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    images_curated_cap?: NullableIntFieldUpdateOperationsInput | number | null
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
     estateweb_type_id?: NullableIntFieldUpdateOperationsInput | number | null
     estateweb_location_id?: NullableIntFieldUpdateOperationsInput | number | null
@@ -60950,6 +61006,8 @@ export namespace Prisma {
     renovation_year?: SortOrder
     features?: SortOrder
     images?: SortOrder
+    images_curated_at?: SortOrder
+    images_curated_cap?: SortOrder
     normalized_data?: SortOrder
     estateweb_type_id?: SortOrder
     estateweb_location_id?: SortOrder
@@ -60979,6 +61037,7 @@ export namespace Prisma {
     bathrooms?: SortOrder
     construction_year?: SortOrder
     renovation_year?: SortOrder
+    images_curated_cap?: SortOrder
     estateweb_type_id?: SortOrder
     estateweb_location_id?: SortOrder
     estateweb_scope_id?: SortOrder
@@ -61013,6 +61072,8 @@ export namespace Prisma {
     floor?: SortOrder
     construction_year?: SortOrder
     renovation_year?: SortOrder
+    images_curated_at?: SortOrder
+    images_curated_cap?: SortOrder
     estateweb_type_id?: SortOrder
     estateweb_location_id?: SortOrder
     estateweb_scope_id?: SortOrder
@@ -61057,6 +61118,8 @@ export namespace Prisma {
     floor?: SortOrder
     construction_year?: SortOrder
     renovation_year?: SortOrder
+    images_curated_at?: SortOrder
+    images_curated_cap?: SortOrder
     estateweb_type_id?: SortOrder
     estateweb_location_id?: SortOrder
     estateweb_scope_id?: SortOrder
@@ -61083,6 +61146,7 @@ export namespace Prisma {
     bathrooms?: SortOrder
     construction_year?: SortOrder
     renovation_year?: SortOrder
+    images_curated_cap?: SortOrder
     estateweb_type_id?: SortOrder
     estateweb_location_id?: SortOrder
     estateweb_scope_id?: SortOrder
@@ -65987,6 +66051,8 @@ export namespace Prisma {
     renovation_year?: number | null
     features?: NullableJsonNullValueInput | InputJsonValue
     images?: NullableJsonNullValueInput | InputJsonValue
+    images_curated_at?: Date | string | null
+    images_curated_cap?: number | null
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
     estateweb_type_id?: number | null
     estateweb_location_id?: number | null
@@ -66039,6 +66105,8 @@ export namespace Prisma {
     renovation_year?: number | null
     features?: NullableJsonNullValueInput | InputJsonValue
     images?: NullableJsonNullValueInput | InputJsonValue
+    images_curated_at?: Date | string | null
+    images_curated_cap?: number | null
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
     estateweb_type_id?: number | null
     estateweb_location_id?: number | null
@@ -66325,6 +66393,8 @@ export namespace Prisma {
     renovation_year?: IntNullableFilter<"UserProperty"> | number | null
     features?: JsonNullableFilter<"UserProperty">
     images?: JsonNullableFilter<"UserProperty">
+    images_curated_at?: DateTimeNullableFilter<"UserProperty"> | Date | string | null
+    images_curated_cap?: IntNullableFilter<"UserProperty"> | number | null
     normalized_data?: JsonNullableFilter<"UserProperty">
     estateweb_type_id?: IntNullableFilter<"UserProperty"> | number | null
     estateweb_location_id?: IntNullableFilter<"UserProperty"> | number | null
@@ -72200,6 +72270,8 @@ export namespace Prisma {
     renovation_year?: number | null
     features?: NullableJsonNullValueInput | InputJsonValue
     images?: NullableJsonNullValueInput | InputJsonValue
+    images_curated_at?: Date | string | null
+    images_curated_cap?: number | null
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
     estateweb_type_id?: number | null
     estateweb_location_id?: number | null
@@ -72252,6 +72324,8 @@ export namespace Prisma {
     renovation_year?: number | null
     features?: NullableJsonNullValueInput | InputJsonValue
     images?: NullableJsonNullValueInput | InputJsonValue
+    images_curated_at?: Date | string | null
+    images_curated_cap?: number | null
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
     estateweb_type_id?: number | null
     estateweb_location_id?: number | null
@@ -74145,6 +74219,8 @@ export namespace Prisma {
     renovation_year?: number | null
     features?: NullableJsonNullValueInput | InputJsonValue
     images?: NullableJsonNullValueInput | InputJsonValue
+    images_curated_at?: Date | string | null
+    images_curated_cap?: number | null
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
     estateweb_type_id?: number | null
     estateweb_location_id?: number | null
@@ -74198,6 +74274,8 @@ export namespace Prisma {
     renovation_year?: number | null
     features?: NullableJsonNullValueInput | InputJsonValue
     images?: NullableJsonNullValueInput | InputJsonValue
+    images_curated_at?: Date | string | null
+    images_curated_cap?: number | null
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
     estateweb_type_id?: number | null
     estateweb_location_id?: number | null
@@ -74263,6 +74341,8 @@ export namespace Prisma {
     renovation_year?: NullableIntFieldUpdateOperationsInput | number | null
     features?: NullableJsonNullValueInput | InputJsonValue
     images?: NullableJsonNullValueInput | InputJsonValue
+    images_curated_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    images_curated_cap?: NullableIntFieldUpdateOperationsInput | number | null
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
     estateweb_type_id?: NullableIntFieldUpdateOperationsInput | number | null
     estateweb_location_id?: NullableIntFieldUpdateOperationsInput | number | null
@@ -74316,6 +74396,8 @@ export namespace Prisma {
     renovation_year?: NullableIntFieldUpdateOperationsInput | number | null
     features?: NullableJsonNullValueInput | InputJsonValue
     images?: NullableJsonNullValueInput | InputJsonValue
+    images_curated_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    images_curated_cap?: NullableIntFieldUpdateOperationsInput | number | null
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
     estateweb_type_id?: NullableIntFieldUpdateOperationsInput | number | null
     estateweb_location_id?: NullableIntFieldUpdateOperationsInput | number | null
@@ -74853,6 +74935,8 @@ export namespace Prisma {
     renovation_year?: number | null
     features?: NullableJsonNullValueInput | InputJsonValue
     images?: NullableJsonNullValueInput | InputJsonValue
+    images_curated_at?: Date | string | null
+    images_curated_cap?: number | null
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
     estateweb_type_id?: number | null
     estateweb_location_id?: number | null
@@ -74906,6 +74990,8 @@ export namespace Prisma {
     renovation_year?: number | null
     features?: NullableJsonNullValueInput | InputJsonValue
     images?: NullableJsonNullValueInput | InputJsonValue
+    images_curated_at?: Date | string | null
+    images_curated_cap?: number | null
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
     estateweb_type_id?: number | null
     estateweb_location_id?: number | null
@@ -75187,6 +75273,8 @@ export namespace Prisma {
     renovation_year?: NullableIntFieldUpdateOperationsInput | number | null
     features?: NullableJsonNullValueInput | InputJsonValue
     images?: NullableJsonNullValueInput | InputJsonValue
+    images_curated_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    images_curated_cap?: NullableIntFieldUpdateOperationsInput | number | null
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
     estateweb_type_id?: NullableIntFieldUpdateOperationsInput | number | null
     estateweb_location_id?: NullableIntFieldUpdateOperationsInput | number | null
@@ -75240,6 +75328,8 @@ export namespace Prisma {
     renovation_year?: NullableIntFieldUpdateOperationsInput | number | null
     features?: NullableJsonNullValueInput | InputJsonValue
     images?: NullableJsonNullValueInput | InputJsonValue
+    images_curated_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    images_curated_cap?: NullableIntFieldUpdateOperationsInput | number | null
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
     estateweb_type_id?: NullableIntFieldUpdateOperationsInput | number | null
     estateweb_location_id?: NullableIntFieldUpdateOperationsInput | number | null
@@ -75451,6 +75541,8 @@ export namespace Prisma {
     renovation_year?: number | null
     features?: NullableJsonNullValueInput | InputJsonValue
     images?: NullableJsonNullValueInput | InputJsonValue
+    images_curated_at?: Date | string | null
+    images_curated_cap?: number | null
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
     estateweb_type_id?: number | null
     estateweb_location_id?: number | null
@@ -75504,6 +75596,8 @@ export namespace Prisma {
     renovation_year?: number | null
     features?: NullableJsonNullValueInput | InputJsonValue
     images?: NullableJsonNullValueInput | InputJsonValue
+    images_curated_at?: Date | string | null
+    images_curated_cap?: number | null
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
     estateweb_type_id?: number | null
     estateweb_location_id?: number | null
@@ -75641,6 +75735,8 @@ export namespace Prisma {
     renovation_year?: NullableIntFieldUpdateOperationsInput | number | null
     features?: NullableJsonNullValueInput | InputJsonValue
     images?: NullableJsonNullValueInput | InputJsonValue
+    images_curated_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    images_curated_cap?: NullableIntFieldUpdateOperationsInput | number | null
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
     estateweb_type_id?: NullableIntFieldUpdateOperationsInput | number | null
     estateweb_location_id?: NullableIntFieldUpdateOperationsInput | number | null
@@ -75694,6 +75790,8 @@ export namespace Prisma {
     renovation_year?: NullableIntFieldUpdateOperationsInput | number | null
     features?: NullableJsonNullValueInput | InputJsonValue
     images?: NullableJsonNullValueInput | InputJsonValue
+    images_curated_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    images_curated_cap?: NullableIntFieldUpdateOperationsInput | number | null
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
     estateweb_type_id?: NullableIntFieldUpdateOperationsInput | number | null
     estateweb_location_id?: NullableIntFieldUpdateOperationsInput | number | null
@@ -75960,6 +76058,8 @@ export namespace Prisma {
     renovation_year?: number | null
     features?: NullableJsonNullValueInput | InputJsonValue
     images?: NullableJsonNullValueInput | InputJsonValue
+    images_curated_at?: Date | string | null
+    images_curated_cap?: number | null
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
     estateweb_type_id?: number | null
     estateweb_location_id?: number | null
@@ -76136,6 +76236,8 @@ export namespace Prisma {
     renovation_year?: NullableIntFieldUpdateOperationsInput | number | null
     features?: NullableJsonNullValueInput | InputJsonValue
     images?: NullableJsonNullValueInput | InputJsonValue
+    images_curated_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    images_curated_cap?: NullableIntFieldUpdateOperationsInput | number | null
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
     estateweb_type_id?: NullableIntFieldUpdateOperationsInput | number | null
     estateweb_location_id?: NullableIntFieldUpdateOperationsInput | number | null
@@ -76188,6 +76290,8 @@ export namespace Prisma {
     renovation_year?: NullableIntFieldUpdateOperationsInput | number | null
     features?: NullableJsonNullValueInput | InputJsonValue
     images?: NullableJsonNullValueInput | InputJsonValue
+    images_curated_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    images_curated_cap?: NullableIntFieldUpdateOperationsInput | number | null
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
     estateweb_type_id?: NullableIntFieldUpdateOperationsInput | number | null
     estateweb_location_id?: NullableIntFieldUpdateOperationsInput | number | null
@@ -76239,6 +76343,8 @@ export namespace Prisma {
     renovation_year?: NullableIntFieldUpdateOperationsInput | number | null
     features?: NullableJsonNullValueInput | InputJsonValue
     images?: NullableJsonNullValueInput | InputJsonValue
+    images_curated_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    images_curated_cap?: NullableIntFieldUpdateOperationsInput | number | null
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
     estateweb_type_id?: NullableIntFieldUpdateOperationsInput | number | null
     estateweb_location_id?: NullableIntFieldUpdateOperationsInput | number | null
@@ -78395,6 +78501,8 @@ export namespace Prisma {
     renovation_year?: number | null
     features?: NullableJsonNullValueInput | InputJsonValue
     images?: NullableJsonNullValueInput | InputJsonValue
+    images_curated_at?: Date | string | null
+    images_curated_cap?: number | null
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
     estateweb_type_id?: number | null
     estateweb_location_id?: number | null
@@ -78482,6 +78590,8 @@ export namespace Prisma {
     renovation_year?: NullableIntFieldUpdateOperationsInput | number | null
     features?: NullableJsonNullValueInput | InputJsonValue
     images?: NullableJsonNullValueInput | InputJsonValue
+    images_curated_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    images_curated_cap?: NullableIntFieldUpdateOperationsInput | number | null
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
     estateweb_type_id?: NullableIntFieldUpdateOperationsInput | number | null
     estateweb_location_id?: NullableIntFieldUpdateOperationsInput | number | null
@@ -78534,6 +78644,8 @@ export namespace Prisma {
     renovation_year?: NullableIntFieldUpdateOperationsInput | number | null
     features?: NullableJsonNullValueInput | InputJsonValue
     images?: NullableJsonNullValueInput | InputJsonValue
+    images_curated_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    images_curated_cap?: NullableIntFieldUpdateOperationsInput | number | null
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
     estateweb_type_id?: NullableIntFieldUpdateOperationsInput | number | null
     estateweb_location_id?: NullableIntFieldUpdateOperationsInput | number | null
@@ -78585,6 +78697,8 @@ export namespace Prisma {
     renovation_year?: NullableIntFieldUpdateOperationsInput | number | null
     features?: NullableJsonNullValueInput | InputJsonValue
     images?: NullableJsonNullValueInput | InputJsonValue
+    images_curated_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    images_curated_cap?: NullableIntFieldUpdateOperationsInput | number | null
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
     estateweb_type_id?: NullableIntFieldUpdateOperationsInput | number | null
     estateweb_location_id?: NullableIntFieldUpdateOperationsInput | number | null

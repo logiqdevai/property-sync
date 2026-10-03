@@ -792,6 +792,18 @@ export class UserPropertiesController {
     );
   }
 
+  @Audited({ action: 'user_property.reset_images', entity: 'UserProperty', ids: { param: 'id' } })
+  @Post(':id/reset-images')
+  @ApiOperation({
+    summary:
+      "Undo hand-edited photos: follow the agency's photos again (cut to the image limit) and update the CRM to match",
+  })
+  @ApiResponse({ status: 200, type: UserPropertyEntity })
+  @ApiResponse({ status: 404, description: 'Saved property not found' })
+  resetImages(@CurrentUser('id') userId: string, @Param('id') id: string) {
+    return this.userPropertiesService.resetImagesToAutomatic(userId, id);
+  }
+
   @Audited({ action: 'user_property.remove_watermark_images', entity: 'UserProperty', ids: { param: 'id' } })
   @Post(':id/remove-watermark-images')
   @ApiOperation({

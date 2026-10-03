@@ -23,18 +23,28 @@ describe('isIncompleteDetailExtraction', () => {
   // A real full page for a listing with no photos (housemarket plots) must
   // still count as read, so its price/title keep updating.
   it('accepts a full page that simply has no photos', () => {
-    expect(isIncompleteDetailExtraction(nothing, cretahouses, 5000)).toBe(false);
+    expect(isIncompleteDetailExtraction(nothing, cretahouses, 5000)).toBe(
+      false,
+    );
   });
 
   it('accepts a page with gallery images', () => {
     expect(
-      isIncompleteDetailExtraction({ images: ['a.jpg'], raw_detail_text: null }, cretahouses, 0),
+      isIncompleteDetailExtraction(
+        { images: ['a.jpg'], raw_detail_text: null },
+        cretahouses,
+        0,
+      ),
     ).toBe(false);
   });
 
   it('accepts a page with a description but no gallery', () => {
     expect(
-      isIncompleteDetailExtraction({ images: [], raw_detail_text: 'Villa' }, cretahouses, 0),
+      isIncompleteDetailExtraction(
+        { images: [], raw_detail_text: 'Villa' },
+        cretahouses,
+        0,
+      ),
     ).toBe(false);
   });
 

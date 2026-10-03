@@ -12,6 +12,7 @@ import {
 import { UserPropertiesService } from '../user-properties.service';
 import { normalizeSourceImageIdentity } from '../utils/duplicate-watermark-detection.util';
 import { AgencyWatermarkSettings } from '../interfaces/agency-watermark-settings.interface';
+import { UserPropertyImagesCurationService } from './user-property-images-curation.service';
 import {
   CrmImageSyncItemResult,
   CrmImageSyncJobData,
@@ -36,6 +37,7 @@ export class CrmImageSyncService {
     private readonly prisma: PrismaService,
     private readonly userPropertiesService: UserPropertiesService,
     private readonly estateWebCmsSyncAdapter: EstateWebCmsSyncAdapter,
+    private readonly imagesCuration: UserPropertyImagesCurationService,
     @InjectQueue(CRM_IMAGE_SYNC_QUEUE)
     private readonly queue: Queue<CrmImageSyncJobData>,
   ) {}
@@ -58,7 +60,9 @@ export class CrmImageSyncService {
     canonicalIds: string[],
   ): Promise<Map<string, number>> {
     if (canonicalIds.length === 0) return new Map();
-    const rows = await this.prisma.$queryRaw<Array<{ property_id: string; peak: number }>>`
+    const rows = await this.prisma.$queryRaw<
+      Array<{ property_id: string; peak: number }>
+    >`
       SELECT property_id, MAX(jsonb_array_length(old_value))::int AS peak
       FROM property_history
       WHERE field = 'images'
@@ -70,7 +74,9 @@ export class CrmImageSyncService {
 
   // Read-only, from our cached copy of each CRM gallery. The real run re-reads
   // EstateWeb live, so numbers can shift slightly if the cache is stale.
-  async preview(sourceAgencyIds: string[]): Promise<CrmImageSyncPreviewAgency[]> {
+  async preview(
+    sourceAgencyIds: string[],
+  ): Promise<CrmImageSyncPreviewAgency[]> {
     const agencies = await this.prisma.sourceAgency.findMany({
       where: { id: { in: sourceAgencyIds } },
       select: { id: true, name: true },
@@ -99,6 +105,8 @@ export class CrmImageSyncService {
             title: true,
             property_id: true,
             images: true,
+            images_curated_at: true,
+            images_curated_cap: true,
             canonical_property_id: true,
             canonical_property: { select: { images: true } },
             integration_properties: {
@@ -143,7 +151,10 @@ export class CrmImageSyncService {
             ? property.canonical_property.images.length
             : 0;
           const peak = peaks.get(property.canonical_property_id);
-          if (isSourceGalleryShrunk(sourceCount, peak, tracker.max_image_count)) {
+          if (
+            property.images_curated_at == null &&
+            isSourceGalleryShrunk(sourceCount, peak, tracker.max_image_count)
+          ) {
             summary.skipped_source_shrank.push({
               user_property_id: property.id,
               title: property.title,
@@ -154,11 +165,17 @@ export class CrmImageSyncService {
             });
             continue;
           }
-          const desired = this.userPropertiesService.computeTrackedImages(
-            property.images,
-            property.canonical_property.images,
-            tracker.max_image_count,
-          );
+          const excludedImages = Array.isArray(cache?.excluded_source_images)
+            ? (cache.excluded_source_images as unknown[]).filter(
+                (url): url is string => typeof url === 'string',
+              )
+            : [];
+          const desired = this.userPropertiesService.computeTrackedImages({
+            userProperty: property,
+            canonicalImages: property.canonical_property.images,
+            maxImageCount: tracker.max_image_count,
+            excludedImages,
+          }).images;
           if (desired.length === 0) continue;
 
           const cachedImages = Array.isArray(cache?.images)
@@ -169,7 +186,10 @@ export class CrmImageSyncService {
             .filter((id): id is number => typeof id === 'number');
           const sourceById = new Map<number, string>();
           for (const image of cachedImages) {
-            if (typeof image?.id === 'number' && typeof image.source_image === 'string') {
+            if (
+              typeof image?.id === 'number' &&
+              typeof image.source_image === 'string'
+            ) {
               sourceById.set(image.id, image.source_image);
             }
           }
@@ -181,17 +201,15 @@ export class CrmImageSyncService {
             crmImageIds: crmIds,
             sourceById,
             desiredImages: desired,
-            excludedImages: Array.isArray(cache?.excluded_source_images)
-              ? (cache.excluded_source_images as unknown[]).filter(
-                  (url): url is string => typeof url === 'string',
-                )
-              : [],
+            excludedImages,
             isUploadBlocked: (url) =>
               (failures[url]?.attempts ?? 0) >= MAX_IMAGE_UPLOAD_ATTEMPTS,
             normalize: normalizeSourceImageIdentity,
           });
 
-          const localNow = Array.isArray(property.images) ? property.images.length : 0;
+          const localNow = Array.isArray(property.images)
+            ? property.images.length
+            : 0;
           const localChanges =
             JSON.stringify(property.images ?? []) !== JSON.stringify(desired);
           summary.crm_now += crmIds.length;
@@ -227,7 +245,10 @@ export class CrmImageSyncService {
     return result;
   }
 
-  async enqueue(sourceAgencyIds: string[], onlyUserPropertyIds?: string[]): Promise<{
+  async enqueue(
+    sourceAgencyIds: string[],
+    onlyUserPropertyIds?: string[],
+  ): Promise<{
     job_log_id: string;
     enqueued: number;
     message: string;
@@ -259,7 +280,9 @@ export class CrmImageSyncService {
       for (const id of [...ids]) if (!only.has(id)) ids.delete(id);
     }
     if (ids.size === 0) {
-      throw new BadRequestException('No linked properties found for the selected agencies');
+      throw new BadRequestException(
+        'No linked properties found for the selected agencies',
+      );
     }
 
     const total = ids.size;
@@ -288,7 +311,11 @@ export class CrmImageSyncService {
     await this.queue.addBulk(
       [...ids].map((userPropertyId) => ({
         name: 'crm-image-sync',
-        data: { job_log_id: jobLog.id, user_property_id: userPropertyId, total },
+        data: {
+          job_log_id: jobLog.id,
+          user_property_id: userPropertyId,
+          total,
+        },
         opts: {
           jobId: `${jobLog.id}__${userPropertyId}`,
           attempts: 3,
@@ -302,11 +329,14 @@ export class CrmImageSyncService {
     return {
       job_log_id: jobLog.id,
       enqueued: total,
-      message: 'CRM image sync started in the background. Track progress in Job queue.',
+      message:
+        'CRM image sync started in the background. Track progress in Job queue.',
     };
   }
 
-  async processProperty(userPropertyId: string): Promise<CrmImageSyncItemResult> {
+  async processProperty(
+    userPropertyId: string,
+  ): Promise<CrmImageSyncItemResult> {
     const base: CrmImageSyncItemResult = {
       user_property_id: userPropertyId,
       status: 'skipped',
@@ -325,6 +355,8 @@ export class CrmImageSyncService {
         id: true,
         user_id: true,
         images: true,
+        images_curated_at: true,
+        images_curated_cap: true,
         integration_property_id: true,
         canonical_property_id: true,
         canonical_property: {
@@ -332,7 +364,9 @@ export class CrmImageSyncService {
             images: true,
             source_links: {
               take: 1,
-              select: { source_property: { select: { source_agency_id: true } } },
+              select: {
+                source_property: { select: { source_agency_id: true } },
+              },
             },
           },
         },
@@ -342,7 +376,8 @@ export class CrmImageSyncService {
       return { ...base, skip_reason: 'not_linked' };
     }
     const agencyId =
-      property.canonical_property.source_links[0]?.source_property.source_agency_id;
+      property.canonical_property.source_links[0]?.source_property
+        .source_agency_id;
     const tracker = agencyId
       ? await this.prisma.userTrackedAgency.findFirst({
           where: { user_id: property.user_id, source_agency_id: agencyId },
@@ -360,8 +395,11 @@ export class CrmImageSyncService {
     const sourceCount = Array.isArray(property.canonical_property.images)
       ? property.canonical_property.images.length
       : 0;
-    const peaks = await this.loadPeakGallerySizes([property.canonical_property_id]);
+    const peaks = await this.loadPeakGallerySizes([
+      property.canonical_property_id,
+    ]);
     if (
+      property.images_curated_at == null &&
       isSourceGalleryShrunk(
         sourceCount,
         peaks.get(property.canonical_property_id),
@@ -371,11 +409,15 @@ export class CrmImageSyncService {
       return { ...base, skip_reason: 'source_gallery_shrank' };
     }
 
-    const desired = this.userPropertiesService.computeTrackedImages(
-      property.images,
-      property.canonical_property.images,
-      tracker.max_image_count,
-    );
+    const tracked = this.userPropertiesService.computeTrackedImages({
+      userProperty: property,
+      canonicalImages: property.canonical_property.images,
+      maxImageCount: tracker.max_image_count,
+      excludedImages: await this.imagesCuration.loadExcludedSourceImages(
+        property.id,
+      ),
+    });
+    const desired = tracked.images;
     if (desired.length === 0) {
       return { ...base, skip_reason: 'no_source_images' };
     }
@@ -385,7 +427,12 @@ export class CrmImageSyncService {
     if (localChanged) {
       await this.prisma.userProperty.update({
         where: { id: property.id },
-        data: { images: desired },
+        data: {
+          images: desired,
+          ...(tracked.curatedCap !== undefined
+            ? { images_curated_cap: tracked.curatedCap }
+            : {}),
+        },
       });
     }
 

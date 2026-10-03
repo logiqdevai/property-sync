@@ -1024,6 +1024,15 @@ model UserProperty {
   renovation_year         Int?
   features                Json?
   images                  Json?
+  // Set once the user edits this property's photos by hand (deletes, reorders
+  // or copies in photos). From then on the crawl keeps their selection instead
+  // of rebuilding `images` from the source gallery; the tracker's
+  // max_image_count still caps it. null = photos follow the source.
+  images_curated_at       DateTime?
+  // The max_image_count in effect when the selection was last edited/adjusted
+  // (null = keep all). Lets the crawl tell a raised cap (top the selection up
+  // from the source) from a lowered one (trim it).
+  images_curated_cap      Int?
   normalized_data         Json?
   estateweb_type_id       Int?
   estateweb_location_id   Int?

@@ -21,7 +21,13 @@ const plan = (
 
 describe('planImageReconcile', () => {
   it('leaves an exact gallery alone', () => {
-    const result = plan([[1, u('a')], [2, u('b')]], [u('a'), u('b')]);
+    const result = plan(
+      [
+        [1, u('a')],
+        [2, u('b')],
+      ],
+      [u('a'), u('b')],
+    );
     expect(result.toDelete).toEqual([]);
     expect(result.toUpload).toEqual([]);
     expect(result.orderWrong).toBe(false);
@@ -48,7 +54,15 @@ describe('planImageReconcile', () => {
   });
 
   it('deletes photos beyond the cap and images with no recorded source', () => {
-    const result = plan([[1, u('a')], [2, null], [3, u('b')], [4, u('z')]], [u('a'), u('b')]);
+    const result = plan(
+      [
+        [1, u('a')],
+        [2, null],
+        [3, u('b')],
+        [4, u('z')],
+      ],
+      [u('a'), u('b')],
+    );
     expect(result.toDelete).toEqual([2, 4]);
     expect(result.orderWrong).toBe(false);
   });
@@ -60,7 +74,13 @@ describe('planImageReconcile', () => {
   });
 
   it('detects a wrong order among kept photos', () => {
-    const result = plan([[1, u('b')], [2, u('a')]], [u('a'), u('b')]);
+    const result = plan(
+      [
+        [1, u('b')],
+        [2, u('a')],
+      ],
+      [u('a'), u('b')],
+    );
     expect(result.orderWrong).toBe(true);
     expect(result.toDelete).toEqual([]);
   });
@@ -72,7 +92,14 @@ describe('planImageReconcile', () => {
   });
 
   it('never re-uploads an excluded photo and removes it if present', () => {
-    const result = plan([[1, u('a')], [2, u('b')]], [u('a'), u('b')], { excluded: [u('b')] });
+    const result = plan(
+      [
+        [1, u('a')],
+        [2, u('b')],
+      ],
+      [u('a'), u('b')],
+      { excluded: [u('b')] },
+    );
     expect(result.desired).toEqual([u('a')]);
     expect(result.toDelete).toEqual([2]);
     expect(result.toUpload).toEqual([]);

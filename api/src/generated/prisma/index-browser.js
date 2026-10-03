@@ -532,6 +532,8 @@ exports.Prisma.UserPropertyScalarFieldEnum = {
   renovation_year: 'renovation_year',
   features: 'features',
   images: 'images',
+  images_curated_at: 'images_curated_at',
+  images_curated_cap: 'images_curated_cap',
   normalized_data: 'normalized_data',
   estateweb_type_id: 'estateweb_type_id',
   estateweb_location_id: 'estateweb_location_id',

@@ -2000,8 +2000,8 @@ export default function DashboardPropertiesListPage() {
         title="Delete CMS images?"
         description={
           deleteCmsImagesPropertyIds.length === 1
-            ? "Deletes all stored CMS/integration images for this linked property via its CRM adapter. Local listing images stay. Progress shows in Job queue."
-            : `Deletes all stored CMS/integration images for ${deleteCmsImagesPropertyIds.length} linked properties via each CRM adapter. Local listing images stay. Progress shows in Job queue.`
+            ? "Deletes all photos of this property from the CRM, and they stay deleted on later crawls. To bring the agency's photos back, use \"Reset photos to automatic\" on the property. Progress shows in Job queue."
+            : `Deletes all photos of ${deleteCmsImagesPropertyIds.length} properties from the CRM, and they stay deleted on later crawls. To bring the agency's photos back, use "Reset photos to automatic" on each property. Progress shows in Job queue.`
         }
         confirmLabel="Delete CMS images"
         onConfirm={handleDeleteCmsImages}

@@ -30,6 +30,7 @@ import {
   useCopyUserPropertyNormalizedImages,
   useUpdateUserPropertyIntegrationImages,
   useReorderUserPropertyIntegrationImages,
+  useResetUserPropertyImages,
   useRemoveUserPropertyWatermarkImages,
   useRemoveUserPropertiesWatermarkImages,
   useProduceUserPropertyContent,
@@ -113,6 +114,7 @@ export default function DashboardPropertyDetailPage() {
   const [isEditing, setIsEditing] = useState(false);
   const truncateConfirm = useOverlayState();
   const unlinkConfirm = useOverlayState();
+  const resetImagesConfirm = useOverlayState();
   const updateSalesPricesConfirm = useOverlayState();
   const syncCrmClientNotesConfirm = useOverlayState();
   const renormalizeConfirm = useOverlayState();
@@ -141,6 +143,7 @@ export default function DashboardPropertyDetailPage() {
   const reorderIntegrationImages = useReorderUserPropertyIntegrationImages();
   const removeWatermarkImages = useRemoveUserPropertyWatermarkImages();
   const removeWatermarksByCount = useRemoveUserPropertiesWatermarkImages();
+  const resetImages = useResetUserPropertyImages();
   const produceContent = useProduceUserPropertyContent();
   const truncateDescriptions = useTruncateUserPropertyDescriptions();
   const { data: locationCatalog = [] } = useEstateWebLocationCatalog(isEditing);
@@ -373,6 +376,15 @@ export default function DashboardPropertyDetailPage() {
               !hasIntegration ||
               removeWatermarksByCount.isPending,
           },
+          {
+            id: "reset-images",
+            label: property.images_curated_at
+              ? "Reset photos to automatic"
+              : "Reset photos to automatic (not edited)",
+            icon: RefreshCw,
+            isDisabled:
+              isEditing || !property.images_curated_at || resetImages.isPending,
+          },
         ],
       },
       isEditing
@@ -396,6 +408,7 @@ export default function DashboardPropertyDetailPage() {
     pushToCrm.isPending,
     removeWatermarksByCount.isPending,
     renormalize.isPending,
+    resetImages.isPending,
     syncCrmClientNotes.isPending,
     updateProperty.isPending,
     updateSalesPrices.isPending,
@@ -503,6 +516,10 @@ export default function DashboardPropertyDetailPage() {
     }
     if (actionId === "unlink-from-crm") {
       unlinkConfirm.open();
+      return;
+    }
+    if (actionId === "reset-images") {
+      resetImagesConfirm.open();
       return;
     }
     if (actionId === "truncate") {
@@ -1066,6 +1083,16 @@ export default function DashboardPropertyDetailPage() {
               confirmLabel="Unlink"
               onConfirm={handleUnlinkFromCrm}
               isPending={updateProperty.isPending}
+            />
+            <ConfirmationDialog
+              state={resetImagesConfirm}
+              title="Reset photos to automatic?"
+              description="Your hand-picked photos for this property are replaced by the agency's photos (up to the agency's photo limit), photos you deleted can come back, and the CRM is updated to match."
+              confirmLabel="Reset photos"
+              onConfirm={async () => {
+                await resetImages.mutateAsync(property.id);
+              }}
+              isPending={resetImages.isPending}
             />
             <EstateWebLocationPickerModal
               state={locationPicker}

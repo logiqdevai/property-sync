@@ -60,6 +60,7 @@ import { ResolveEstateWebLocationJobService } from './services/resolve-estateweb
 import { CheckEstateWebRemovalJobService } from './services/check-estateweb-removal-job.service';
 import { FixEstateWebRemovalJobService } from './services/fix-estateweb-removal-job.service';
 import { CrmImageSyncService } from './services/crm-image-sync.service';
+import { UserPropertyImagesCurationService } from './services/user-property-images-curation.service';
 
 @Module({
   imports: [
@@ -124,6 +125,7 @@ import { CrmImageSyncService } from './services/crm-image-sync.service';
     FixEstateWebRemovalProcessor,
     CrmImageSyncService,
     CrmImageSyncProcessor,
+    UserPropertyImagesCurationService,
   ],
   exports: [UserPropertiesService],
 })

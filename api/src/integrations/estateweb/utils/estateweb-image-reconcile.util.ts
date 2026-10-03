@@ -56,7 +56,11 @@ export function planImageReconcile(params: {
   for (const id of params.crmImageIds) {
     const source = params.sourceById.get(id);
     const identity = source ? params.normalize(source) : null;
-    if (identity && desiredIdentities.has(identity) && !keptIdByIdentity.has(identity)) {
+    if (
+      identity &&
+      desiredIdentities.has(identity) &&
+      !keptIdByIdentity.has(identity)
+    ) {
       keptIdByIdentity.set(identity, id);
     } else {
       toDelete.push(id);
@@ -65,7 +69,8 @@ export function planImageReconcile(params: {
 
   const toUpload = desired.filter(
     (url) =>
-      !keptIdByIdentity.has(params.normalize(url)) && !params.isUploadBlocked(url),
+      !keptIdByIdentity.has(params.normalize(url)) &&
+      !params.isUploadBlocked(url),
   );
 
   const deleted = new Set(toDelete);

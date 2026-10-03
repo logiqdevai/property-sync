@@ -111,7 +111,8 @@ export function isIncompleteDetailExtraction(
 ): boolean {
   if (!detailConfig?.image_selector) return false;
   if (extracted.images.length > 0) return false;
-  if (detailConfig.description_selector && extracted.raw_detail_text) return false;
+  if (detailConfig.description_selector && extracted.raw_detail_text)
+    return false;
   return bodyTextLength < MIN_DETAIL_BODY_TEXT_CHARS;
 }
 
@@ -973,10 +974,13 @@ export class DetailEnrichmentService {
         const bodyTextLength = await page.evaluate(
           () => document.body?.innerText.trim().length ?? 0,
         );
-        if (isIncompleteDetailExtraction(extracted, detailConfig, bodyTextLength)) {
+        if (
+          isIncompleteDetailExtraction(extracted, detailConfig, bodyTextLength)
+        ) {
           return {
             ...empty,
-            error: 'incomplete detail page: no gallery images and no description',
+            error:
+              'incomplete detail page: no gallery images and no description',
           };
         }
 

@@ -545,3 +545,100 @@ describe('EstateWebCmsSyncAdapter.deleteImages', () => {
     ]);
   });
 });
+
+describe('EstateWebCmsSyncAdapter image edits never lose or duplicate a photo', () => {
+  const cmsImage = (id: number, sourceUrl: string) => ({
+    id,
+    path: 'agent-1',
+    filename: `img-${id}.jpg`,
+    source_image: sourceUrl,
+  });
+
+  function setup(cachedImages: unknown[]) {
+    const upsertCalls: Array<{ update?: Record<string, unknown> }> = [];
+    const prisma = {
+      userIntegration: {
+        findUnique: jest.fn().mockResolvedValue({
+          user_id: 'user-1',
+          user_integration_settings_id: 'settings-1',
+        }),
+      },
+      integrationProperty: {
+        findUnique: jest.fn().mockResolvedValue({
+          images: cachedImages,
+          excluded_source_images: null,
+          linked_via_reconciliation: false,
+        }),
+        upsert: jest.fn().mockImplementation(async (args) => {
+          upsertCalls.push(args);
+          return {};
+        }),
+      },
+    };
+    const propertyService = {
+      deletePropertyImage: jest.fn().mockResolvedValue(undefined),
+      uploadPropertyImage: jest.fn().mockResolvedValue({ id: 999 }),
+      getProperty: jest.fn().mockResolvedValue({ id: 4242, images: cachedImages }),
+    };
+    const adapter = new EstateWebCmsSyncAdapter(
+      prisma as never,
+      propertyService as never,
+      {} as never,
+      {} as never,
+      {} as never,
+    );
+    (adapter as unknown as Record<string, unknown>).downloadImage = jest
+      .fn()
+      .mockResolvedValue(Buffer.from('fake-image-bytes'));
+    return { adapter, propertyService, upsertCalls };
+  }
+
+  it('deleting a duplicate copy does not block the photo itself', async () => {
+    const { adapter, upsertCalls } = setup([
+      cmsImage(1, 'https://source/url1.jpg'),
+      cmsImage(2, 'https://source/url1.jpg'),
+    ]);
+
+    await adapter.deleteImages({
+      userIntegrationId: 'integration-1',
+      crmPropertyId: '4242',
+      userPropertyId: 'up-1',
+      imageIds: [2],
+    });
+
+    const excluded = upsertCalls.find(
+      (call) => call.update?.excluded_source_images !== undefined,
+    );
+    expect(excluded).toBeUndefined();
+  });
+
+  it('"Push images to CRM" skips photos the listing already shows', async () => {
+    const { adapter, propertyService } = setup([
+      cmsImage(1, 'https://source/url1.jpg'),
+    ]);
+
+    await adapter.createImages({
+      userIntegrationId: 'integration-1',
+      crmPropertyId: '4242',
+      userPropertyId: 'up-1',
+      sourceImageUrls: ['https://source/url1.jpg', 'https://source/url2.jpg'],
+    });
+
+    expect(propertyService.uploadPropertyImage).toHaveBeenCalledTimes(1);
+  });
+
+  it('"Push images to CRM" uploads nothing when every photo is already there', async () => {
+    const { adapter, propertyService } = setup([
+      cmsImage(1, 'https://source/url1.jpg'),
+    ]);
+
+    await adapter.createImages({
+      userIntegrationId: 'integration-1',
+      crmPropertyId: '4242',
+      userPropertyId: 'up-1',
+      sourceImageUrls: ['https://source/url1.jpg'],
+    });
+
+    expect(propertyService.uploadPropertyImage).not.toHaveBeenCalled();
+  });
+});

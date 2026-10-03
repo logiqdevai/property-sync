@@ -144,12 +144,22 @@ import {
   CopyNormalizedImagesJobResult,
 } from './interfaces/copy-normalized-images-job.interface';
 import { WatermarkRemovalService } from './services/watermark-removal.service';
+import { UserPropertyImagesCurationService } from './services/user-property-images-curation.service';
+import {
+  computeCuratedImages,
+  computeResetImages,
+} from './utils/curated-images.util';
 import {
   extractIntegrationImageIds,
   resolveIntegrationImageProcessUrl,
 } from './utils/integration-property-images.util';
 import { buildUserPropertySearchOr } from './utils/user-property-search.util';
-import { normalizeSourceImageIdentity } from './utils/duplicate-watermark-detection.util';
+import {
+  extractEmbeddedSourceIdentityHash,
+  hashSourceIdentity,
+  isPropertyImagesGcsUrl,
+  normalizeSourceImageIdentity,
+} from './utils/duplicate-watermark-detection.util';
 
 export type PropertySyncChangeType = 'created' | 'updated' | 'removed' | 'sold';
 
@@ -211,6 +221,7 @@ export class UserPropertiesService {
     private readonly fixEstateWebRemovalQueue: Queue<FixEstateWebRemovalJobData>,
     @InjectQueue(COPY_NORMALIZED_IMAGES_QUEUE)
     private readonly copyNormalizedImagesQueue: Queue<CopyNormalizedImagesJobData>,
+    private readonly imagesCuration: UserPropertyImagesCurationService,
   ) {}
 
   // Fire-and-forget: queues a single-entity Google-based EstateWeb location
@@ -2595,11 +2606,16 @@ export class UserPropertiesService {
       );
     }
 
-    const existingImages = Array.isArray(userProperty.images)
-      ? userProperty.images.filter(
-          (item): item is string => typeof item === 'string' && item.length > 0,
-        )
-      : [];
+    // Photos the user deleted from the CRM don't count as tracked (older
+    // properties may still list them locally).
+    const excludedIdentities = new Set(
+      (await this.imagesCuration.loadExcludedSourceImages(userProperty.id)).map(
+        normalizeSourceImageIdentity,
+      ),
+    );
+    const existingImages = this.toImageUrls(userProperty.images).filter(
+      (url) => !excludedIdentities.has(normalizeSourceImageIdentity(url)),
+    );
     const existingIdentities = new Set(
       existingImages.map(normalizeSourceImageIdentity),
     );
@@ -2616,6 +2632,16 @@ export class UserPropertiesService {
     if (sourceUrls.length === 0) {
       throw new BadRequestException(
         'Selected images are already tracked for this property',
+      );
+    }
+
+    // The agency's "images to keep" is a hard maximum, hand-picked or not.
+    // Checked before any paid Dewatermark call.
+    const cap = await this.imagesCuration.resolveImageCap(userProperty.id);
+    if (cap != null && existingImages.length + sourceUrls.length > cap) {
+      const tooMany = existingImages.length + sourceUrls.length - cap;
+      throw new BadRequestException(
+        `This agency keeps at most ${cap} photo${cap === 1 ? '' : 's'} per property and this one already has ${existingImages.length}. Delete ${tooMany} photo${tooMany === 1 ? '' : 's'} from the CRM images first, then copy again.`,
       );
     }
 
@@ -2692,18 +2718,27 @@ export class UserPropertiesService {
       throw new NotFoundException('Property not found');
     }
 
+    // Our list is saved (and pinned as hand-edited) BEFORE the upload: a CRM
+    // push running in between makes the CRM equal our list, so it must
+    // already contain the new photos or it would delete them again.
+    await this.imagesCuration.unexcludeSourceImages(
+      userProperty.id,
+      params.finalImageUrls,
+    );
+    const excludedIdentities = new Set(
+      (await this.imagesCuration.loadExcludedSourceImages(userProperty.id)).map(
+        normalizeSourceImageIdentity,
+      ),
+    );
+    const existingImages = this.toImageUrls(userProperty.images).filter(
+      (url) => !excludedIdentities.has(normalizeSourceImageIdentity(url)),
+    );
+    await this.imagesCuration.saveCuratedImages(userProperty.id, [
+      ...existingImages,
+      ...params.finalImageUrls,
+    ]);
+
     await this.pushIntegrationImages(userProperty, params.finalImageUrls);
-
-    const existingImages = Array.isArray(userProperty.images)
-      ? userProperty.images.filter(
-          (item): item is string => typeof item === 'string' && item.length > 0,
-        )
-      : [];
-
-    await this.prisma.userProperty.update({
-      where: { id: userProperty.id },
-      data: { images: [...existingImages, ...params.finalImageUrls] },
-    });
   }
 
   // Pushes every scraped Property.images entry (no per-image selection) --
@@ -2942,6 +2977,79 @@ export class UserPropertiesService {
 
     await this.runReorderIntegrationImages(userProperty, imageIds);
     return this.findOne(userId, id);
+  }
+
+  // "Reset photos to automatic": undoes hand-editing. The property goes back
+  // to the source gallery cut to the cap (reusing already-paid clean copies),
+  // forgets deleted photos and upload failures, and the CRM is made to match
+  // right away.
+  async resetImagesToAutomatic(userId: string | null, id: string) {
+    const userProperty = await this.prisma.userProperty.findFirst({
+      where: { id, ...(userId ? { user_id: userId } : {}) },
+      select: {
+        id: true,
+        user_id: true,
+        images: true,
+        canonical_property_id: true,
+        integration_property_id: true,
+        canonical_property: { select: { images: true } },
+      },
+    });
+    if (!userProperty) {
+      throw new NotFoundException('Property not found');
+    }
+
+    const cap = await this.imagesCuration.resolveImageCap(userProperty.id);
+    const images = computeResetImages({
+      existing: this.toImageUrls(userProperty.images),
+      canonical: this.toImageUrls(userProperty.canonical_property.images),
+      maxImageCount: cap,
+      isProcessed: isPropertyImagesGcsUrl,
+      embeddedHashOf: extractEmbeddedSourceIdentityHash,
+      hashOfSource: (url) => hashSourceIdentity(normalizeSourceImageIdentity(url)),
+    });
+
+    await this.prisma.$transaction([
+      this.prisma.userProperty.update({
+        where: { id: userProperty.id },
+        data: {
+          images: images.length
+            ? (images as unknown as Prisma.InputJsonValue)
+            : Prisma.JsonNull,
+          images_curated_at: null,
+          images_curated_cap: null,
+        },
+      }),
+      this.prisma.integrationProperty.updateMany({
+        where: { user_property_id: userProperty.id },
+        data: {
+          excluded_source_images: Prisma.JsonNull,
+          image_upload_failures: Prisma.JsonNull,
+        },
+      }),
+    ]);
+
+    if (userProperty.integration_property_id && images.length > 0) {
+      try {
+        const { userIntegrationId, integrationType } =
+          await this.resolveCmsIntegrationForProperty(userProperty);
+        if (integrationType === IntegrationType.ESTATEWEB) {
+          await this.estateWebCmsSyncAdapter.reconcileImages({
+            userIntegrationId,
+            userPropertyId: userProperty.id,
+            crmPropertyId: userProperty.integration_property_id,
+            desiredImages: images,
+          });
+        }
+      } catch (error) {
+        // Our own list is already reset; the next CRM push applies it.
+        this.logger.warn(
+          `resetImagesToAutomatic: CRM sync failed for user_property=${userProperty.id}: ${error instanceof Error ? error.message : String(error)}`,
+        );
+      }
+    }
+
+    return userId ? this.findOne(userId, id) : this.adminFindOne(id);
   }
 
   async adminUpdateIntegrationImages(
@@ -3324,6 +3432,13 @@ export class UserPropertiesService {
     const { userIntegrationId, integrationType } =
       await this.resolveCmsIntegrationForProperty(userProperty);
 
+    // Read what the deleted CRM images are *before* deleting (the delete
+    // refreshes the cache and forgets them).
+    const removedIdentities = await this.resolveRemovedImageIdentities(
+      userProperty.id,
+      uniqueIds,
+    );
+
     try {
       const adapter = this.cmsSyncAdapterFactory.getAdapter(integrationType);
       await adapter.deleteImages({
@@ -3336,6 +3451,57 @@ export class UserPropertiesService {
       const message = error instanceof Error ? error.message : String(error);
       throw new BadRequestException(message);
     }
+
+    // The deleted photos leave this property's own selection too; otherwise
+    // they'd sit in UserProperty.images, the next crawl would treat the
+    // selection as unchanged, and copying in replacements would count them
+    // against the cap.
+    if (removedIdentities.size > 0) {
+      const current = await this.prisma.userProperty.findUnique({
+        where: { id: userProperty.id },
+        select: { images: true },
+      });
+      const remaining = this.toImageUrls(current?.images).filter(
+        (url) => !removedIdentities.has(normalizeSourceImageIdentity(url)),
+      );
+      await this.imagesCuration.saveCuratedImages(userProperty.id, remaining);
+    }
+  }
+
+  // Source identities of the CRM images being deleted that no OTHER image on
+  // the listing still shows -- deleting a duplicate copy must not remove the
+  // photo itself.
+  private async resolveRemovedImageIdentities(
+    userPropertyId: string,
+    deletedIds: number[],
+  ): Promise<Set<string>> {
+    const rows = await this.prisma.integrationProperty.findMany({
+      where: { user_property_id: userPropertyId },
+      select: { images: true },
+    });
+    const sourceById = new Map<number, string>();
+    for (const row of rows) {
+      if (!Array.isArray(row.images)) continue;
+      for (const item of row.images as Array<{ id?: unknown; source_image?: unknown }>) {
+        if (typeof item?.id === 'number' && typeof item.source_image === 'string') {
+          sourceById.set(item.id, item.source_image);
+        }
+      }
+    }
+    const deleted = new Set(deletedIds);
+    const stillShown = new Set(
+      [...sourceById.entries()]
+        .filter(([id]) => !deleted.has(id))
+        .map(([, url]) => normalizeSourceImageIdentity(url)),
+    );
+    const removed = new Set<string>();
+    for (const id of deletedIds) {
+      const url = sourceById.get(id);
+      if (!url) continue;
+      const identity = normalizeSourceImageIdentity(url);
+      if (!stillShown.has(identity)) removed.add(identity);
+    }
+    return removed;
   }
 
   private async runReorderIntegrationImages(
@@ -3379,6 +3545,56 @@ export class UserPropertiesService {
       const message = error instanceof Error ? error.message : String(error);
       throw new BadRequestException(message);
     }
+
+    // Our own list follows the new order, or the next CRM push (which makes
+    // the CRM order equal UserProperty.images) would undo the reorder.
+    await this.applyCrmOrderToOwnImages(userProperty.id, uniqueIds);
+  }
+
+  private async applyCrmOrderToOwnImages(
+    userPropertyId: string,
+    orderedCrmIds: number[],
+  ): Promise<void> {
+    const [current, rows] = await Promise.all([
+      this.prisma.userProperty.findUnique({
+        where: { id: userPropertyId },
+        select: { images: true },
+      }),
+      this.prisma.integrationProperty.findMany({
+        where: { user_property_id: userPropertyId },
+        select: { images: true },
+      }),
+    ]);
+    const sourceById = new Map<number, string>();
+    for (const row of rows) {
+      if (!Array.isArray(row.images)) continue;
+      for (const item of row.images as Array<{ id?: unknown; source_image?: unknown }>) {
+        if (typeof item?.id === 'number' && typeof item.source_image === 'string') {
+          sourceById.set(item.id, item.source_image);
+        }
+      }
+    }
+
+    const local = this.toImageUrls(current?.images);
+    const used = new Set<number>();
+    const reordered: string[] = [];
+    for (const crmId of orderedCrmIds) {
+      const source = sourceById.get(crmId);
+      if (!source) continue;
+      const identity = normalizeSourceImageIdentity(source);
+      const index = local.findIndex(
+        (url, i) => !used.has(i) && normalizeSourceImageIdentity(url) === identity,
+      );
+      if (index < 0) continue;
+      used.add(index);
+      reordered.push(local[index]);
+    }
+    local.forEach((url, i) => {
+      if (!used.has(i)) reordered.push(url);
+    });
+
+    if (reordered.join('\n') === local.join('\n')) return;
+    await this.imagesCuration.saveCuratedImages(userPropertyId, reordered);
   }
 
   private async runUpdateIntegrationImages(
@@ -4134,13 +4350,30 @@ export class UserPropertiesService {
       // and gets re-billed to Dewatermark for an image that was already
       // processed. Keep already-processed URLs in place; only positions that
       // still hold a non-GCS (unprocessed) URL take the fresh scrape value.
+      // A hand-edited property keeps the user's own selection (see
+      // computeCuratedImages) instead of being rebuilt from the source.
+      const isCurated = existing.images_curated_at != null;
+      const curated = isCurated
+        ? computeCuratedImages({
+            curated: this.toImageUrls(existing.images),
+            canonical: this.toImageUrls(property.images),
+            excluded: await this.imagesCuration.loadExcludedSourceImages(existing.id),
+            maxImageCount: tracker.max_image_count,
+            curatedCap: existing.images_curated_cap,
+            normalize: normalizeSourceImageIdentity,
+          })
+        : null;
       const effectiveFields = {
         ...canonicalFields,
-        images: this.mergeImagesPreservingProcessed(
-          existing.images,
-          canonicalFields.images,
-          tracker.max_image_count === 0,
-        ),
+        images: curated
+          ? curated.images.length > 0
+            ? (curated.images as Prisma.JsonValue)
+            : Prisma.JsonNull
+          : this.mergeImagesPreservingProcessed(
+              existing.images,
+              canonicalFields.images,
+              tracker.max_image_count === 0,
+            ),
       };
 
       if (!this.hasUserPropertyFieldChanges(existing, effectiveFields)) {
@@ -4154,10 +4387,12 @@ export class UserPropertiesService {
       // that's not a new photo, and must not silently re-bill the whole
       // back catalog to Dewatermark the next time this agency's cron crawl
       // runs. See docs/CLIENT-ISSUES-2026-10-01.md #1.
-      const imagesContentChangedInOverlap = this.imagesOverlapChanged(
-        existing.images,
-        effectiveFields.images,
-      );
+      // Never for a hand-edited selection: the user manages those photos
+      // (including any dewatermarking) themselves, and a cap change shifting
+      // their list must not silently spend credits.
+      const imagesContentChangedInOverlap =
+        !isCurated &&
+        this.imagesOverlapChanged(existing.images, effectiveFields.images);
       // A pure max_image_count change (no overlap change, no pipeline run) still
       // means the locally-stored image LIST differs from what was last pushed to
       // the CRM -- e.g. raising 8 -> 10 exposes 2 more images, or lowering 8 -> 5
@@ -4186,6 +4421,7 @@ export class UserPropertiesService {
             existing.estateweb_location_id,
           estateweb_type_id:
             effectiveFields.estateweb_type_id ?? existing.estateweb_type_id,
+          ...(curated ? { images_curated_cap: curated.curatedCap } : {}),
         },
       });
 
@@ -4364,18 +4600,38 @@ export class UserPropertiesService {
   // next crawl: the canonical gallery cut to the tracker's cap, with any
   // already-processed (paid) GCS copy kept in its slot. Used by the CRM image
   // sync so it targets the same list the crawl converges on.
-  computeTrackedImages(
-    existingImages: unknown,
-    canonicalImages: Prisma.JsonValue | null | undefined,
-    maxImageCount: number | null | undefined,
-  ): string[] {
+  computeTrackedImages(params: {
+    userProperty: {
+      images: unknown;
+      images_curated_at: Date | null;
+      images_curated_cap: number | null;
+    };
+    canonicalImages: Prisma.JsonValue | null | undefined;
+    maxImageCount: number | null | undefined;
+    excludedImages: string[];
+  }): { images: string[]; curatedCap?: number | null } {
+    const maxImageCount = params.maxImageCount ?? null;
+    if (params.userProperty.images_curated_at != null) {
+      return computeCuratedImages({
+        curated: this.toImageUrls(params.userProperty.images),
+        canonical: this.toImageUrls(params.canonicalImages),
+        excluded: params.excludedImages,
+        maxImageCount,
+        curatedCap: params.userProperty.images_curated_cap,
+        normalize: normalizeSourceImageIdentity,
+      });
+    }
     const merged = this.mergeImagesPreservingProcessed(
-      existingImages,
-      this.truncateImages(canonicalImages, maxImageCount) ?? undefined,
+      params.userProperty.images,
+      this.truncateImages(params.canonicalImages, maxImageCount) ?? undefined,
       maxImageCount === 0,
     );
-    return Array.isArray(merged)
-      ? merged.filter((url): url is string => typeof url === 'string' && url.length > 0)
+    return { images: this.toImageUrls(merged) };
+  }
+
+  private toImageUrls(value: unknown): string[] {
+    return Array.isArray(value)
+      ? value.filter((url): url is string => typeof url === 'string' && url.length > 0)
       : [];
   }
 

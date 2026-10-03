@@ -337,6 +337,21 @@ export const reorderUserPropertyIntegrationImages = async (
   }
 };
 
+export const resetUserPropertyImages = async (
+  id: string,
+): Promise<UserPropertyDetail> => {
+  try {
+    const response = await axiosInstance.post(
+      ApiRoutes.userProperties.resetImages(id),
+    );
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error?.response?.data?.message || "Failed to reset the photos.",
+    );
+  }
+};
+
 export const updateAdminUserPropertyIntegrationImages = async (
   id: string,
   payload: UpdateIntegrationImagesPayload,

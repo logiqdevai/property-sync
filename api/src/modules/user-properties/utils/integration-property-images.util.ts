@@ -80,21 +80,3 @@ export function resolveIntegrationImageProcessUrl(
   }
   return undefined;
 }
-
-export function patchIntegrationPropertyImageSource(
-  imagesJson: unknown,
-  integrationType: IntegrationType,
-  imageId: number,
-  sourceImage: string,
-): IntegrationPropertyImage[] | null {
-  const images = parseIntegrationPropertyImages(imagesJson, integrationType);
-  const index = images.findIndex((item) => item.id === imageId);
-  if (index < 0) return null;
-
-  images[index] = {
-    ...images[index],
-    source_image: sourceImage,
-  };
-
-  return images;
-}

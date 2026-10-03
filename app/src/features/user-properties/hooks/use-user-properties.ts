@@ -27,6 +27,7 @@ import {
   copyUserPropertyNormalizedImages,
   updateAdminUserPropertyIntegrationImages,
   reorderUserPropertyIntegrationImages,
+  resetUserPropertyImages,
   updateUserPropertyIntegrationImages,
   removeAdminUserPropertyWatermarkImages,
   removeUserPropertyWatermarkImages,
@@ -422,6 +423,32 @@ export const useCreateAdminUserPropertyIntegrationImages = () => {
     onError: (error: Error) => {
       toast({
         title: "Could not upload photos",
+        description: error.message,
+        variant: "error",
+      });
+    },
+  });
+};
+
+export const useResetUserPropertyImages = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => resetUserPropertyImages(id),
+    onSuccess: (data) => {
+      queryClient.setQueryData(["userProperties", "detail", data.id], data);
+      queryClient.invalidateQueries({ queryKey: ["userProperties"] });
+      toast({
+        title: "Photos reset",
+        description:
+          "This property follows the agency's photos again, and the CRM was updated to match.",
+        duration: 4000,
+        variant: "success",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Could not reset the photos",
         description: error.message,
         variant: "error",
       });
