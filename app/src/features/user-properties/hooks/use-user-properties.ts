@@ -49,13 +49,7 @@ import {
   syncUserPropertyCrmClientNotes,
   checkEstateWebRemoval,
   fixEstateWebRemoval,
-  calculateDuplicateWatermarkImages,
-  enqueueDuplicateWatermarkCleanup,
   getAgencyWatermarkSettings,
-  calculateImageCapExcessImages,
-  enqueueImageCapExcessImagesCleanup,
-  calculateStaleCrmImages,
-  enqueueStaleCrmImagesReplace,
   previewCrmImageSync,
   runCrmImageSync,
 } from "../services/user-properties.services";
@@ -64,12 +58,6 @@ import type {
   AdminUserPropertyListQuery,
   DeleteUserPropertiesPayload,
   DedupeUserPropertiesPayload,
-  CalculateDuplicateWatermarkImagesPayload,
-  EnqueueDuplicateWatermarkCleanupPayload,
-  CalculateImageCapExcessImagesPayload,
-  EnqueueImageCapExcessImagesCleanupPayload,
-  CalculateStaleCrmImagesPayload,
-  EnqueueStaleCrmImagesReplacePayload,
   CrmImageSyncPayload,
   PushUserPropertiesToCrmPayload,
   PushUserPropertiesToCrmResult,
@@ -1165,33 +1153,7 @@ export const useSplitAdminUserProperties = () => {
   });
 };
 
-export const useCalculateDuplicateWatermarkImages = () => {
-  return useMutation({
-    mutationFn: (payload: CalculateDuplicateWatermarkImagesPayload) =>
-      calculateDuplicateWatermarkImages(payload),
-    onError: (error: Error) => {
-      toast({
-        title: "Could not find duplicate watermarked images",
-        description: error.message,
-        variant: "error",
-      });
-    },
-  });
-};
 
-export const useEnqueueDuplicateWatermarkCleanup = () => {
-  return useMutation({
-    mutationFn: (payload: EnqueueDuplicateWatermarkCleanupPayload) =>
-      enqueueDuplicateWatermarkCleanup(payload),
-    onError: (error: Error) => {
-      toast({
-        title: "Could not start duplicate image cleanup",
-        description: error.message,
-        variant: "error",
-      });
-    },
-  });
-};
 
 export const useAgencyWatermarkSettings = (options?: { enabled?: boolean }) => {
   return useQuery({
@@ -1201,61 +1163,9 @@ export const useAgencyWatermarkSettings = (options?: { enabled?: boolean }) => {
   });
 };
 
-export const useCalculateImageCapExcessImages = () => {
-  return useMutation({
-    mutationFn: (payload: CalculateImageCapExcessImagesPayload) =>
-      calculateImageCapExcessImages(payload),
-    onError: (error: Error) => {
-      toast({
-        title: "Could not find excess CRM images",
-        description: error.message,
-        variant: "error",
-      });
-    },
-  });
-};
 
-export const useEnqueueImageCapExcessImagesCleanup = () => {
-  return useMutation({
-    mutationFn: (payload: EnqueueImageCapExcessImagesCleanupPayload) =>
-      enqueueImageCapExcessImagesCleanup(payload),
-    onError: (error: Error) => {
-      toast({
-        title: "Could not start image cap cleanup",
-        description: error.message,
-        variant: "error",
-      });
-    },
-  });
-};
 
-export const useCalculateStaleCrmImages = () => {
-  return useMutation({
-    mutationFn: (payload: CalculateStaleCrmImagesPayload) =>
-      calculateStaleCrmImages(payload),
-    onError: (error: Error) => {
-      toast({
-        title: "Could not find stale CRM images",
-        description: error.message,
-        variant: "error",
-      });
-    },
-  });
-};
 
-export const useEnqueueStaleCrmImagesReplace = () => {
-  return useMutation({
-    mutationFn: (payload: EnqueueStaleCrmImagesReplacePayload) =>
-      enqueueStaleCrmImagesReplace(payload),
-    onError: (error: Error) => {
-      toast({
-        title: "Could not start stale CRM image replacement",
-        description: error.message,
-        variant: "error",
-      });
-    },
-  });
-};
 
 export const usePreviewCrmImageSync = () => {
   return useMutation({

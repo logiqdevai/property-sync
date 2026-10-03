@@ -126,8 +126,11 @@ function CrmImageSyncModalContent({ state }: { state: CrmImageSyncModalState }) 
       <Modal state={state}>
         <Modal.Backdrop isDismissable={!jobIsActive}>
           <Modal.Container>
-            {/* overflow-clip, not overflow-hidden: keeps Modal.Body the only
-                scroll container (see image-cap-excess-images-modal.tsx). */}
+            {/* overflow-clip, not overflow-hidden: overflow-hidden leaves Dialog
+                a valid scroll container, so the browser's native scroll-into-view
+                (clicking a checkbox near the bottom of the list) could scroll
+                Dialog itself and hide its header. overflow-clip keeps Modal.Body
+                the only element that scrolls. */}
             <Modal.Dialog className="w-[calc(100vw-2rem)] max-w-4xl max-h-[85vh] overflow-clip">
               <Modal.Header>
                 <Modal.Heading>Sync CRM images to "images to keep"</Modal.Heading>

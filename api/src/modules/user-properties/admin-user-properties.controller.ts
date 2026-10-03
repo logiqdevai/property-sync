@@ -41,15 +41,6 @@ import { TruncateUserPropertyDescriptionsDto } from './dto/truncate-user-propert
 import { MigrateIntegrationImagesDto } from './dto/migrate-integration-images.dto';
 import { UserPropertyEntity } from './entities/user-property.entity';
 import { Audited, SkipAudit } from '@/modules/activity-logs/decorators/audited.decorator';
-import { CalculateDuplicateWatermarkImagesDto } from './dto/calculate-duplicate-watermark-images.dto';
-import { EnqueueDuplicateWatermarkCleanupDto } from './dto/enqueue-duplicate-watermark-cleanup.dto';
-import { DuplicateWatermarkImagesService } from './services/duplicate-watermark-images.service';
-import { CalculateImageCapExcessImagesDto } from './dto/calculate-image-cap-excess-images.dto';
-import { EnqueueImageCapExcessImagesCleanupDto } from './dto/enqueue-image-cap-excess-images-cleanup.dto';
-import { ImageCapExcessImagesService } from './services/image-cap-excess-images.service';
-import { CalculateStaleCrmImagesDto } from './dto/calculate-stale-crm-images.dto';
-import { EnqueueStaleCrmImagesReplaceDto } from './dto/enqueue-stale-crm-images-replace.dto';
-import { StaleCrmImagesService } from './services/stale-crm-images.service';
 import { CrmImageSyncDto } from './dto/crm-image-sync.dto';
 import { CrmImageSyncService } from './services/crm-image-sync.service';
 
@@ -61,9 +52,6 @@ import { CrmImageSyncService } from './services/crm-image-sync.service';
 export class AdminUserPropertiesController {
   constructor(
     private readonly userPropertiesService: UserPropertiesService,
-    private readonly duplicateWatermarkImagesService: DuplicateWatermarkImagesService,
-    private readonly imageCapExcessImagesService: ImageCapExcessImagesService,
-    private readonly staleCrmImagesService: StaleCrmImagesService,
     private readonly crmImageSyncService: CrmImageSyncService,
   ) {}
 
@@ -214,99 +202,14 @@ export class AdminUserPropertiesController {
     return this.userPropertiesService.adminSplitMany(dto.ids);
   }
 
-  @Get('duplicate-watermark-images/agency-settings')
+  @Get('crm-image-sync/agency-settings')
   @Roles(AuthRole.ADMIN)
   @ApiOperation({
     summary:
-      "List each tracker's watermark removal settings, for the duplicate-photo agency picker",
+      "List each tracker's image cap and watermark settings, for the CRM image sync agency picker",
   })
-  listAgencyWatermarkSettings() {
-    return this.duplicateWatermarkImagesService.listAgencyWatermarkSettings();
-  }
-
-  @SkipAudit()
-  @Post('duplicate-watermark-images/calculate')
-  @Roles(AuthRole.ADMIN)
-  @ApiOperation({
-    summary:
-      'Find CRM images that are stale watermarked duplicates of an already-produced clean copy, for the given source agencies',
-  })
-  calculateDuplicateWatermarkImages(
-    @Body() dto: CalculateDuplicateWatermarkImagesDto,
-  ) {
-    return this.duplicateWatermarkImagesService.calculateCandidates(
-      dto.source_agency_ids,
-    );
-  }
-
-  @Audited({
-    action: 'user_property.duplicate_watermark_images_cleanup',
-    entity: 'UserProperty',
-  })
-  @Post('duplicate-watermark-images/cleanup')
-  @Roles(AuthRole.ADMIN)
-  @ApiOperation({
-    summary: 'Enqueue background deletion of confirmed stale watermarked duplicate CRM images',
-  })
-  enqueueDuplicateWatermarkImagesCleanup(
-    @Body() dto: EnqueueDuplicateWatermarkCleanupDto,
-  ) {
-    return this.duplicateWatermarkImagesService.enqueueCleanup(dto.items);
-  }
-
-  @SkipAudit()
-  @Post('image-cap-excess-images/calculate')
-  @Roles(AuthRole.ADMIN)
-  @ApiOperation({
-    summary:
-      'Find CRM images left over on EstateWeb beyond a tracker image cap that trimmed the local copy, for the given source agencies',
-  })
-  calculateImageCapExcessImages(
-    @Body() dto: CalculateImageCapExcessImagesDto,
-  ) {
-    return this.imageCapExcessImagesService.calculateCandidates(
-      dto.source_agency_ids,
-    );
-  }
-
-  @Audited({
-    action: 'user_property.image_cap_excess_images_cleanup',
-    entity: 'UserProperty',
-  })
-  @Post('image-cap-excess-images/cleanup')
-  @Roles(AuthRole.ADMIN)
-  @ApiOperation({
-    summary: 'Enqueue background deletion of confirmed excess CRM images beyond the image cap',
-  })
-  enqueueImageCapExcessImagesCleanup(
-    @Body() dto: EnqueueImageCapExcessImagesCleanupDto,
-  ) {
-    return this.imageCapExcessImagesService.enqueueCleanup(dto.items);
-  }
-
-  @SkipAudit()
-  @Post('stale-crm-images/calculate')
-  @Roles(AuthRole.ADMIN)
-  @ApiOperation({
-    summary:
-      'Find CRM images whose content no longer matches the local (already-updated) image at the same position, for the given source agencies',
-  })
-  calculateStaleCrmImages(@Body() dto: CalculateStaleCrmImagesDto) {
-    return this.staleCrmImagesService.calculateCandidates(dto.source_agency_ids);
-  }
-
-  @Audited({
-    action: 'user_property.stale_crm_images_replace',
-    entity: 'UserProperty',
-  })
-  @Post('stale-crm-images/replace')
-  @Roles(AuthRole.ADMIN)
-  @ApiOperation({
-    summary:
-      'Enqueue background replacement of confirmed stale CRM images with the current local image, by known EstateWeb image id',
-  })
-  enqueueStaleCrmImagesReplace(@Body() dto: EnqueueStaleCrmImagesReplaceDto) {
-    return this.staleCrmImagesService.enqueueReplace(dto.items);
+  listAgencyImageSettings() {
+    return this.crmImageSyncService.listAgencyImageSettings();
   }
 
   @SkipAudit()

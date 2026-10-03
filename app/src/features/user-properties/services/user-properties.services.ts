@@ -52,21 +52,9 @@ import type {
   BulkRemoveWatermarkImagesResponse,
   ProduceUserPropertyContentPayload,
   ProduceUserPropertyContentResponse,
-  CalculateDuplicateWatermarkImagesPayload,
-  DuplicateWatermarkPropertyCandidate,
-  EnqueueDuplicateWatermarkCleanupPayload,
-  EnqueueDuplicateWatermarkCleanupResponse,
   AgencyWatermarkSettings,
   UpdateUserPropertyStatusPayload,
   UpdateUserPropertyStatusResult,
-  CalculateImageCapExcessImagesPayload,
-  ImageCapExcessPropertyCandidate,
-  EnqueueImageCapExcessImagesCleanupPayload,
-  EnqueueImageCapExcessImagesCleanupResponse,
-  CalculateStaleCrmImagesPayload,
-  StaleCrmImagePropertyCandidate,
-  EnqueueStaleCrmImagesReplacePayload,
-  EnqueueStaleCrmImagesReplaceResponse,
   CrmImageSyncPayload,
   CrmImageSyncPreviewAgency,
   CrmImageSyncRunResponse,
@@ -745,101 +733,11 @@ export const splitAdminUserProperties = async (
   }
 };
 
-export const calculateDuplicateWatermarkImages = async (
-  payload: CalculateDuplicateWatermarkImagesPayload,
-): Promise<DuplicateWatermarkPropertyCandidate[]> => {
-  try {
-    const response = await axiosInstance.post(
-      ApiRoutes.admin.userProperties.calculateDuplicateWatermarkImages,
-      payload,
-    );
-    return response.data;
-  } catch (error: any) {
-    throw new Error(
-      error?.response?.data?.message || "Failed to find duplicate watermarked images.",
-    );
-  }
-};
 
-export const enqueueDuplicateWatermarkCleanup = async (
-  payload: EnqueueDuplicateWatermarkCleanupPayload,
-): Promise<EnqueueDuplicateWatermarkCleanupResponse> => {
-  try {
-    const response = await axiosInstance.post(
-      ApiRoutes.admin.userProperties.cleanupDuplicateWatermarkImages,
-      payload,
-    );
-    return response.data;
-  } catch (error: any) {
-    throw new Error(
-      error?.response?.data?.message || "Failed to start duplicate image cleanup.",
-    );
-  }
-};
 
-export const calculateImageCapExcessImages = async (
-  payload: CalculateImageCapExcessImagesPayload,
-): Promise<ImageCapExcessPropertyCandidate[]> => {
-  try {
-    const response = await axiosInstance.post(
-      ApiRoutes.admin.userProperties.calculateImageCapExcessImages,
-      payload,
-    );
-    return response.data;
-  } catch (error: any) {
-    throw new Error(
-      error?.response?.data?.message || "Failed to find excess CRM images.",
-    );
-  }
-};
 
-export const enqueueImageCapExcessImagesCleanup = async (
-  payload: EnqueueImageCapExcessImagesCleanupPayload,
-): Promise<EnqueueImageCapExcessImagesCleanupResponse> => {
-  try {
-    const response = await axiosInstance.post(
-      ApiRoutes.admin.userProperties.cleanupImageCapExcessImages,
-      payload,
-    );
-    return response.data;
-  } catch (error: any) {
-    throw new Error(
-      error?.response?.data?.message || "Failed to start image cap cleanup.",
-    );
-  }
-};
 
-export const calculateStaleCrmImages = async (
-  payload: CalculateStaleCrmImagesPayload,
-): Promise<StaleCrmImagePropertyCandidate[]> => {
-  try {
-    const response = await axiosInstance.post(
-      ApiRoutes.admin.userProperties.calculateStaleCrmImages,
-      payload,
-    );
-    return response.data;
-  } catch (error: any) {
-    throw new Error(
-      error?.response?.data?.message || "Failed to find stale CRM images.",
-    );
-  }
-};
 
-export const enqueueStaleCrmImagesReplace = async (
-  payload: EnqueueStaleCrmImagesReplacePayload,
-): Promise<EnqueueStaleCrmImagesReplaceResponse> => {
-  try {
-    const response = await axiosInstance.post(
-      ApiRoutes.admin.userProperties.replaceStaleCrmImages,
-      payload,
-    );
-    return response.data;
-  } catch (error: any) {
-    throw new Error(
-      error?.response?.data?.message || "Failed to start stale CRM image replacement.",
-    );
-  }
-};
 
 export const previewCrmImageSync = async (
   payload: CrmImageSyncPayload,

@@ -458,58 +458,12 @@ export interface ProduceUserPropertyContentResponse {
   skipped?: Array<{ user_property_id: string; error: string }>;
 }
 
-export interface DuplicateWatermarkImageCandidate {
-  id: number;
-  source_image: string;
-  filename: string | null;
-  after_image: string;
-}
 
-export interface DuplicateWatermarkPropertyCandidate {
-  user_property_id: string;
-  user_id: string;
-  property_id: string;
-  title: string;
-  agency_id: string;
-  agency_name: string;
-  user_integration_id: string;
-  crm_property_id: string;
-  genuine_duplicate_count: number;
-  excess_left_alone_count: number;
-  genuine_duplicates: DuplicateWatermarkImageCandidate[];
-}
 
-export interface CalculateDuplicateWatermarkImagesPayload {
-  source_agency_ids: string[];
-}
 
-export interface DuplicateWatermarkCleanupItem {
-  user_property_id: string;
-  crm_image_id: number;
-}
 
-export interface EnqueueDuplicateWatermarkCleanupPayload {
-  items: DuplicateWatermarkCleanupItem[];
-}
 
-export interface EnqueueDuplicateWatermarkCleanupResponse {
-  job_log_id: string;
-  enqueued: number;
-  message: string;
-}
 
-export interface DuplicateWatermarkCleanupJobResult {
-  total: number;
-  processed: number;
-  deleted: number;
-  failed: number;
-  items: Array<{
-    user_property_id: string;
-    crm_image_id: number;
-    status: "deleted" | "failed";
-    error?: string;
-  }>;
-}
 
 export interface AgencyWatermarkSettings {
   source_agency_id: string;
@@ -519,120 +473,19 @@ export interface AgencyWatermarkSettings {
   max_image_count: number | null;
 }
 
-export interface ImageCapExcessImageCandidate {
-  id: number;
-  source_image: string | null;
-  url: string | null;
-  filename: string | null;
-}
 
-export interface ImageCapExcessPropertyCandidate {
-  user_property_id: string;
-  user_id: string;
-  property_id: string;
-  title: string;
-  agency_id: string;
-  agency_name: string;
-  user_integration_id: string;
-  crm_property_id: string;
-  local_image_count: number;
-  crm_image_count: number;
-  excess_count: number;
-  is_high_confidence: boolean;
-  excess_images: ImageCapExcessImageCandidate[];
-  kept_local_images: string[];
-}
 
-export interface CalculateImageCapExcessImagesPayload {
-  source_agency_ids: string[];
-}
 
-export interface ImageCapExcessImagesCleanupItem {
-  user_property_id: string;
-  crm_image_id: number;
-}
 
-export interface EnqueueImageCapExcessImagesCleanupPayload {
-  items: ImageCapExcessImagesCleanupItem[];
-}
 
-export interface EnqueueImageCapExcessImagesCleanupResponse {
-  job_log_id: string;
-  enqueued: number;
-  message: string;
-}
 
-export interface ImageCapExcessImagesCleanupJobResult {
-  total: number;
-  processed: number;
-  deleted: number;
-  failed: number;
-  items: Array<{
-    user_property_id: string;
-    crm_image_id: number;
-    status: "deleted" | "failed";
-    error?: string;
-  }>;
-}
 
-export interface StaleCrmImageCandidate {
-  position: number;
-  crm_image_id: number;
-  new_source_image: string;
-  old_source_image: string | null;
-  show_on_site: boolean;
-  show_on_groups: boolean;
-  show_on_foreign_agents: boolean;
-}
 
-export interface StaleCrmImagePropertyCandidate {
-  user_property_id: string;
-  user_id: string;
-  property_id: string;
-  title: string;
-  agency_id: string;
-  agency_name: string;
-  user_integration_id: string;
-  crm_property_id: string;
-  mismatches: StaleCrmImageCandidate[];
-}
 
-export interface CalculateStaleCrmImagesPayload {
-  source_agency_ids: string[];
-}
 
-export interface StaleCrmImageReplaceItem {
-  user_property_id: string;
-  crm_image_id: number;
-  new_source_image: string;
-  position: number;
-  show_on_site: boolean;
-  show_on_groups: boolean;
-  show_on_foreign_agents: boolean;
-}
 
-export interface EnqueueStaleCrmImagesReplacePayload {
-  items: StaleCrmImageReplaceItem[];
-}
 
-export interface EnqueueStaleCrmImagesReplaceResponse {
-  job_log_id: string;
-  enqueued: number;
-  message: string;
-}
 
-export interface StaleCrmImagesReplaceJobResult {
-  total: number;
-  processed: number;
-  replaced: number;
-  failed: number;
-  items: Array<{
-    user_property_id: string;
-    crm_image_id: number;
-    status: "replaced" | "failed";
-    error?: string;
-  }>;
-}
 
 export interface CrmImageSyncPayload {
   source_agency_ids: string[];

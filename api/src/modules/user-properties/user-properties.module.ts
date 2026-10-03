@@ -4,9 +4,6 @@ import { PrismaModule } from '@/core/databases/prisma/prisma.module';
 import {
   CHECK_ESTATEWEB_REMOVAL_QUEUE,
   FIX_ESTATEWEB_REMOVAL_QUEUE,
-  DUPLICATE_WATERMARK_CLEANUP_QUEUE,
-  IMAGE_CAP_EXCESS_IMAGES_CLEANUP_QUEUE,
-  STALE_CRM_IMAGES_REPLACE_QUEUE,
   CRM_IMAGE_SYNC_QUEUE,
   CONTENT_PRODUCTION_QUEUE,
   COPY_NORMALIZED_IMAGES_QUEUE,
@@ -44,9 +41,6 @@ import { GeocodeCoordinatesProcessor } from '@/background/geocode-coordinates.pr
 import { ResolveEstateWebLocationProcessor } from '@/background/resolve-estateweb-location.processor';
 import { CheckEstateWebRemovalProcessor } from '@/background/check-estateweb-removal.processor';
 import { FixEstateWebRemovalProcessor } from '@/background/fix-estateweb-removal.processor';
-import { DuplicateWatermarkCleanupProcessor } from '@/background/duplicate-watermark-cleanup.processor';
-import { ImageCapExcessImagesCleanupProcessor } from '@/background/image-cap-excess-images-cleanup.processor';
-import { StaleCrmImagesReplaceProcessor } from '@/background/stale-crm-images-replace.processor';
 import { CrmImageSyncProcessor } from '@/background/crm-image-sync.processor';
 import { UserPropertiesController } from './user-properties.controller';
 import { AdminUserPropertiesController } from './admin-user-properties.controller';
@@ -65,12 +59,6 @@ import { GeocodeCoordinatesJobService } from './services/geocode-coordinates-job
 import { ResolveEstateWebLocationJobService } from './services/resolve-estateweb-location-job.service';
 import { CheckEstateWebRemovalJobService } from './services/check-estateweb-removal-job.service';
 import { FixEstateWebRemovalJobService } from './services/fix-estateweb-removal-job.service';
-import { DuplicateWatermarkImagesService } from './services/duplicate-watermark-images.service';
-import { DuplicateWatermarkCleanupJobService } from './services/duplicate-watermark-cleanup-job.service';
-import { ImageCapExcessImagesService } from './services/image-cap-excess-images.service';
-import { ImageCapExcessImagesCleanupJobService } from './services/image-cap-excess-images-cleanup-job.service';
-import { StaleCrmImagesService } from './services/stale-crm-images.service';
-import { StaleCrmImagesReplaceJobService } from './services/stale-crm-images-replace-job.service';
 import { CrmImageSyncService } from './services/crm-image-sync.service';
 
 @Module({
@@ -100,9 +88,6 @@ import { CrmImageSyncService } from './services/crm-image-sync.service';
       { name: RESOLVE_ESTATEWEB_LOCATION_QUEUE },
       { name: CHECK_ESTATEWEB_REMOVAL_QUEUE },
       { name: FIX_ESTATEWEB_REMOVAL_QUEUE },
-      { name: DUPLICATE_WATERMARK_CLEANUP_QUEUE },
-      { name: IMAGE_CAP_EXCESS_IMAGES_CLEANUP_QUEUE },
-      { name: STALE_CRM_IMAGES_REPLACE_QUEUE },
       { name: CRM_IMAGE_SYNC_QUEUE },
     ),
   ],
@@ -137,15 +122,6 @@ import { CrmImageSyncService } from './services/crm-image-sync.service';
     CheckEstateWebRemovalProcessor,
     FixEstateWebRemovalJobService,
     FixEstateWebRemovalProcessor,
-    DuplicateWatermarkImagesService,
-    DuplicateWatermarkCleanupJobService,
-    DuplicateWatermarkCleanupProcessor,
-    ImageCapExcessImagesService,
-    ImageCapExcessImagesCleanupJobService,
-    ImageCapExcessImagesCleanupProcessor,
-    StaleCrmImagesService,
-    StaleCrmImagesReplaceJobService,
-    StaleCrmImagesReplaceProcessor,
     CrmImageSyncService,
     CrmImageSyncProcessor,
   ],

@@ -216,9 +216,17 @@ describe('EstateWebCmsSyncAdapter.ensureImagesCached', () => {
     } | null;
     remoteImages?: unknown[];
     remoteImagesAfterUpload?: unknown[];
+    sourceGallery?: { current: number; peak: number; maxImageCount: number | null };
   }) {
     const upsertCalls: unknown[] = [];
+    const gallery = options.sourceGallery;
     const prisma = {
+      $queryRaw: jest.fn().mockResolvedValue([{ peak: gallery?.peak ?? null }]),
+      userTrackedAgency: {
+        findFirst: jest
+          .fn()
+          .mockResolvedValue({ max_image_count: gallery?.maxImageCount ?? null }),
+      },
       userIntegration: {
         findUnique: jest.fn().mockResolvedValue({
           user_id: 'user-1',
@@ -237,7 +245,19 @@ describe('EstateWebCmsSyncAdapter.ensureImagesCached', () => {
         }),
       },
       userProperty: {
-        findUnique: jest.fn().mockResolvedValue({ images: [] }),
+        findUnique: jest.fn().mockResolvedValue(
+          gallery
+            ? {
+                images: [],
+                user_id: 'user-1',
+                canonical_property_id: 'prop-1',
+                canonical_property: {
+                  images: Array.from({ length: gallery.current }, (_, i) => `s${i}`),
+                  source_links: [{ source_property: { source_agency_id: 'agency-1' } }],
+                },
+              }
+            : { images: [] },
+        ),
       },
     };
 
@@ -389,6 +409,71 @@ describe('EstateWebCmsSyncAdapter.ensureImagesCached', () => {
     });
 
     expect(propertyService.uploadPropertyImage).not.toHaveBeenCalled();
+  });
+
+  // The old push only ever added photos, so every mismatch became a
+  // duplicate. It now deletes copies and photos that aren't ours to keep.
+  it('own listing: deletes a duplicate copy and a photo beyond what we keep', async () => {
+    const { adapter, propertyService } = setup({
+      cachedRow: {
+        images: [
+          cmsImage(1, 'https://source/url1.jpg'),
+          cmsImage(2, 'https://source/url2.jpg'),
+          cmsImage(3, 'https://source/url1.jpg'),
+          cmsImage(4, 'https://source/url9.jpg'),
+        ],
+        linked_via_reconciliation: false,
+      },
+      remoteImages: [
+        cmsImage(1, 'https://source/url1.jpg'),
+        cmsImage(2, 'https://source/url2.jpg'),
+        cmsImage(3, 'https://source/url1.jpg'),
+        cmsImage(4, 'https://source/url9.jpg'),
+      ],
+      remoteImagesAfterUpload: [
+        cmsImage(1, 'https://source/url1.jpg'),
+        cmsImage(2, 'https://source/url2.jpg'),
+      ],
+    });
+
+    await adapter.ensureImagesCached({
+      userIntegrationId: 'integration-1',
+      crmPropertyId: '4242',
+      userPropertyId: 'up-1',
+      sourceImages: ['https://source/url1.jpg', 'https://source/url2.jpg'],
+    });
+
+    expect(propertyService.uploadPropertyImage).not.toHaveBeenCalled();
+    expect(propertyService.deletePropertyImage.mock.calls.map((call) => call[1])).toEqual([3, 4]);
+  });
+
+  // cretahouses: a gallery the crawler suddenly read as 3 of 55 photos must
+  // never cause the push to delete the real photos from the CRM.
+  it('own listing: only adds, never deletes, when our source gallery collapsed', async () => {
+    const { adapter, propertyService } = setup({
+      cachedRow: {
+        images: [
+          cmsImage(1, 'https://source/url1.jpg'),
+          cmsImage(2, 'https://source/url9.jpg'),
+        ],
+        linked_via_reconciliation: false,
+      },
+      remoteImages: [
+        cmsImage(1, 'https://source/url1.jpg'),
+        cmsImage(2, 'https://source/url9.jpg'),
+      ],
+      sourceGallery: { current: 3, peak: 55, maxImageCount: 8 },
+    });
+
+    await adapter.ensureImagesCached({
+      userIntegrationId: 'integration-1',
+      crmPropertyId: '4242',
+      userPropertyId: 'up-1',
+      sourceImages: ['https://source/url1.jpg', 'https://source/url2.jpg'],
+    });
+
+    expect(propertyService.deletePropertyImage).not.toHaveBeenCalled();
+    expect(propertyService.uploadPropertyImage).toHaveBeenCalledTimes(1);
   });
 });
 

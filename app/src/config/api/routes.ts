@@ -136,20 +136,8 @@ export const ApiRoutes = {
             truncateDescriptions: "/admin/user-properties/truncate-descriptions",
             dedupeGroups: "/admin/user-properties/dedupe-groups",
             bulkSplit: "/admin/user-properties/bulk-split",
-            calculateDuplicateWatermarkImages:
-                "/admin/user-properties/duplicate-watermark-images/calculate",
-            cleanupDuplicateWatermarkImages:
-                "/admin/user-properties/duplicate-watermark-images/cleanup",
             agencyWatermarkSettings:
-                "/admin/user-properties/duplicate-watermark-images/agency-settings",
-            calculateImageCapExcessImages:
-                "/admin/user-properties/image-cap-excess-images/calculate",
-            cleanupImageCapExcessImages:
-                "/admin/user-properties/image-cap-excess-images/cleanup",
-            calculateStaleCrmImages:
-                "/admin/user-properties/stale-crm-images/calculate",
-            replaceStaleCrmImages:
-                "/admin/user-properties/stale-crm-images/replace",
+                "/admin/user-properties/crm-image-sync/agency-settings",
             previewCrmImageSync: "/admin/user-properties/crm-image-sync/preview",
             runCrmImageSync: "/admin/user-properties/crm-image-sync/run",
         },

@@ -57,7 +57,10 @@ import { EstateWebPropertyService } from './estateweb-property.service';
 import { ContentProductionService } from '@/modules/content-publishing/services/content-production.service';
 import { ContentResolutionService } from '@/modules/content-publishing/services/content-resolution.service';
 import { EstateWebAdLanguageMaps } from '@/modules/content-publishing/interfaces/content-publishing.interface';
-import { planImageReconcile } from '../utils/estateweb-image-reconcile.util';
+import {
+  isSourceGalleryShrunk,
+  planImageReconcile,
+} from '../utils/estateweb-image-reconcile.util';
 
 interface ImageEntry {
   url: string;
@@ -363,11 +366,13 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
     });
   }
 
-  // For listings this pipeline created: top up any scraped image that isn't
-  // represented on the CRM yet, instead of stopping the moment at least one
-  // image exists. Skips images the user deliberately deleted from the CRM
-  // listing, and backs off images that keep failing to download/upload so a
-  // permanently broken source URL isn't retried every sync cycle forever.
+  // For listings this pipeline created: make the CRM gallery exactly equal
+  // our images (each once, in order, nothing else) via reconcileImages. The
+  // previous behaviour only ever topped up "missing" photos and never removed
+  // anything, so every cache/CRM mismatch turned into a duplicate upload.
+  // Falls back to add-only when our source gallery looks like a crawler gap,
+  // and first rebuilds our record of the CRM gallery when we have none, so a
+  // listing is never wiped and re-uploaded blind.
   private async ensureImagesCachedWithTopUp(
     params: CmsSyncBackfillImagesParams,
     propertyId: number,
@@ -390,6 +395,80 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
       return;
     }
 
+    if (await this.isSourceGalleryShrunkForProperty(params.userPropertyId)) {
+      await this.topUpOnly(params, propertyId, cachedRow, localEntries, sourceImages);
+      return;
+    }
+
+    if (this.buildExistingSourceImageById(cachedRow?.images).size === 0) {
+      await this.syncIntegrationPropertyImages({
+        userIntegrationId: params.userIntegrationId,
+        userPropertyId: params.userPropertyId,
+        estateWebPropertyId: params.crmPropertyId,
+        sourceImageUrls: this.parseSourceImageUrls(sourceImages),
+        preserveExistingSourceImages: false,
+      });
+    }
+
+    await this.reconcileImages({
+      userIntegrationId: params.userIntegrationId,
+      userPropertyId: params.userPropertyId,
+      crmPropertyId: params.crmPropertyId,
+      desiredImages: this.parseSourceImageUrls(sourceImages),
+    });
+  }
+
+  private async isSourceGalleryShrunkForProperty(
+    userPropertyId: string,
+  ): Promise<boolean> {
+    const property = await this.prisma.userProperty.findUnique({
+      where: { id: userPropertyId },
+      select: {
+        user_id: true,
+        canonical_property_id: true,
+        canonical_property: {
+          select: {
+            images: true,
+            source_links: {
+              take: 1,
+              select: { source_property: { select: { source_agency_id: true } } },
+            },
+          },
+        },
+      },
+    });
+    const canonical = property?.canonical_property;
+    const agencyId = canonical?.source_links[0]?.source_property.source_agency_id;
+    if (!property || !canonical || !agencyId) return false;
+
+    const tracker = await this.prisma.userTrackedAgency.findFirst({
+      where: { user_id: property.user_id, source_agency_id: agencyId },
+      select: { max_image_count: true },
+    });
+    const rows = await this.prisma.$queryRaw<Array<{ peak: number | null }>>`
+      SELECT MAX(jsonb_array_length(old_value))::int AS peak
+      FROM property_history
+      WHERE field = 'images'
+        AND jsonb_typeof(old_value) = 'array'
+        AND property_id = ${property.canonical_property_id}`;
+    const currentCount = Array.isArray(canonical.images) ? canonical.images.length : 0;
+    return isSourceGalleryShrunk(
+      currentCount,
+      rows[0]?.peak ?? undefined,
+      tracker?.max_image_count ?? null,
+    );
+  }
+
+  // The previous add-only behaviour: upload scraped images not yet on the CRM,
+  // never delete. Skips images the user deliberately deleted from the CRM and
+  // backs off images that keep failing to download/upload.
+  private async topUpOnly(
+    params: CmsSyncBackfillImagesParams,
+    propertyId: number,
+    cachedRow: CachedIntegrationPropertyRow | null,
+    localEntries: ImageEntry[],
+    sourceImages: unknown,
+  ): Promise<void> {
     const excludedUrls = new Set(
       this.parseSourceImageUrls(cachedRow?.excluded_source_images),
     );
@@ -1756,9 +1835,10 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
     result.crm_before = live.length;
 
     const failures = this.parseImageUploadFailures(cachedRow?.image_upload_failures);
+    const sourceById = this.buildExistingSourceImageById(cachedRow?.images);
     const { desired, toDelete, toUpload, orderWrong } = planImageReconcile({
       crmImageIds: live.map((image) => image.id),
-      sourceById: this.buildExistingSourceImageById(cachedRow?.images),
+      sourceById,
       desiredImages: params.desiredImages,
       excludedImages: this.parseSourceImageUrls(cachedRow?.excluded_source_images),
       isUploadBlocked: (url) =>
@@ -1819,7 +1899,13 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
       }
     }
 
-    for (const imageId of toDelete) {
+    // An image we have no record of might be the very photo whose upload just
+    // failed; only remove those once every upload succeeded.
+    const deletable =
+      result.upload_failed.length > 0
+        ? toDelete.filter((imageId) => sourceById.has(imageId))
+        : toDelete;
+    for (const imageId of deletable) {
       try {
         await this.estateWebPropertyService.deletePropertyImage(
           params.userIntegrationId,
@@ -2137,9 +2223,7 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
     return `${propertyId}-${stamp}${ext}`;
   }
 
-  // Public: reused by StaleCrmImagesReplaceJobService to download the local
-  // (already-processed) image before calling replaceImageAfterWatermark.
-  async downloadImage(url: string): Promise<Buffer | null> {
+  private async downloadImage(url: string): Promise<Buffer | null> {
     try {
       const response = await fetch(url);
       if (!response.ok) {

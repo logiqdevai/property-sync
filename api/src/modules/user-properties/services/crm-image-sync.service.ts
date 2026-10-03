@@ -5,9 +5,13 @@ import { JobStatus } from 'generated/prisma';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
 import { CRM_IMAGE_SYNC_QUEUE } from '@/core/queues/queues.constants';
 import { EstateWebCmsSyncAdapter } from '@/integrations/estateweb/services/estateweb-cms-sync-adapter.service';
-import { planImageReconcile } from '@/integrations/estateweb/utils/estateweb-image-reconcile.util';
+import {
+  isSourceGalleryShrunk,
+  planImageReconcile,
+} from '@/integrations/estateweb/utils/estateweb-image-reconcile.util';
 import { UserPropertiesService } from '../user-properties.service';
 import { normalizeSourceImageIdentity } from '../utils/duplicate-watermark-detection.util';
+import { AgencyWatermarkSettings } from '../interfaces/agency-watermark-settings.interface';
 import {
   CrmImageSyncItemResult,
   CrmImageSyncJobData,
@@ -36,6 +40,19 @@ export class CrmImageSyncService {
     private readonly queue: Queue<CrmImageSyncJobData>,
   ) {}
 
+  async listAgencyImageSettings(): Promise<AgencyWatermarkSettings[]> {
+    return this.prisma.userTrackedAgency.findMany({
+      where: { enabled: true },
+      select: {
+        source_agency_id: true,
+        user_id: true,
+        remove_watermark: true,
+        watermark_image_count: true,
+        max_image_count: true,
+      },
+    });
+  }
+
   // Largest gallery each canonical property ever had, from its image history.
   private async loadPeakGallerySizes(
     canonicalIds: string[],
@@ -49,23 +66,6 @@ export class CrmImageSyncService {
         AND property_id = ANY(${canonicalIds}::text[])
       GROUP BY property_id`;
     return new Map(rows.map((row) => [row.property_id, row.peak]));
-  }
-
-  // A source gallery that lost half or more of its photos (e.g. cretahouses
-  // 54 -> 3 when the origin served truncated pages) is far more likely a
-  // crawler gap than the agency deleting photos; syncing to it would delete
-  // real photos from the CRM, so it's left for manual review. Small drops are
-  // normal -- e.g. nikiestate galleries going 8 -> 7 when a duplicate size
-  // variant of the same photo collapsed into one -- and must still sync.
-  private isSourceGalleryShrunk(
-    currentCount: number,
-    peakCount: number | undefined,
-    maxImageCount: number | null,
-  ): boolean {
-    if (peakCount == null) return false;
-    const lostHalf = currentCount * 2 <= peakCount;
-    if (maxImageCount == null) return lostHalf && peakCount >= currentCount + 5;
-    return peakCount >= maxImageCount && currentCount < maxImageCount && lostHalf;
   }
 
   // Read-only, from our cached copy of each CRM gallery. The real run re-reads
@@ -143,7 +143,7 @@ export class CrmImageSyncService {
             ? property.canonical_property.images.length
             : 0;
           const peak = peaks.get(property.canonical_property_id);
-          if (this.isSourceGalleryShrunk(sourceCount, peak, tracker.max_image_count)) {
+          if (isSourceGalleryShrunk(sourceCount, peak, tracker.max_image_count)) {
             summary.skipped_source_shrank.push({
               user_property_id: property.id,
               title: property.title,
@@ -362,7 +362,7 @@ export class CrmImageSyncService {
       : 0;
     const peaks = await this.loadPeakGallerySizes([property.canonical_property_id]);
     if (
-      this.isSourceGalleryShrunk(
+      isSourceGalleryShrunk(
         sourceCount,
         peaks.get(property.canonical_property_id),
         tracker.max_image_count,

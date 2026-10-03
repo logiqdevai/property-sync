@@ -13,7 +13,7 @@ import {
   useOverlayState,
   type Selection,
 } from "@heroui/react";
-import { CircleDot, Compass, CopyCheck, ExternalLink, Globe, Hash, ImageMinus, ImageOff, Images, Languages, Layers, ListFilter, MapIcon, MapPin, NotebookPen, Percent, RefreshCw, Scissors, Search, Sparkles, TableIcon, Trash2, Ungroup, Upload, Wrench, X } from "lucide-react";
+import { CircleDot, Compass, CopyCheck, ExternalLink, Globe, Hash, ImageOff, Images, Languages, Layers, ListFilter, MapIcon, MapPin, NotebookPen, Percent, RefreshCw, Scissors, Search, Sparkles, TableIcon, Trash2, Ungroup, Upload, Wrench, X } from "lucide-react";
 import { Routes } from "@/routes/routes";
 import { DatePickerField } from "@/components/ui/date-picker-field";
 import { ClearableSearchInput } from "@/components/ui/clearable-search-input";
@@ -36,9 +36,6 @@ import { ManageEstateWebSitesModal } from "./components/manage-estateweb-sites-m
 import { CheckEstateWebRemovalModal } from "./components/check-estateweb-removal-modal";
 import { EstateWebDuplicatePropertiesModal } from "./components/estateweb-duplicate-properties-modal";
 import { EstateWebOrphanSitesModal } from "./components/estateweb-orphan-sites-modal";
-import { DuplicateWatermarkImagesModal } from "./components/duplicate-watermark-images-modal";
-import { ImageCapExcessImagesModal } from "./components/image-cap-excess-images-modal";
-import { StaleCrmImagesModal } from "./components/stale-crm-images-modal";
 import { CrmImageSyncModal } from "./components/crm-image-sync-modal";
 import { RemoveWatermarkByCountModal } from "./components/remove-watermark-by-count-modal";
 import { ProduceContentModal } from "./components/produce-content-modal";
@@ -344,9 +341,6 @@ export default function DashboardPropertiesListPage() {
   const migrateCmsImagesModal = useOverlayState();
   const checkCrmDuplicatesModal = useOverlayState();
   const manageOrphanSitesModal = useOverlayState();
-  const duplicateWatermarkImagesModal = useOverlayState();
-  const imageCapExcessImagesModal = useOverlayState();
-  const staleCrmImagesModal = useOverlayState();
   const crmImageSyncModal = useOverlayState();
   const geocodeModal = useOverlayState();
   const resolveEstateWebLocationsModal = useOverlayState();
@@ -689,24 +683,6 @@ export default function DashboardPropertiesListPage() {
           adminOnly: true,
         },
         {
-          id: "find-duplicate-watermarked-photos",
-          label: "Find duplicate watermarked photos",
-          icon: Images,
-          adminOnly: true,
-        },
-        {
-          id: "find-image-cap-excess-images",
-          label: "Find excess CRM images (image cap)",
-          icon: ImageMinus,
-          adminOnly: true,
-        },
-        {
-          id: "find-stale-crm-images",
-          label: "Find stale CRM images (content changed)",
-          icon: RefreshCw,
-          adminOnly: true,
-        },
-        {
           id: "check-estateweb-removal",
           label: "Check EstateWeb removal sync",
           icon: Search,
@@ -995,20 +971,8 @@ export default function DashboardPropertiesListPage() {
       manageOrphanSitesModal.open();
       return;
     }
-    if (actionId === "find-duplicate-watermarked-photos") {
-      duplicateWatermarkImagesModal.open();
-      return;
-    }
-    if (actionId === "find-image-cap-excess-images") {
-      imageCapExcessImagesModal.open();
-      return;
-    }
     if (actionId === "sync-crm-images") {
       crmImageSyncModal.open();
-      return;
-    }
-    if (actionId === "find-stale-crm-images") {
-      staleCrmImagesModal.open();
       return;
     }
     if (actionId === "geocode-missing-coordinates") {
@@ -1962,9 +1926,6 @@ export default function DashboardPropertiesListPage() {
         <>
           <EstateWebDuplicatePropertiesModal state={checkCrmDuplicatesModal} />
           <EstateWebOrphanSitesModal state={manageOrphanSitesModal} />
-          <DuplicateWatermarkImagesModal state={duplicateWatermarkImagesModal} />
-          <ImageCapExcessImagesModal state={imageCapExcessImagesModal} />
-          <StaleCrmImagesModal state={staleCrmImagesModal} />
           <CrmImageSyncModal state={crmImageSyncModal} />
           <CheckEstateWebRemovalModal
             state={checkEstateWebRemovalModal}
