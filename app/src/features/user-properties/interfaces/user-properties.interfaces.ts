@@ -569,4 +569,5 @@ export interface ImageJobStatus {
 
 export type PendingImageOp =
   | { id: string; kind: "add"; count: number }
-  | { id: string; kind: "remove"; crmImageIds: number[] };
+  | { id: string; kind: "remove"; crmImageIds: number[] }
+  | { id: string; kind: "reorder"; imageIds: number[] };

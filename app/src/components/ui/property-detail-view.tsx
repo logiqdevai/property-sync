@@ -51,6 +51,7 @@ import type {
 } from "@/features/user-properties/interfaces/user-properties.interfaces";
 import { getContentLanguageLabel } from "@/config/constants/dropdowns/agencies/content-language-form.options";
 import {
+  extractSourceIdentityHash,
   normalizeSourceImageIdentity,
   resolvePropertyDisplayImages,
   type PropertyDisplayImage,
@@ -100,6 +101,7 @@ export interface PropertyDetailViewData extends Partial<PropertyCmsFields> {
   image_limit?: number | null;
   tracked_image_count?: number;
   canonical_images?: string[];
+  canonical_source_hashes?: string[];
   integration_property?: IntegrationProperty | null;
   localized_contents?: PropertyLocalizedContent[];
   duplicate_group_id?: string | null;
@@ -186,6 +188,23 @@ function toPlainDisplayImages(
     show_on_groups: false,
     show_on_foreign_agents: false,
   }));
+}
+
+// Shows the order a queued reorder is saving, so the list doesn't snap back while the job runs.
+function applyPendingImageOrder(
+  images: PropertyDisplayImage[],
+  order: number[] | null,
+): PropertyDisplayImage[] {
+  if (!order || order.length === 0) return images;
+  const position = new Map(order.map((id, index) => [id, index]));
+  const rankOf = (image: PropertyDisplayImage, index: number) => {
+    const known = image.crmImageId != null ? position.get(image.crmImageId) : undefined;
+    return known ?? order.length + index;
+  };
+  return images
+    .map((image, index) => ({ image, rank: rankOf(image, index) }))
+    .sort((a, b) => a.rank - b.rank)
+    .map(({ image }) => image);
 }
 
 function formatLocation(property: PropertyDetailViewData): string | null {
@@ -319,10 +338,16 @@ export function PropertyDetailView({
   const cmsFieldEntries = (property.cms_fields ?? []) as CmsPropertyFieldEntry[];
   const cmsMetadataLines = formatCmsMetadata(property.cms_metadata ?? null);
   const location = formatLocation(property);
-  const displayImages = resolvePropertyDisplayImages({
-    integrationProperty: property.integration_property,
-    fallbackImages: property.images,
-  });
+  const pendingReorder = [...pendingImageOps]
+    .reverse()
+    .find((op) => op.kind === "reorder");
+  const displayImages = applyPendingImageOrder(
+    resolvePropertyDisplayImages({
+      integrationProperty: property.integration_property,
+      fallbackImages: property.images,
+    }),
+    pendingReorder?.kind === "reorder" ? pendingReorder.imageIds : null,
+  );
   const fallbackImages = (property.images ?? []).filter(
     (url): url is string => typeof url === "string" && url.length > 0,
   );
@@ -332,8 +357,22 @@ export function PropertyDetailView({
   const propertyImageIdentities = new Set(
     displayImages.map((image) => normalizeSourceImageIdentity(image.url)),
   );
-  const isOriginalOnProperty = (image: PropertyDisplayImage) =>
-    propertyImageIdentities.has(normalizeSourceImageIdentity(image.url));
+  const propertySourceHashes = new Set(
+    displayImages
+      .map((image) => extractSourceIdentityHash(image.url))
+      .filter((hash): hash is string => hash != null),
+  );
+  const canonicalSourceHashes = property.canonical_source_hashes ?? [];
+  const isOriginalOnProperty = (image: PropertyDisplayImage) => {
+    if (propertyImageIdentities.has(normalizeSourceImageIdentity(image.url))) {
+      return true;
+    }
+    const hash =
+      image.propertyImageIndex != null
+        ? canonicalSourceHashes[image.propertyImageIndex]
+        : undefined;
+    return hash != null && propertySourceHashes.has(hash);
+  };
   const heroImage = displayImages[0] ?? null;
   const heroFallback = fallbackImages[0] ?? null;
   const canManageIntegrationImages =
@@ -397,6 +436,7 @@ export function PropertyDetailView({
     isReorderPending: isReorderingIntegrationImages,
     pendingRemoveIds,
     pendingAddCount,
+    isSavingOrder: pendingReorder !== undefined,
   };
   const primaryLink =
     sourceLinks.find((link) => link.is_primary_source) ?? sourceLinks[0] ?? null;

@@ -86,6 +86,7 @@ export interface PropertyImagesGridProps {
   copyLimitRemaining?: number | null;
   pendingRemoveIds?: number[];
   pendingAddCount?: number;
+  isSavingOrder?: boolean;
   onDragChange?: (count: number | null) => void;
   dropHint?: string | null;
   dropHintTone?: "default" | "error";
@@ -134,6 +135,7 @@ export function PropertyImagesGrid({
   copyLimitRemaining = null,
   pendingRemoveIds = [],
   pendingAddCount = 0,
+  isSavingOrder = false,
   onDragChange,
   dropHint = null,
   dropHintTone = "default",
@@ -459,6 +461,12 @@ export function PropertyImagesGrid({
         >
           {dropHint ?? "Drop to copy to tracked images"}
         </div>
+      ) : null}
+      {isSavingOrder ? (
+        <p className="flex items-center gap-1.5 text-xs text-muted">
+          <Loader2 className="size-3.5 animate-spin" aria-hidden />
+          Saving new order…
+        </p>
       ) : null}
       {showToolbar ? (
         <div className="flex flex-wrap items-center gap-2">

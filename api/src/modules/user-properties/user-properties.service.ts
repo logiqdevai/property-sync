@@ -757,6 +757,12 @@ export class UserPropertiesService {
       (url) => !excludedIdentities.has(normalizeSourceImageIdentity(url)),
     ).length;
 
+    const canonicalImageUrls = Array.isArray(canonical_property.images)
+      ? canonical_property.images.filter(
+          (url): url is string => typeof url === 'string' && url.length > 0,
+        )
+      : [];
+
     return serializePropertyForApi({
       ...rest,
       image_limit: tracker?.max_image_count ?? null,
@@ -767,11 +773,10 @@ export class UserPropertiesService {
       history: canonical_property.history,
       // The full normalized scrape result, before any per-tracker
       // max_image_count trim is applied to this UserProperty's own `images`.
-      canonical_images: Array.isArray(canonical_property.images)
-        ? canonical_property.images.filter(
-            (url): url is string => typeof url === 'string' && url.length > 0,
-          )
-        : [],
+      canonical_images: canonicalImageUrls,
+      canonical_source_hashes: canonicalImageUrls.map((url) =>
+        hashSourceIdentity(normalizeSourceImageIdentity(url)),
+      ),
       localized_contents: this.resolveLocalizedContentsForDisplay(
         { id: rest.id, title: rest.title, description: rest.description },
         localized_contents,

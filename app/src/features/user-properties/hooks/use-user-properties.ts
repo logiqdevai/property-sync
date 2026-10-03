@@ -260,6 +260,17 @@ export const usePendingImageOps = (propertyId: string): PendingImageOp[] => {
   return data;
 };
 
+// The first N CRM photos are what a by-count watermark removal works on.
+function firstCrmImageIds(queryClient: QueryClient, propertyId: string, count: number): number[] {
+  const detail = queryClient.getQueryData<{
+    integration_property?: { images?: Array<{ id?: unknown }> | null } | null;
+  }>(["userProperties", "detail", propertyId]);
+  return (detail?.integration_property?.images ?? [])
+    .slice(0, count)
+    .map((image) => image.id)
+    .filter((id): id is number => typeof id === "number");
+}
+
 // Users can't read job logs, so the property's photos are refetched once the queued job settles.
 function trackQueuedImageJob(
   queryClient: QueryClient,
@@ -602,8 +613,13 @@ export const useReorderUserPropertyIntegrationImages = () => {
       ...payload
     }: { id: string } & ReorderIntegrationImagesPayload) =>
       reorderUserPropertyIntegrationImages(id, payload),
-    onSuccess: (data, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["userProperties"] });
+    onMutate: ({ id, image_ids }) => {
+      const tempId = `temp-${Date.now()}`;
+      addPendingImageOp(queryClient, id, { id: tempId, kind: "reorder", imageIds: image_ids });
+      return { tempId };
+    },
+    onSuccess: (data, variables, context) => {
+      replacePendingImageOpId(queryClient, variables.id, context.tempId, data.job_log_id);
       trackQueuedImageJob(queryClient, {
         jobLogId: data.job_log_id,
         propertyId: variables.id,
@@ -617,7 +633,8 @@ export const useReorderUserPropertyIntegrationImages = () => {
         variant: "success",
       });
     },
-    onError: (error: Error) => {
+    onError: (error: Error, variables, context) => {
+      removePendingImageOp(queryClient, variables.id, context?.tempId ?? "");
       toast({
         title: "Could not reorder images",
         description: error.message,
@@ -658,13 +675,28 @@ export const useUpdateUserPropertyIntegrationImages = () => {
 };
 
 export const useRemoveUserPropertyWatermarkImages = () => {
+  const queryClient = useQueryClient();
+
   return useMutation({
-    mutationFn: ({
-      id,
-      ...payload
-    }: { id: string } & RemoveWatermarkImagesPayload) =>
+    mutationFn: ({ id, ...payload }: { id: string } & RemoveWatermarkImagesPayload) =>
       removeUserPropertyWatermarkImages(id, payload),
-    onSuccess: (data) => {
+    onMutate: ({ id, image_ids }) => {
+      const tempId = `temp-${Date.now()}`;
+      addPendingImageOp(queryClient, id, {
+        id: tempId,
+        kind: "remove",
+        crmImageIds: (image_ids ?? []).map(Number),
+      });
+      return { tempId };
+    },
+    onSuccess: (data, variables, context) => {
+      replacePendingImageOpId(queryClient, variables.id, context.tempId, data.job_log_id);
+      trackQueuedImageJob(queryClient, {
+        jobLogId: data.job_log_id,
+        propertyId: variables.id,
+        admin: false,
+        label: "Watermark removal",
+      });
       toast({
         title: "Watermark removal started",
         description: data.message,
@@ -672,7 +704,8 @@ export const useRemoveUserPropertyWatermarkImages = () => {
         variant: "success",
       });
     },
-    onError: (error: Error) => {
+    onError: (error: Error, variables, context) => {
+      removePendingImageOp(queryClient, variables.id, context?.tempId ?? "");
       toast({
         title: "Could not start watermark removal",
         description: error.message,
@@ -683,10 +716,38 @@ export const useRemoveUserPropertyWatermarkImages = () => {
 };
 
 export const useRemoveUserPropertiesWatermarkImages = () => {
+  const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: (payload: BulkRemoveWatermarkImagesPayload) =>
       removeUserPropertiesWatermarkImages(payload),
-    onSuccess: (data) => {
+    onMutate: (payload) => {
+      if (payload.ids.length !== 1) return { tempId: null as string | null };
+      const [id] = payload.ids;
+      const tempId = `temp-${Date.now()}`;
+      addPendingImageOp(queryClient, id, {
+        id: tempId,
+        kind: "remove",
+        crmImageIds: firstCrmImageIds(queryClient, id, payload.image_count),
+      });
+      return { tempId };
+    },
+    onSuccess: (data, payload, context) => {
+      if (payload.ids.length === 1 && context?.tempId) {
+        const [id] = payload.ids;
+        const jobLogId = (data as { job_log_id?: string }).job_log_id;
+        if (jobLogId) {
+          replacePendingImageOpId(queryClient, id, context.tempId, jobLogId);
+          trackQueuedImageJob(queryClient, {
+            jobLogId,
+            propertyId: id,
+            admin: false,
+            label: "Watermark removal",
+          });
+        } else {
+          removePendingImageOp(queryClient, id, context.tempId);
+        }
+      }
       const bulk = data as BulkRemoveWatermarkImagesResponse;
       const failedCount = Array.isArray(bulk.failed) ? bulk.failed.length : 0;
       toast({
@@ -699,7 +760,8 @@ export const useRemoveUserPropertiesWatermarkImages = () => {
         variant: failedCount > 0 ? "warning" : "success",
       });
     },
-    onError: (error: Error) => {
+    onError: (error: Error, payload, context) => {
+      if (context?.tempId) removePendingImageOp(queryClient, payload.ids[0], context.tempId);
       toast({
         title: "Could not start watermark removal",
         description: error.message,
@@ -738,13 +800,28 @@ export const useProduceUserPropertyContent = () => {
 };
 
 export const useRemoveAdminUserPropertyWatermarkImages = () => {
+  const queryClient = useQueryClient();
+
   return useMutation({
-    mutationFn: ({
-      id,
-      ...payload
-    }: { id: string } & RemoveWatermarkImagesPayload) =>
+    mutationFn: ({ id, ...payload }: { id: string } & RemoveWatermarkImagesPayload) =>
       removeAdminUserPropertyWatermarkImages(id, payload),
-    onSuccess: (data) => {
+    onMutate: ({ id, image_ids }) => {
+      const tempId = `temp-${Date.now()}`;
+      addPendingImageOp(queryClient, id, {
+        id: tempId,
+        kind: "remove",
+        crmImageIds: (image_ids ?? []).map(Number),
+      });
+      return { tempId };
+    },
+    onSuccess: (data, variables, context) => {
+      replacePendingImageOpId(queryClient, variables.id, context.tempId, data.job_log_id);
+      trackQueuedImageJob(queryClient, {
+        jobLogId: data.job_log_id,
+        propertyId: variables.id,
+        admin: true,
+        label: "Watermark removal",
+      });
       toast({
         title: "Watermark removal started",
         description: data.message,
@@ -752,7 +829,8 @@ export const useRemoveAdminUserPropertyWatermarkImages = () => {
         variant: "success",
       });
     },
-    onError: (error: Error) => {
+    onError: (error: Error, variables, context) => {
+      removePendingImageOp(queryClient, variables.id, context?.tempId ?? "");
       toast({
         title: "Could not start watermark removal",
         description: error.message,

@@ -62,6 +62,14 @@ function resolveIntegrationImageDisplayUrl(
 // query string across crawls, so comparing raw URLs treats it as a different photo and
 // makes an already-synced image look unsynced. Strips the query string and a trailing
 // "_WIDTHxHEIGHT" resize suffix before comparing.
+// The watermark pipeline names processed files "...-src-<hash>.jpg", where the hash is the
+// source identity of the original it was cut from.
+const SOURCE_HASH_IN_FILENAME = /-src-([0-9a-f]{16})\.[a-zA-Z0-9]+$/;
+
+export function extractSourceIdentityHash(url: string): string | null {
+  return url.match(SOURCE_HASH_IN_FILENAME)?.[1] ?? null;
+}
+
 export function normalizeSourceImageIdentity(url: string): string {
   try {
     const parsed = new URL(url);
