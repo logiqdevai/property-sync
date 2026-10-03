@@ -21,11 +21,16 @@ export class DeleteIntegrationImagesJobService {
     );
 
     try {
-      const result =
-        await this.userPropertiesService.deleteAllIntegrationImagesForUserProperty(
-          data.user_id,
-          data.user_property_id,
-        );
+      const result = Array.isArray(data.image_ids)
+        ? await this.userPropertiesService.deleteIntegrationImagesForJob(
+            data.user_id,
+            data.user_property_id,
+            data.image_ids,
+          )
+        : await this.userPropertiesService.deleteAllIntegrationImagesForUserProperty(
+            data.user_id,
+            data.user_property_id,
+          );
 
       return {
         user_property_id: data.user_property_id,

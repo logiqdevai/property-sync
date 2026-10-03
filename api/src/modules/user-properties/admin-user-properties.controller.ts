@@ -249,6 +249,12 @@ export class AdminUserPropertiesController {
     return this.crmImageSyncService.enqueue(dto.source_agency_ids, dto.user_property_ids);
   }
 
+  @Get(':id/image-jobs/:jobLogId')
+  @ApiOperation({ summary: 'Status of a queued image job for one user property' })
+  getImageJobStatus(@Param('id') id: string, @Param('jobLogId') jobLogId: string) {
+    return this.userPropertiesService.getImageJobStatus(null, id, jobLogId);
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Get user property with owner, sources, and history' })
   @ApiResponse({ status: 200, type: UserPropertyEntity })

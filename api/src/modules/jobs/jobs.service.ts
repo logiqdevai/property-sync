@@ -12,6 +12,8 @@ import {
   CMS_SYNC_QUEUE,
   CRM_CLIENT_NOTES_SYNC_QUEUE,
   DELETE_INTEGRATION_IMAGES_QUEUE,
+  REORDER_INTEGRATION_IMAGES_QUEUE,
+  DELETE_INTEGRATION_IMAGE_IDS_QUEUE,
   ESTATEWEB_SITES_UPDATE_QUEUE,
   MIGRATE_INTEGRATION_IMAGES_QUEUE,
   PUSH_TO_CMS_QUEUE,
@@ -55,6 +57,10 @@ export class JobsService {
     private readonly renormalizationQueue: Queue,
     @InjectQueue(DELETE_INTEGRATION_IMAGES_QUEUE)
     private readonly deleteIntegrationImagesQueue: Queue,
+    @InjectQueue(REORDER_INTEGRATION_IMAGES_QUEUE)
+    private readonly reorderIntegrationImagesQueue: Queue,
+    @InjectQueue(DELETE_INTEGRATION_IMAGE_IDS_QUEUE)
+    private readonly deleteIntegrationImageIdsQueue: Queue,
     @InjectQueue(MIGRATE_INTEGRATION_IMAGES_QUEUE)
     private readonly migrateIntegrationImagesQueue: Queue,
     @InjectQueue(CMS_SYNC_QUEUE)
@@ -160,6 +166,8 @@ export class JobsService {
             jobLog.queue_name === RENORMALIZATION_QUEUE ||
             jobLog.queue_name === DELETE_INTEGRATION_IMAGES_QUEUE ||
             jobLog.queue_name === MIGRATE_INTEGRATION_IMAGES_QUEUE ||
+            jobLog.queue_name === REORDER_INTEGRATION_IMAGES_QUEUE ||
+            jobLog.queue_name === DELETE_INTEGRATION_IMAGE_IDS_QUEUE ||
             jobLog.queue_name === CMS_SYNC_QUEUE
           ? {
               attempts: 3,
@@ -325,6 +333,7 @@ export class JobsService {
       const payloadRecord = payload as {
         user_id?: string;
         user_property_ids?: string[];
+        image_ids?: number[];
         total?: number;
       };
       const propertyIds = Array.isArray(payloadRecord.user_property_ids)
@@ -342,6 +351,82 @@ export class JobsService {
             job_log_id: jobLog.id,
             user_id: payloadRecord.user_id,
             user_property_id: userPropertyId,
+            ...(payloadRecord.image_ids ? { image_ids: payloadRecord.image_ids } : {}),
+            total: payloadRecord.total ?? propertyIds.length,
+          },
+          opts: {
+            ...(jobOptions ?? {}),
+            jobId: `${jobLog.id}__${userPropertyId}`,
+          },
+        })),
+      );
+      return this.findOne(id);
+    }
+
+    if (jobLog.queue_name === DELETE_INTEGRATION_IMAGE_IDS_QUEUE) {
+      const payloadRecord = payload as {
+        user_id?: string;
+        user_property_ids?: string[];
+        image_ids?: number[];
+        total?: number;
+      };
+      const propertyIds = Array.isArray(payloadRecord.user_property_ids)
+        ? payloadRecord.user_property_ids
+        : [];
+      if (
+        !payloadRecord.user_id ||
+        propertyIds.length === 0 ||
+        !Array.isArray(payloadRecord.image_ids)
+      ) {
+        throw new BadRequestException(
+          'Delete integration image ids job payload is missing user, property or image ids',
+        );
+      }
+      await this.deleteIntegrationImageIdsQueue.addBulk(
+        propertyIds.map((userPropertyId) => ({
+          name: jobLog.job_name ?? 'delete-integration-images',
+          data: {
+            job_log_id: jobLog.id,
+            user_id: payloadRecord.user_id,
+            user_property_id: userPropertyId,
+            image_ids: payloadRecord.image_ids,
+            total: payloadRecord.total ?? propertyIds.length,
+          },
+          opts: {
+            ...(jobOptions ?? {}),
+            jobId: `${jobLog.id}__${userPropertyId}`,
+          },
+        })),
+      );
+      return this.findOne(id);
+    }
+    if (jobLog.queue_name === REORDER_INTEGRATION_IMAGES_QUEUE) {
+      const payloadRecord = payload as {
+        user_id?: string;
+        user_property_ids?: string[];
+        image_ids?: number[];
+        total?: number;
+      };
+      const propertyIds = Array.isArray(payloadRecord.user_property_ids)
+        ? payloadRecord.user_property_ids
+        : [];
+      if (
+        !payloadRecord.user_id ||
+        propertyIds.length === 0 ||
+        !Array.isArray(payloadRecord.image_ids)
+      ) {
+        throw new BadRequestException(
+          'Reorder integration images job payload is missing user, property or image ids',
+        );
+      }
+      await this.reorderIntegrationImagesQueue.addBulk(
+        propertyIds.map((userPropertyId) => ({
+          name: jobLog.job_name ?? 'reorder-integration-images',
+          data: {
+            job_log_id: jobLog.id,
+            user_id: payloadRecord.user_id,
+            user_property_id: userPropertyId,
+            image_ids: payloadRecord.image_ids,
             total: payloadRecord.total ?? propertyIds.length,
           },
           opts: {
@@ -536,6 +621,8 @@ export class JobsService {
       jobLog.queue_name === ESTATEWEB_SITES_UPDATE_QUEUE ||
       jobLog.queue_name === RENORMALIZATION_QUEUE ||
       jobLog.queue_name === DELETE_INTEGRATION_IMAGES_QUEUE ||
+      jobLog.queue_name === REORDER_INTEGRATION_IMAGES_QUEUE ||
+      jobLog.queue_name === DELETE_INTEGRATION_IMAGE_IDS_QUEUE ||
       jobLog.queue_name === MIGRATE_INTEGRATION_IMAGES_QUEUE
     ) {
       const payload = (jobLog.payload ?? {}) as {
@@ -559,7 +646,11 @@ export class JobsService {
                     ? this.deleteIntegrationImagesQueue
                     : jobLog.queue_name === MIGRATE_INTEGRATION_IMAGES_QUEUE
                       ? this.migrateIntegrationImagesQueue
-                      : this.renormalizationQueue;
+                      : jobLog.queue_name === REORDER_INTEGRATION_IMAGES_QUEUE
+                        ? this.reorderIntegrationImagesQueue
+                        : jobLog.queue_name === DELETE_INTEGRATION_IMAGE_IDS_QUEUE
+                          ? this.deleteIntegrationImageIdsQueue
+                          : this.renormalizationQueue;
       for (const propertyId of propertyIds) {
         try {
           await queue.remove(`${jobLog.id}__${propertyId}`);
@@ -651,6 +742,12 @@ export class JobsService {
     }
     if (queueName === MIGRATE_INTEGRATION_IMAGES_QUEUE) {
       return this.migrateIntegrationImagesQueue;
+    }
+    if (queueName === REORDER_INTEGRATION_IMAGES_QUEUE) {
+      return this.reorderIntegrationImagesQueue;
+    }
+    if (queueName === DELETE_INTEGRATION_IMAGE_IDS_QUEUE) {
+      return this.deleteIntegrationImageIdsQueue;
     }
     if (queueName === CMS_SYNC_QUEUE) {
       return this.cmsSyncQueue;

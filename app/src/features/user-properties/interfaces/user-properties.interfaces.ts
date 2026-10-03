@@ -547,3 +547,22 @@ export interface CrmImageSyncJobResult {
   uploaded: number;
   logs: string[];
 }
+
+export interface QueuedImageJobResponse {
+  job_log_id: string;
+  message: string;
+}
+
+export interface ImageJobStatus {
+  id: string;
+  status:
+    | "WAITING"
+    | "ACTIVE"
+    | "COMPLETED"
+    | "FAILED"
+    | "DELAYED"
+    | "PAUSED"
+    | "STALLED";
+  error_message: string | null;
+  finished_at: string | null;
+}

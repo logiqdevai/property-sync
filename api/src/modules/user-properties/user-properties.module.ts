@@ -10,6 +10,8 @@ import {
   CREATE_INTEGRATION_IMAGES_QUEUE,
   CRM_CLIENT_NOTES_SYNC_QUEUE,
   DELETE_INTEGRATION_IMAGES_QUEUE,
+  REORDER_INTEGRATION_IMAGES_QUEUE,
+  DELETE_INTEGRATION_IMAGE_IDS_QUEUE,
   ESTATEWEB_SITES_UPDATE_QUEUE,
   GEOCODE_MISSING_COORDINATES_QUEUE,
   MIGRATE_INTEGRATION_IMAGES_QUEUE,
@@ -34,6 +36,8 @@ import { PushToCmsProcessor } from '@/background/push-to-cms.processor';
 import { CrmClientNotesSyncProcessor } from '@/background/crm-client-notes-sync.processor';
 import { EstateWebSitesUpdateProcessor } from '@/background/estateweb-sites-update.processor';
 import { DeleteIntegrationImagesProcessor } from '@/background/delete-integration-images.processor';
+import { DeleteIntegrationImageIdsProcessor } from '@/background/delete-integration-image-ids.processor';
+import { ReorderIntegrationImagesProcessor } from '@/background/reorder-integration-images.processor';
 import { MigrateIntegrationImagesProcessor } from '@/background/migrate-integration-images.processor';
 import { CreateIntegrationImagesProcessor } from '@/background/create-integration-images.processor';
 import { CopyNormalizedImagesProcessor } from '@/background/copy-normalized-images.processor';
@@ -82,6 +86,8 @@ import { UserPropertyImagesCurationService } from './services/user-property-imag
       { name: ESTATEWEB_SITES_UPDATE_QUEUE },
       { name: RENORMALIZATION_QUEUE },
       { name: DELETE_INTEGRATION_IMAGES_QUEUE },
+      { name: REORDER_INTEGRATION_IMAGES_QUEUE },
+      { name: DELETE_INTEGRATION_IMAGE_IDS_QUEUE },
       { name: MIGRATE_INTEGRATION_IMAGES_QUEUE },
       { name: CREATE_INTEGRATION_IMAGES_QUEUE },
       { name: COPY_NORMALIZED_IMAGES_QUEUE },
@@ -109,6 +115,8 @@ import { UserPropertyImagesCurationService } from './services/user-property-imag
     EstateWebSitesUpdateProcessor,
     DeleteIntegrationImagesJobService,
     DeleteIntegrationImagesProcessor,
+    ReorderIntegrationImagesProcessor,
+    DeleteIntegrationImageIdsProcessor,
     MigrateIntegrationImagesJobService,
     MigrateIntegrationImagesProcessor,
     CreateIntegrationImagesJobService,

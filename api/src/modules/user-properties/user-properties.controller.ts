@@ -604,6 +604,16 @@ export class UserPropertiesController {
     return this.userPropertiesService.findOne(userId, id);
   }
 
+  @Get(':id/image-jobs/:jobLogId')
+  @ApiOperation({ summary: 'Status of a queued image job for one saved property' })
+  getImageJobStatus(
+    @CurrentUser('id') userId: string,
+    @Param('id') id: string,
+    @Param('jobLogId') jobLogId: string,
+  ) {
+    return this.userPropertiesService.getImageJobStatus(userId, id, jobLogId);
+  }
+
   @Audited({ action: 'user_property.update', entity: 'UserProperty', ids: { param: 'id' } })
   @Patch(':id')
   @ApiOperation({ summary: 'Edit a saved property copy' })

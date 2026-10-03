@@ -62,7 +62,7 @@ function resolveIntegrationImageDisplayUrl(
 // query string across crawls, so comparing raw URLs treats it as a different photo and
 // makes an already-synced image look unsynced. Strips the query string and a trailing
 // "_WIDTHxHEIGHT" resize suffix before comparing.
-function normalizeSourceImageIdentity(url: string): string {
+export function normalizeSourceImageIdentity(url: string): string {
   try {
     const parsed = new URL(url);
     const path = parsed.pathname.replace(

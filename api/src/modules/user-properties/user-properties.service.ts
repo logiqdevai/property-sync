@@ -16,6 +16,8 @@ import {
   CREATE_INTEGRATION_IMAGES_QUEUE,
   CRM_CLIENT_NOTES_SYNC_QUEUE,
   DELETE_INTEGRATION_IMAGES_QUEUE,
+  REORDER_INTEGRATION_IMAGES_QUEUE,
+  DELETE_INTEGRATION_IMAGE_IDS_QUEUE,
   ESTATEWEB_SITES_UPDATE_QUEUE,
   GEOCODE_MISSING_COORDINATES_QUEUE,
   MIGRATE_INTEGRATION_IMAGES_QUEUE,
@@ -127,6 +129,7 @@ import {
   DeleteIntegrationImagesJobData,
   DeleteIntegrationImagesJobResult,
 } from './interfaces/delete-integration-images-job.interface';
+import { ReorderIntegrationImagesJobData } from './interfaces/reorder-integration-images-job.interface';
 import {
   MigrateIntegrationImagesJobData,
   MigrateIntegrationImagesJobResult,
@@ -207,6 +210,10 @@ export class UserPropertiesService {
     private readonly renormalizationQueue: Queue<RenormalizationJobData>,
     @InjectQueue(DELETE_INTEGRATION_IMAGES_QUEUE)
     private readonly deleteIntegrationImagesQueue: Queue<DeleteIntegrationImagesJobData>,
+    @InjectQueue(REORDER_INTEGRATION_IMAGES_QUEUE)
+    private readonly reorderIntegrationImagesQueue: Queue<ReorderIntegrationImagesJobData>,
+    @InjectQueue(DELETE_INTEGRATION_IMAGE_IDS_QUEUE)
+    private readonly deleteIntegrationImageIdsQueue: Queue<DeleteIntegrationImagesJobData>,
     @InjectQueue(MIGRATE_INTEGRATION_IMAGES_QUEUE)
     private readonly migrateIntegrationImagesQueue: Queue<MigrateIntegrationImagesJobData>,
     @InjectQueue(CREATE_INTEGRATION_IMAGES_QUEUE)
@@ -725,6 +732,7 @@ export class UserPropertiesService {
           select: {
             id: true,
             text_truncate_pieces: true,
+            max_image_count: true,
             integration_link: {
               select: {
                 user_integration: {
@@ -740,8 +748,19 @@ export class UserPropertiesService {
       ? await this.contentPublishingConfigService.getByTrackerId(tracker.id)
       : null;
 
+    const excludedIdentities = new Set(
+      (await this.imagesCuration.loadExcludedSourceImages(rest.id)).map(
+        normalizeSourceImageIdentity,
+      ),
+    );
+    const trackedImageCount = this.toImageUrls(rest.images).filter(
+      (url) => !excludedIdentities.has(normalizeSourceImageIdentity(url)),
+    ).length;
+
     return serializePropertyForApi({
       ...rest,
+      image_limit: tracker?.max_image_count ?? null,
+      tracked_image_count: trackedImageCount,
       duplicate_group_id: canonical_property.duplicate_group_id,
       source_agency: resolveSourceAgency(canonical_property.source_links),
       source_links: canonical_property.source_links,
@@ -777,6 +796,46 @@ export class UserPropertiesService {
           }
         : null,
     });
+  }
+
+  async getImageJobStatus(
+    userId: string | null,
+    userPropertyId: string,
+    jobLogId: string,
+  ) {
+    const userProperty = await this.prisma.userProperty.findFirst({
+      where: { id: userPropertyId, ...(userId ? { user_id: userId } : {}) },
+      select: { id: true },
+    });
+    if (!userProperty) {
+      throw new NotFoundException('Property not found');
+    }
+    const jobLog = await this.prisma.jobLog.findUnique({
+      where: { id: jobLogId },
+      select: {
+        id: true,
+        status: true,
+        error_message: true,
+        finished_at: true,
+        payload: true,
+      },
+    });
+    const payload = (jobLog?.payload ?? {}) as {
+      user_property_id?: string;
+      user_property_ids?: string[];
+    };
+    const propertyIds =
+      payload.user_property_ids ??
+      (payload.user_property_id ? [payload.user_property_id] : []);
+    if (!jobLog || !propertyIds.includes(userPropertyId)) {
+      throw new NotFoundException('Job not found');
+    }
+    return {
+      id: jobLog.id,
+      status: jobLog.status,
+      error_message: jobLog.error_message,
+      finished_at: jobLog.finished_at,
+    };
   }
 
   async update(userId: string, id: string, dto: UpdateUserPropertyDto) {
@@ -2470,8 +2529,95 @@ export class UserPropertiesService {
       throw new NotFoundException('Property not found');
     }
 
+    return this.enqueueIntegrationImageDelete(userProperty, imageIds);
+  }
+
+  async deleteIntegrationImagesForJob(
+    userId: string,
+    userPropertyId: string,
+    imageIds: number[],
+  ): Promise<{ deleted_count: number }> {
+    const userProperty = await this.prisma.userProperty.findFirst({
+      where: { id: userPropertyId, user_id: userId },
+      select: {
+        id: true,
+        user_id: true,
+        canonical_property_id: true,
+        integration_property_id: true,
+      },
+    });
+    if (!userProperty) {
+      throw new NotFoundException('Property not found');
+    }
     await this.runDeleteIntegrationImages(userProperty, imageIds);
-    return this.findOne(userId, id);
+    return {
+      deleted_count: new Set(
+        imageIds.filter((id) => Number.isFinite(id) && id > 0),
+      ).size,
+    };
+  }
+
+  private async enqueueIntegrationImageDelete(
+    userProperty: {
+      id: string;
+      user_id: string;
+      integration_property_id: string | null;
+    },
+    imageIds: number[],
+  ) {
+    if (!userProperty.integration_property_id) {
+      throw new BadRequestException('Property is not linked to a CMS');
+    }
+    const uniqueIds = [
+      ...new Set(imageIds.filter((id) => Number.isFinite(id) && id > 0)),
+    ];
+    if (uniqueIds.length === 0) {
+      throw new BadRequestException('No valid image ids provided');
+    }
+    const payload = {
+      user_id: userProperty.user_id,
+      user_property_ids: [userProperty.id],
+      image_ids: uniqueIds,
+      total: 1,
+    };
+    const jobLog = await this.prisma.jobLog.create({
+      data: {
+        queue_name: DELETE_INTEGRATION_IMAGE_IDS_QUEUE,
+        job_name: 'delete-integration-images',
+        status: JobStatus.WAITING,
+        payload: payload as object,
+        result: {
+          total: 1,
+          processed: 0,
+          deleted: 0,
+          skipped: 0,
+          failed: 0,
+          items: [],
+          logs: [
+            `enqueued user=${userProperty.user_id} property=${userProperty.id} images=${uniqueIds.length}`,
+          ],
+        } as object,
+      },
+    });
+    const jobData: DeleteIntegrationImagesJobData = {
+      job_log_id: jobLog.id,
+      user_id: userProperty.user_id,
+      user_property_id: userProperty.id,
+      image_ids: uniqueIds,
+      total: 1,
+    };
+    await this.deleteIntegrationImageIdsQueue.add('delete-integration-images', jobData, {
+      jobId: `${jobLog.id}__${userProperty.id}`,
+      attempts: 3,
+      backoff: { type: 'exponential' as const, delay: 5000 },
+      removeOnComplete: 100,
+      removeOnFail: 200,
+    });
+    return {
+      job_log_id: jobLog.id,
+      message:
+        'CMS image delete started in the background. Track progress in Job queue.',
+    };
   }
 
   async adminDeleteIntegrationImages(id: string, imageIds: number[]) {
@@ -2489,8 +2635,7 @@ export class UserPropertiesService {
       throw new NotFoundException('Property not found');
     }
 
-    await this.runDeleteIntegrationImages(userProperty, imageIds);
-    return this.adminFindOne(id);
+    return this.enqueueIntegrationImageDelete(userProperty, imageIds);
   }
 
   async adminCreateIntegrationImages(id: string, imageIndexes: number[]) {
@@ -2975,8 +3120,90 @@ export class UserPropertiesService {
       throw new NotFoundException('Property not found');
     }
 
+    return this.enqueueIntegrationImageReorder(userProperty, imageIds);
+  }
+
+  async reorderIntegrationImagesForJob(
+    userId: string,
+    userPropertyId: string,
+    imageIds: number[],
+  ): Promise<void> {
+    const userProperty = await this.prisma.userProperty.findFirst({
+      where: { id: userPropertyId, user_id: userId },
+      select: {
+        id: true,
+        user_id: true,
+        canonical_property_id: true,
+        integration_property_id: true,
+      },
+    });
+    if (!userProperty) {
+      throw new NotFoundException('Property not found');
+    }
     await this.runReorderIntegrationImages(userProperty, imageIds);
-    return this.findOne(userId, id);
+  }
+
+  private async enqueueIntegrationImageReorder(
+    userProperty: {
+      id: string;
+      user_id: string;
+      integration_property_id: string | null;
+    },
+    imageIds: number[],
+  ) {
+    if (!userProperty.integration_property_id) {
+      throw new BadRequestException('Property is not linked to a CMS');
+    }
+    const uniqueIds = [
+      ...new Set(imageIds.filter((id) => Number.isFinite(id) && id > 0)),
+    ];
+    if (uniqueIds.length === 0) {
+      throw new BadRequestException('No valid image ids provided');
+    }
+    const payload = {
+      user_id: userProperty.user_id,
+      user_property_ids: [userProperty.id],
+      image_ids: uniqueIds,
+      total: 1,
+    };
+    const jobLog = await this.prisma.jobLog.create({
+      data: {
+        queue_name: REORDER_INTEGRATION_IMAGES_QUEUE,
+        job_name: 'reorder-integration-images',
+        status: JobStatus.WAITING,
+        payload: payload as object,
+        result: {
+          total: 1,
+          processed: 0,
+          deleted: 0,
+          skipped: 0,
+          failed: 0,
+          items: [],
+          logs: [
+            `enqueued user=${userProperty.user_id} property=${userProperty.id} images=${uniqueIds.length}`,
+          ],
+        } as object,
+      },
+    });
+    const jobData: ReorderIntegrationImagesJobData = {
+      job_log_id: jobLog.id,
+      user_id: userProperty.user_id,
+      user_property_id: userProperty.id,
+      image_ids: uniqueIds,
+      total: 1,
+    };
+    await this.reorderIntegrationImagesQueue.add('reorder-integration-images', jobData, {
+      jobId: `${jobLog.id}__${userProperty.id}`,
+      attempts: 3,
+      backoff: { type: 'exponential' as const, delay: 5000 },
+      removeOnComplete: 100,
+      removeOnFail: 200,
+    });
+    return {
+      job_log_id: jobLog.id,
+      message:
+        'Image order is being saved in the background. Track progress in Job queue.',
+    };
   }
 
   // "Reset photos to automatic": undoes hand-editing. The property goes back

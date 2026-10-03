@@ -124,6 +124,8 @@ export const ApiRoutes = {
             detail: (id: string) => `/admin/user-properties/${id}`,
             migrateIntegrationImages: (id: string) =>
                 `/admin/user-properties/${id}/migrate-integration-images`,
+            imageJob: (id: string, jobLogId: string) =>
+                `/admin/user-properties/${id}/image-jobs/${jobLogId}`,
             deleteIntegrationImages: (id: string) =>
                 `/admin/user-properties/${id}/delete-integration-images`,
             createIntegrationImages: (id: string) =>
@@ -242,6 +244,8 @@ export const ApiRoutes = {
             `/properties/${id}/update-integration-images`,
         reorderIntegrationImages: (id: string) =>
             `/properties/${id}/reorder-integration-images`,
+        imageJob: (id: string, jobLogId: string) =>
+            `/properties/${id}/image-jobs/${jobLogId}`,
         resetImages: (id: string) => `/properties/${id}/reset-images`,
         removeWatermarkImages: (id: string) =>
             `/properties/${id}/remove-watermark-images`,

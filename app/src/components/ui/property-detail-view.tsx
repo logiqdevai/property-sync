@@ -1,13 +1,10 @@
-import { useEffect, useState, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import {
   Button,
-  Checkbox,
   Chip,
   ListBox,
   Select,
-  Tabs,
-  Tooltip,
   useOverlayState,
 } from "@heroui/react";
 import {
@@ -15,33 +12,25 @@ import {
   BedDouble,
   Building2,
   Calendar,
-  CloudCheck,
+  Columns2,
   ExternalLink,
-  Eye,
-  ArrowUpDown,
-  Images,
   Mail,
   MapPin,
   Maximize2,
   Ruler,
-  Sparkles,
-  Trash2,
 } from "lucide-react";
 import { getCrmPropertyAppUrl } from "@/config/constants/crm-app-urls";
 import { ListingTypeFilterOptions } from "@/config/constants/dropdowns/properties/listing-type-filter.options";
 import { PropertyTypeFilterOptions } from "@/config/constants/dropdowns/properties/property-type-filter.options";
 import { PropertyStatusChip } from "@/components/ui/property-status-chip";
 import { PropertyDuplicateGroupChip } from "@/components/ui/property-duplicate-group-chip";
-import { BulkActionsMenu } from "@/components/ui/bulk-actions-menu";
-import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
+import type { EstateWebImageOptions } from "@/components/ui/estateweb-image-options-modal";
 import {
-  EstateWebImageOptionsModal,
-  type EstateWebImageOptions,
-} from "@/components/ui/estateweb-image-options-modal";
-import { RemoveWatermarkModal } from "@/components/ui/remove-watermark-modal";
-import { MigrateIntegrationImagesModal } from "@/components/ui/migrate-integration-images-modal";
-import { PropertyImagesReorderGrid } from "@/components/ui/property-images-reorder-grid";
-import type { TableRowAction } from "@/components/ui/table-row-actions-menu";
+  PropertyImagesGrid,
+  PropertyPhoto,
+  type PropertyImagesGridProps,
+} from "@/components/ui/property-images-grid";
+import { PropertyImagesCompareDialog } from "@/components/ui/property-images-compare-dialog";
 import type { MigrateIntegrationImagesMode } from "@/features/user-properties/interfaces/user-properties.interfaces";
 import type {
   CmsPropertyFieldEntry,
@@ -59,6 +48,7 @@ import type { IntegrationProperty } from "@/features/integration-property/interf
 import type { PropertyLocalizedContent } from "@/features/user-properties/interfaces/user-properties.interfaces";
 import { getContentLanguageLabel } from "@/config/constants/dropdowns/agencies/content-language-form.options";
 import {
+  normalizeSourceImageIdentity,
   resolvePropertyDisplayImages,
   type PropertyDisplayImage,
 } from "@/features/integration-property/utils/resolve-property-display-images";
@@ -104,6 +94,8 @@ export interface PropertyDetailViewData extends Partial<PropertyCmsFields> {
   renovation_year?: number | null;
   features: string[] | null;
   images: string[] | null;
+  image_limit?: number | null;
+  tracked_image_count?: number;
   canonical_images?: string[];
   integration_property?: IntegrationProperty | null;
   localized_contents?: PropertyLocalizedContent[];
@@ -178,14 +170,6 @@ function buildLocalizedContentRows(property: PropertyDetailViewData): Array<{
   }));
 }
 
-const SYSTEM_IMAGES_TABS = {
-  normalized: "normalized",
-  tracked: "tracked",
-} as const;
-
-type SystemImagesTab =
-  (typeof SYSTEM_IMAGES_TABS)[keyof typeof SYSTEM_IMAGES_TABS];
-
 function toPlainDisplayImages(
   urls: string[],
   keyPrefix: string,
@@ -249,602 +233,6 @@ function SpecItem({
   );
 }
 
-function PropertyPhoto({
-  src,
-  fallbackSrc,
-  alt,
-  className,
-}: {
-  src: string;
-  fallbackSrc?: string | null;
-  alt: string;
-  className?: string;
-}) {
-  const [currentSrc, setCurrentSrc] = useState(src);
-
-  useEffect(() => {
-    setCurrentSrc(src);
-  }, [src]);
-
-  return (
-    <a
-      href={currentSrc}
-      target="_blank"
-      rel="noreferrer"
-      className="block size-full"
-    >
-      <img
-        src={currentSrc}
-        alt={alt}
-        loading="lazy"
-        referrerPolicy="no-referrer"
-        className={className}
-        onError={() => {
-          if (fallbackSrc && currentSrc !== fallbackSrc) {
-            setCurrentSrc(fallbackSrc);
-          }
-        }}
-      />
-    </a>
-  );
-}
-
-function PropertyImagesGrid({
-  images,
-  fallbackImages,
-  title,
-  selectable = false,
-  canCreateFromPropertyImages = false,
-  canCopyToTracked = false,
-  canUpdateEstateWebImageOptions = false,
-  canRemoveWatermark = false,
-  canMigrateIntegrationImages = false,
-  canReorderIntegrationImages = false,
-  onDeleteSelected,
-  onCreateSelected,
-  onCopySelected,
-  onUpdateEstateWebImageOptions,
-  onRemoveWatermark,
-  onMigrateIntegrationImages,
-  onReorderIntegrationImages,
-  isDeletePending = false,
-  isCreatePending = false,
-  isCopyToTrackedPending = false,
-  isUpdateEstateWebImageOptionsPending = false,
-  isRemoveWatermarkPending = false,
-  isMigrateIntegrationImagesPending = false,
-  isReorderPending = false,
-}: {
-  images: PropertyDisplayImage[];
-  fallbackImages: string[];
-  title: string;
-  selectable?: boolean;
-  canCreateFromPropertyImages?: boolean;
-  canCopyToTracked?: boolean;
-  canUpdateEstateWebImageOptions?: boolean;
-  canRemoveWatermark?: boolean;
-  canMigrateIntegrationImages?: boolean;
-  canReorderIntegrationImages?: boolean;
-  onDeleteSelected?: (imageIds: number[]) => Promise<void> | void;
-  onCreateSelected?: (imageIndexes: number[]) => Promise<void> | void;
-  onCopySelected?: (
-    imageIndexes: number[],
-    removeWatermark: boolean,
-  ) => Promise<void> | void;
-  onUpdateEstateWebImageOptions?: (
-    imageIds: number[],
-    options: EstateWebImageOptions,
-  ) => Promise<void> | void;
-  onRemoveWatermark?: (
-    imageIds: number[],
-    replaceCrmImages: boolean,
-  ) => Promise<void> | void;
-  onMigrateIntegrationImages?: (
-    mode: MigrateIntegrationImagesMode,
-  ) => Promise<void> | void;
-  onReorderIntegrationImages?: (imageIds: number[]) => Promise<void> | void;
-  isDeletePending?: boolean;
-  isCreatePending?: boolean;
-  isCopyToTrackedPending?: boolean;
-  isUpdateEstateWebImageOptionsPending?: boolean;
-  isRemoveWatermarkPending?: boolean;
-  isMigrateIntegrationImagesPending?: boolean;
-  isReorderPending?: boolean;
-}) {
-  const [expanded, setExpanded] = useState(false);
-  const [isReordering, setIsReordering] = useState(false);
-  const [selectedIndexes, setSelectedIndexes] = useState<Set<number>>(
-    new Set(),
-  );
-  const deleteConfirm = useOverlayState();
-  const createConfirm = useOverlayState();
-  const copyConfirm = useOverlayState();
-  const copyWithWatermarkConfirm = useOverlayState();
-  const estateWebOptionsModal = useOverlayState();
-  const removeWatermarkModal = useOverlayState();
-  const migrateIntegrationImagesModal = useOverlayState();
-  const canExpand = images.length > 2;
-  const isPending =
-    isDeletePending ||
-    isCreatePending ||
-    isCopyToTrackedPending ||
-    isUpdateEstateWebImageOptionsPending ||
-    isRemoveWatermarkPending ||
-    isMigrateIntegrationImagesPending ||
-    isReorderPending;
-  // Only CRM-synced images have an id the reorder endpoint can act on; a not-yet-synced
-  // (or permanently excluded duplicate) scraped photo tagging along in `images` shouldn't
-  // block reordering the ones that actually are synced.
-  const crmBackedImages = images.filter((image) => image.crmImageId != null);
-  const canReorder =
-    canReorderIntegrationImages &&
-    Boolean(onReorderIntegrationImages) &&
-    crmBackedImages.length > 1;
-  // A CRM-synced image can be deleted/watermarked/etc; a not-yet-synced scraped
-  // photo can only be picked to upload. Never show a checkbox promising an action
-  // the image doesn't actually support.
-  const isImageSelectable = (image: PropertyDisplayImage) => {
-    if (image.crmImageId != null) {
-      return (
-        Boolean(onDeleteSelected) ||
-        (canUpdateEstateWebImageOptions &&
-          Boolean(onUpdateEstateWebImageOptions)) ||
-        (canRemoveWatermark && Boolean(onRemoveWatermark))
-      );
-    }
-    return (
-      (canCreateFromPropertyImages &&
-        Boolean(onCreateSelected) &&
-        image.propertyImageIndex != null) ||
-      (canCopyToTracked &&
-        Boolean(onCopySelected) &&
-        image.propertyImageIndex != null)
-    );
-  };
-  const selectableIndexes = images
-    .map((image, index) => (isImageSelectable(image) ? index : null))
-    .filter((index): index is number => index != null);
-  const canSelect = selectable && selectableIndexes.length > 0;
-  const canMigrate =
-    canMigrateIntegrationImages && Boolean(onMigrateIntegrationImages);
-  const showToolbar = canSelect || canMigrate || canReorder;
-  const allSelected =
-    canSelect &&
-    selectableIndexes.every((index) => selectedIndexes.has(index));
-  const selectedCount = selectedIndexes.size;
-  const selectedCrmIds = [
-    ...new Set(
-      [...selectedIndexes]
-        .map((index) => images[index]?.crmImageId)
-        .filter((id): id is number => id != null),
-    ),
-  ];
-  const selectedCrmImages = images.filter(
-    (image, index) =>
-      selectedIndexes.has(index) && image.crmImageId != null,
-  );
-  const selectedEstateWebOptions: EstateWebImageOptions =
-    selectedCrmImages.length === 0
-      ? {
-          show_on_site: false,
-          show_on_groups: false,
-          show_on_foreign_agents: false,
-        }
-      : {
-          show_on_site: selectedCrmImages.every((image) => image.show_on_site),
-          show_on_groups: selectedCrmImages.every(
-            (image) => image.show_on_groups,
-          ),
-          show_on_foreign_agents: selectedCrmImages.every(
-            (image) => image.show_on_foreign_agents,
-          ),
-        };
-  const selectedPropertyIndexes = [
-    ...new Set(
-      [...selectedIndexes]
-        .map((index) => images[index]?.propertyImageIndex)
-        .filter((index): index is number => index != null),
-    ),
-  ].sort((a, b) => a - b);
-
-  const selectAll = () => {
-    setSelectedIndexes(new Set(selectableIndexes));
-  };
-
-  const deselectAll = () => {
-    setSelectedIndexes(new Set());
-  };
-
-  const bulkActions: TableRowAction[] = [
-    ...(canMigrate
-      ? [
-          {
-            id: "migrate-crm-images",
-            label: "Migrate CRM images",
-            variant: "accent" as const,
-            icon: Images,
-            isDisabled: isPending,
-            adminOnly: true,
-          },
-        ]
-      : []),
-    ...(canUpdateEstateWebImageOptions && onUpdateEstateWebImageOptions
-      ? [
-          {
-            id: "estateweb-options",
-            label: `EstateWeb options${selectedCrmIds.length > 0 ? ` (${selectedCrmIds.length})` : ""}`,
-            variant: "accent" as const,
-            icon: Eye,
-            isDisabled: isPending || selectedCrmIds.length === 0,
-          },
-        ]
-      : []),
-    ...(canCreateFromPropertyImages && onCreateSelected
-      ? [
-          {
-            id: "create-from-property",
-            label: `Upload to CRM${selectedPropertyIndexes.length > 0 ? ` (${selectedPropertyIndexes.length})` : ""}`,
-            variant: "accent" as const,
-            icon: Images,
-            isDisabled: isPending || selectedPropertyIndexes.length === 0,
-            adminOnly: true,
-          },
-        ]
-      : []),
-    ...(canCopyToTracked && onCopySelected
-      ? [
-          {
-            id: "copy-to-tracked",
-            label: `Copy to tracked${selectedPropertyIndexes.length > 0 ? ` (${selectedPropertyIndexes.length})` : ""}`,
-            variant: "accent" as const,
-            icon: Images,
-            isDisabled: isPending || selectedPropertyIndexes.length === 0,
-            adminOnly: true,
-          },
-          {
-            id: "copy-to-tracked-watermark",
-            label: `Copy to tracked (remove watermark)${selectedPropertyIndexes.length > 0 ? ` (${selectedPropertyIndexes.length})` : ""}`,
-            variant: "accent" as const,
-            icon: Sparkles,
-            isDisabled: isPending || selectedPropertyIndexes.length === 0,
-            adminOnly: true,
-          },
-        ]
-      : []),
-    ...(canRemoveWatermark && onRemoveWatermark
-      ? [
-          {
-            id: "remove-watermark",
-            label: `Remove watermark${selectedCrmIds.length > 0 ? ` (${selectedCrmIds.length})` : ""}`,
-            variant: "accent" as const,
-            icon: Sparkles,
-            isDisabled: isPending || selectedCrmIds.length === 0,
-          },
-        ]
-      : []),
-    ...(onDeleteSelected
-      ? [
-          {
-            id: "delete",
-            label: `Delete${selectedCrmIds.length > 0 ? ` (${selectedCrmIds.length})` : ""}`,
-            variant: "danger" as const,
-            icon: Trash2,
-            isDisabled: isPending || selectedCrmIds.length === 0,
-          },
-        ]
-      : []),
-  ];
-
-  const showActionsMenu =
-    bulkActions.length > 0 && (canMigrate || selectedCount > 0);
-
-  const handleDeleteConfirm = async () => {
-    if (!onDeleteSelected || selectedCrmIds.length === 0) return;
-    await onDeleteSelected(selectedCrmIds);
-    setSelectedIndexes(new Set());
-  };
-
-  const handleCreateConfirm = async () => {
-    if (!onCreateSelected || selectedPropertyIndexes.length === 0) return;
-    await onCreateSelected(selectedPropertyIndexes);
-    setSelectedIndexes(new Set());
-  };
-
-  const handleCopyConfirm = async () => {
-    if (!onCopySelected || selectedPropertyIndexes.length === 0) return;
-    await onCopySelected(selectedPropertyIndexes, false);
-    setSelectedIndexes(new Set());
-  };
-
-  const handleCopyWithWatermarkConfirm = async () => {
-    if (!onCopySelected || selectedPropertyIndexes.length === 0) return;
-    await onCopySelected(selectedPropertyIndexes, true);
-    setSelectedIndexes(new Set());
-  };
-
-  const handleEstateWebOptionsConfirm = async (
-    options: EstateWebImageOptions,
-  ) => {
-    if (!onUpdateEstateWebImageOptions || selectedCrmIds.length === 0) return;
-    await onUpdateEstateWebImageOptions(selectedCrmIds, options);
-    setSelectedIndexes(new Set());
-  };
-
-  const handleRemoveWatermarkConfirm = async (replaceCrmImages: boolean) => {
-    if (!onRemoveWatermark || selectedCrmIds.length === 0) return;
-    await onRemoveWatermark(selectedCrmIds, replaceCrmImages);
-    setSelectedIndexes(new Set());
-  };
-
-  const handleMigrateConfirm = async (mode: MigrateIntegrationImagesMode) => {
-    if (!onMigrateIntegrationImages) return;
-    await onMigrateIntegrationImages(mode);
-  };
-
-  const handleReorderSave = async (imageIds: number[]) => {
-    if (!onReorderIntegrationImages) return;
-    try {
-      await onReorderIntegrationImages(imageIds);
-      setIsReordering(false);
-    } catch {
-      // The mutation hook already surfaced the error; stay in reorder mode so the
-      // user's arrangement isn't lost.
-    }
-  };
-
-  if (isReordering && canReorder) {
-    return (
-      <PropertyImagesReorderGrid
-        images={images}
-        title={title}
-        isPending={isReorderPending}
-        onSave={handleReorderSave}
-        onCancel={() => setIsReordering(false)}
-      />
-    );
-  }
-
-  return (
-    <div className="@container flex flex-col gap-3">
-      {showToolbar ? (
-        <div className="flex flex-wrap items-center gap-2">
-          {canSelect ? (
-            <Button
-              type="button"
-              variant="secondary"
-              size="sm"
-              isDisabled={isPending || images.length === 0}
-              onPress={allSelected ? deselectAll : selectAll}
-            >
-              {allSelected ? "Deselect all" : "Select all"}
-            </Button>
-          ) : null}
-          {canReorder ? (
-            <Button
-              type="button"
-              variant="secondary"
-              size="sm"
-              isDisabled={isPending}
-              onPress={() => {
-                setSelectedIndexes(new Set());
-                setIsReordering(true);
-              }}
-            >
-              <ArrowUpDown className="size-4" />
-              Reorder
-            </Button>
-          ) : null}
-          {showActionsMenu ? (
-            <BulkActionsMenu
-              actions={bulkActions}
-              onAction={(actionId) => {
-                if (actionId === "migrate-crm-images")
-                  migrateIntegrationImagesModal.open();
-                if (actionId === "delete") deleteConfirm.open();
-                if (actionId === "create-from-property") createConfirm.open();
-                if (actionId === "copy-to-tracked") copyConfirm.open();
-                if (actionId === "copy-to-tracked-watermark")
-                  copyWithWatermarkConfirm.open();
-                if (actionId === "estateweb-options")
-                  estateWebOptionsModal.open();
-                if (actionId === "remove-watermark")
-                  removeWatermarkModal.open();
-              }}
-              isPending={isPending}
-              label="Actions"
-            />
-          ) : null}
-          {selectedCount > 0 ? (
-            <span className="text-xs text-muted">{selectedCount} selected</span>
-          ) : null}
-        </div>
-      ) : null}
-      <div
-        className={cn(
-          "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3",
-          expanded
-            ? "overflow-y-auto max-h-[calc(3*((100cqi-0.75rem)/2)+1.5rem)] sm:max-h-[calc(3*((100cqi-1.5rem)/3)+1.5rem)] md:max-h-[calc(3*((100cqi-2.25rem)/4)+1.5rem)]"
-            : "overflow-hidden max-h-[calc((100cqi-0.75rem)/2)] sm:max-h-[calc((100cqi-1.5rem)/3)] md:max-h-[calc((100cqi-2.25rem)/4)]",
-        )}
-      >
-        {images.map((image, index) => {
-          const isSelected = selectedIndexes.has(index);
-          const showCheckbox = canSelect && isImageSelectable(image);
-
-          return (
-            <div
-              key={image.key}
-              className={cn(
-                "group relative aspect-square overflow-hidden rounded-lg border transition-colors",
-                isSelected
-                  ? "border-accent ring-2 ring-accent/40"
-                  : "border-border hover:border-accent/50",
-              )}
-            >
-              <PropertyPhoto
-                src={image.url}
-                fallbackSrc={fallbackImages[index] ?? fallbackImages[0] ?? null}
-                alt={`${title} photo ${index + 1}`}
-                className="size-full object-cover"
-              />
-              {showCheckbox ? (
-                <div
-                  className={cn(
-                    "absolute left-2 top-2 z-10 transition-opacity",
-                    isSelected || selectedCount > 0
-                      ? "opacity-100"
-                      : "opacity-100 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 [@media(hover:hover)]:focus-within:opacity-100",
-                  )}
-                  onClick={(event) => {
-                    event.preventDefault();
-                    event.stopPropagation();
-                  }}
-                  onKeyDown={(event) => event.stopPropagation()}
-                >
-                  <Checkbox
-                    aria-label={`Select photo ${index + 1}`}
-                    isSelected={isSelected}
-                    onChange={(selected) => {
-                      setSelectedIndexes((current) => {
-                        const next = new Set(current);
-                        if (selected) next.add(index);
-                        else next.delete(index);
-                        return next;
-                      });
-                    }}
-                    className="rounded-md bg-background/90 p-1 shadow-sm backdrop-blur-sm"
-                  >
-                    <Checkbox.Content>
-                      <Checkbox.Control>
-                        <Checkbox.Indicator />
-                      </Checkbox.Control>
-                    </Checkbox.Content>
-                  </Checkbox>
-                </div>
-              ) : null}
-              {image.crmImageId != null ? (
-                <div
-                  className="absolute right-2 top-2 z-10"
-                  onClick={(event) => {
-                    event.preventDefault();
-                    event.stopPropagation();
-                  }}
-                >
-                  <Tooltip delay={150}>
-                    <Tooltip.Trigger>
-                      <span
-                        tabIndex={0}
-                        className="inline-flex items-center justify-center rounded-md bg-background/90 p-1 text-accent shadow-sm backdrop-blur-sm"
-                        aria-label="Synced to CRM"
-                      >
-                        <CloudCheck className="size-3.5" />
-                      </span>
-                    </Tooltip.Trigger>
-                    <Tooltip.Content className="max-w-56 px-2 py-1.5 text-xs leading-snug">
-                      <p className="font-medium text-foreground">
-                        Synced to CRM
-                      </p>
-                      <p className="text-muted">
-                        CRM image #{image.crmImageId}
-                      </p>
-                      <p className="text-muted">
-                        Visible on:{" "}
-                        {[
-                          image.show_on_site ? "site" : null,
-                          image.show_on_groups ? "groups" : null,
-                          image.show_on_foreign_agents
-                            ? "foreign agents"
-                            : null,
-                        ]
-                          .filter(Boolean)
-                          .join(", ") || "nowhere"}
-                      </p>
-                    </Tooltip.Content>
-                  </Tooltip>
-                </div>
-              ) : null}
-            </div>
-          );
-        })}
-      </div>
-      {canExpand ? (
-        <Button
-          type="button"
-          variant="secondary"
-          size="sm"
-          className="self-start"
-          onPress={() => setExpanded((current) => !current)}
-        >
-          {expanded ? "Show less" : "Show more"}
-        </Button>
-      ) : null}
-      {onDeleteSelected ? (
-        <ConfirmationDialog
-          state={deleteConfirm}
-          title={`Delete ${selectedCrmIds.length} CRM ${selectedCrmIds.length === 1 ? "image" : "images"}?`}
-          description="Selected images will be removed from the linked CRM and refreshed locally."
-          confirmLabel="Delete"
-          onConfirm={handleDeleteConfirm}
-          isPending={isDeletePending}
-        />
-      ) : null}
-      {canCreateFromPropertyImages && onCreateSelected ? (
-        <ConfirmationDialog
-          state={createConfirm}
-          title={`Upload ${selectedPropertyIndexes.length} ${selectedPropertyIndexes.length === 1 ? "photo" : "photos"} to CRM?`}
-          description="Selected scraped photos will be uploaded to the linked CRM."
-          confirmLabel="Upload"
-          onConfirm={handleCreateConfirm}
-          isPending={isCreatePending}
-        />
-      ) : null}
-      {canCopyToTracked && onCopySelected ? (
-        <>
-          <ConfirmationDialog
-            state={copyConfirm}
-            title={`Copy ${selectedPropertyIndexes.length} ${selectedPropertyIndexes.length === 1 ? "photo" : "photos"} to tracked images?`}
-            description="Selected normalized photos will be added to this property's tracked images and uploaded to the linked CRM."
-            confirmLabel="Copy"
-            onConfirm={handleCopyConfirm}
-            isPending={isCopyToTrackedPending}
-          />
-          <ConfirmationDialog
-            state={copyWithWatermarkConfirm}
-            title={`Copy ${selectedPropertyIndexes.length} ${selectedPropertyIndexes.length === 1 ? "photo" : "photos"} to tracked images (remove watermark)?`}
-            description="Each selected photo will be run through Dewatermark, then the clean result will be added to this property's tracked images and uploaded to the linked CRM."
-            confirmLabel="Copy"
-            onConfirm={handleCopyWithWatermarkConfirm}
-            isPending={isCopyToTrackedPending}
-          />
-        </>
-      ) : null}
-      {canUpdateEstateWebImageOptions && onUpdateEstateWebImageOptions ? (
-        <EstateWebImageOptionsModal
-          state={estateWebOptionsModal}
-          selectedCount={selectedCrmIds.length}
-          initialOptions={selectedEstateWebOptions}
-          onConfirm={handleEstateWebOptionsConfirm}
-          isPending={isUpdateEstateWebImageOptionsPending}
-        />
-      ) : null}
-      {canRemoveWatermark && onRemoveWatermark ? (
-        <RemoveWatermarkModal
-          state={removeWatermarkModal}
-          selectedCount={selectedCrmIds.length}
-          onConfirm={handleRemoveWatermarkConfirm}
-          isPending={isRemoveWatermarkPending}
-        />
-      ) : null}
-      {canMigrate ? (
-        <MigrateIntegrationImagesModal
-          state={migrateIntegrationImagesModal}
-          onConfirm={handleMigrateConfirm}
-          isPending={isMigrateIntegrationImagesPending}
-        />
-      ) : null}
-    </div>
-  );
-}
 
 interface PropertyDetailViewProps {
   property: PropertyDetailViewData;
@@ -936,9 +324,11 @@ export function PropertyDetailView({
   const normalizedImages = (property.canonical_images ?? []).filter(
     (url): url is string => typeof url === "string" && url.length > 0,
   );
-  const [systemImagesTab, setSystemImagesTab] = useState<SystemImagesTab>(
-    SYSTEM_IMAGES_TABS.normalized,
+  const propertyImageIdentities = new Set(
+    displayImages.map((image) => normalizeSourceImageIdentity(image.url)),
   );
+  const isOriginalOnProperty = (image: PropertyDisplayImage) =>
+    propertyImageIdentities.has(normalizeSourceImageIdentity(image.url));
   const heroImage = displayImages[0] ?? null;
   const heroFallback = fallbackImages[0] ?? null;
   const canManageIntegrationImages =
@@ -961,6 +351,39 @@ export function PropertyDetailView({
     canCopyNormalizedImages &&
     Boolean(onCopyNormalizedImages) &&
     Boolean(property.integration_property_id);
+  const originalDisplayImages = toPlainDisplayImages(normalizedImages, "normalized");
+  const canCompareOriginals =
+    property.canonical_images !== undefined && normalizedImages.length > 0;
+  const showAdvancedEditing = canCompareOriginals || canManageIntegrationImages;
+  const compareOverlay = useOverlayState();
+  const userImagesGridProps: PropertyImagesGridProps = {
+    images: displayImages,
+    fallbackImages,
+    title: property.title,
+    selectable: canManageIntegrationImages,
+    canCreateFromPropertyImages:
+      canCreateIntegrationImages &&
+      Boolean(onCreateIntegrationImages) &&
+      Boolean(property.integration_property_id),
+    canUpdateEstateWebImageOptions:
+      canUpdateEstateWebImageOptions && Boolean(onUpdateEstateWebImageOptions),
+    canRemoveWatermark: canRemoveWatermark && Boolean(onRemoveWatermark),
+    canMigrateIntegrationImages:
+      canMigrateIntegrationImages && Boolean(onMigrateIntegrationImages),
+    canReorderIntegrationImages,
+    onDeleteSelected: onDeleteIntegrationImages,
+    onCreateSelected: onCreateIntegrationImages,
+    onUpdateEstateWebImageOptions,
+    onRemoveWatermark,
+    onMigrateIntegrationImages,
+    onReorderIntegrationImages,
+    isDeletePending: isDeletingIntegrationImages,
+    isCreatePending: isCreatingIntegrationImages,
+    isUpdateEstateWebImageOptionsPending: isUpdatingEstateWebImageOptions,
+    isRemoveWatermarkPending: isRemovingWatermark,
+    isMigrateIntegrationImagesPending: isMigratingIntegrationImages,
+    isReorderPending: isReorderingIntegrationImages,
+  };
   const primaryLink =
     sourceLinks.find((link) => link.is_primary_source) ?? sourceLinks[0] ?? null;
   const agencyName = primaryLink?.source_property.source_agency?.name ?? null;
@@ -1368,141 +791,44 @@ export function PropertyDetailView({
       </section>
 
       <section className="flex min-w-0 flex-col gap-4 rounded-xl border border-border bg-surface p-4 sm:p-5">
-        <h2 className="text-sm font-semibold text-foreground">Images</h2>
-        {!displayImages.length ? (
-          canMigrateIntegrationImages && onMigrateIntegrationImages ? (
-            <div className="flex flex-col gap-3">
-              <p className="text-sm text-muted">No images yet.</p>
-              <PropertyImagesGrid
-                images={[]}
-                fallbackImages={fallbackImages}
-                title={property.title}
-                canMigrateIntegrationImages
-                onMigrateIntegrationImages={onMigrateIntegrationImages}
-                isMigrateIntegrationImagesPending={isMigratingIntegrationImages}
-              />
-            </div>
-          ) : (
-            <p className="text-sm text-muted">No images yet.</p>
-          )
+        <div className="flex min-w-0 flex-wrap items-center gap-3">
+          {showAdvancedEditing ? (
+            <Button
+              type="button"
+              variant="secondary"
+              size="lg"
+              onPress={compareOverlay.open}
+            >
+              <Columns2 className="size-5" />
+              Advanced editing
+            </Button>
+          ) : null}
+          <h2 className="text-sm font-semibold text-foreground">Images</h2>
+        </div>
+        {displayImages.length === 0 ? (
+          <p className="text-sm text-muted">No images yet.</p>
         ) : (
           <PropertyImagesGrid
             images={displayImages}
             fallbackImages={fallbackImages}
             title={property.title}
-            selectable={canManageIntegrationImages}
-            canCreateFromPropertyImages={
-              canCreateIntegrationImages &&
-              Boolean(onCreateIntegrationImages) &&
-              Boolean(property.integration_property_id)
-            }
-            canUpdateEstateWebImageOptions={
-              canUpdateEstateWebImageOptions &&
-              Boolean(onUpdateEstateWebImageOptions)
-            }
-            canRemoveWatermark={
-              canRemoveWatermark && Boolean(onRemoveWatermark)
-            }
-            canMigrateIntegrationImages={
-              canMigrateIntegrationImages &&
-              Boolean(onMigrateIntegrationImages)
-            }
-            onDeleteSelected={onDeleteIntegrationImages}
-            onCreateSelected={onCreateIntegrationImages}
-            onUpdateEstateWebImageOptions={onUpdateEstateWebImageOptions}
-            onRemoveWatermark={onRemoveWatermark}
-            onMigrateIntegrationImages={onMigrateIntegrationImages}
-            canReorderIntegrationImages={canReorderIntegrationImages}
-            onReorderIntegrationImages={onReorderIntegrationImages}
-            isReorderPending={isReorderingIntegrationImages}
-            isDeletePending={isDeletingIntegrationImages}
-            isCreatePending={isCreatingIntegrationImages}
-            isUpdateEstateWebImageOptionsPending={
-              isUpdatingEstateWebImageOptions
-            }
-            isRemoveWatermarkPending={isRemovingWatermark}
-            isMigrateIntegrationImagesPending={isMigratingIntegrationImages}
           />
         )}
       </section>
 
-      {property.canonical_images !== undefined ? (
-        <section className="flex min-w-0 flex-col gap-4 rounded-xl border border-border bg-surface p-4 sm:p-5">
-          <div className="flex min-w-0 flex-col gap-0.5">
-            <h2 className="text-sm font-semibold text-foreground">
-              Original images
-            </h2>
-            <p className="text-xs text-muted">
-              The agency's original photos for this property — separate from
-              the CRM/integration images shown above.
-            </p>
-          </div>
-          <Tabs
-            className="relative w-full"
-            variant="secondary"
-            selectedKey={systemImagesTab}
-            onSelectionChange={(key) =>
-              setSystemImagesTab(String(key) as SystemImagesTab)
-            }
-          >
-            <Tabs.ListContainer className="relative z-10">
-              <Tabs.List aria-label="Original images">
-                <Tabs.Tab id={SYSTEM_IMAGES_TABS.normalized}>
-                  Normalized ({normalizedImages.length})
-                  <Tabs.Indicator />
-                </Tabs.Tab>
-                <Tabs.Tab id={SYSTEM_IMAGES_TABS.tracked}>
-                  Tracked ({fallbackImages.length})
-                  <Tabs.Indicator />
-                </Tabs.Tab>
-              </Tabs.List>
-            </Tabs.ListContainer>
-
-            <Tabs.Panel
-              id={SYSTEM_IMAGES_TABS.normalized}
-              className="pt-4 data-[exiting]:pointer-events-none"
-            >
-              <p className="mb-3 text-xs text-muted">
-                All images from the latest normalized scrape, before any
-                per-agency image limit is applied.
-              </p>
-              {normalizedImages.length === 0 ? (
-                <p className="text-sm text-muted">No normalized images found.</p>
-              ) : (
-                <PropertyImagesGrid
-                  images={toPlainDisplayImages(normalizedImages, "normalized")}
-                  fallbackImages={[]}
-                  title={`${property.title} (normalized)`}
-                  selectable={canCopyNormalizedImagesToTracked}
-                  canCopyToTracked={canCopyNormalizedImagesToTracked}
-                  onCopySelected={onCopyNormalizedImages}
-                  isCopyToTrackedPending={isCopyingNormalizedImages}
-                />
-              )}
-            </Tabs.Panel>
-
-            <Tabs.Panel
-              id={SYSTEM_IMAGES_TABS.tracked}
-              className="pt-4 data-[exiting]:pointer-events-none"
-            >
-              <p className="mb-3 text-xs text-muted">
-                The images kept for this tracked property, after any
-                per-agency image limit.
-              </p>
-              {fallbackImages.length === 0 ? (
-                <p className="text-sm text-muted">
-                  No tracked images stored for this property.
-                </p>
-              ) : (
-                <PropertyImagesGrid
-                  images={toPlainDisplayImages(fallbackImages, "system")}
-                  fallbackImages={[]}
-                  title={`${property.title} (system)`}
-                />
-              )}
-            </Tabs.Panel>
-          </Tabs>
-        </section>
+      {showAdvancedEditing ? (
+        <PropertyImagesCompareDialog
+          state={compareOverlay}
+          title={property.title}
+          userImagesGridProps={userImagesGridProps}
+          originalImages={originalDisplayImages}
+          isOriginalOnProperty={isOriginalOnProperty}
+          canCopyOriginals={canCopyNormalizedImagesToTracked}
+          onCopyOriginals={onCopyNormalizedImages}
+          isCopyingOriginals={isCopyingNormalizedImages}
+          imageLimit={property.image_limit ?? null}
+          trackedImageCount={property.tracked_image_count ?? 0}
+        />
       ) : null}
 
       <section className="flex min-w-0 flex-col gap-4 rounded-xl border border-border bg-surface p-4 sm:p-5">

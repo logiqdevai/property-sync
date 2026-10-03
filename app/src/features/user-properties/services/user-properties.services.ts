@@ -1,6 +1,8 @@
 import axiosInstance from "@/config/api/axios";
 import { ApiRoutes } from "@/config/api/routes";
 import type {
+  QueuedImageJobResponse,
+  ImageJobStatus,
   DeleteUserPropertiesPayload,
   DedupeUserPropertiesPayload,
   DedupeUserPropertiesResult,
@@ -219,7 +221,7 @@ export const migrateAdminUserPropertyIntegrationImages = async (
 export const deleteUserPropertyIntegrationImages = async (
   id: string,
   imageIds: number[],
-): Promise<UserPropertyDetail> => {
+): Promise<QueuedImageJobResponse> => {
   try {
     const response = await axiosInstance.post(
       ApiRoutes.userProperties.deleteIntegrationImages(id),
@@ -236,7 +238,7 @@ export const deleteUserPropertyIntegrationImages = async (
 export const deleteAdminUserPropertyIntegrationImages = async (
   id: string,
   imageIds: number[],
-): Promise<UserPropertyDetail> => {
+): Promise<QueuedImageJobResponse> => {
   try {
     const response = await axiosInstance.post(
       ApiRoutes.admin.userProperties.deleteIntegrationImages(id),
@@ -323,7 +325,7 @@ export const updateUserPropertyIntegrationImages = async (
 export const reorderUserPropertyIntegrationImages = async (
   id: string,
   payload: ReorderIntegrationImagesPayload,
-): Promise<UserPropertyDetail> => {
+): Promise<QueuedImageJobResponse> => {
   try {
     const response = await axiosInstance.post(
       ApiRoutes.userProperties.reorderIntegrationImages(id),
@@ -843,6 +845,38 @@ export const truncateUserPropertyDescriptions = async (
   } catch (error: any) {
     throw new Error(
       error?.response?.data?.message || "Failed to truncate property descriptions.",
+    );
+  }
+};
+
+export const getUserPropertyImageJob = async (
+  id: string,
+  jobLogId: string,
+): Promise<ImageJobStatus> => {
+  try {
+    const response = await axiosInstance.get(
+      ApiRoutes.userProperties.imageJob(id, jobLogId),
+    );
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error?.response?.data?.message || "Failed to read image job status.",
+    );
+  }
+};
+
+export const getAdminUserPropertyImageJob = async (
+  id: string,
+  jobLogId: string,
+): Promise<ImageJobStatus> => {
+  try {
+    const response = await axiosInstance.get(
+      ApiRoutes.admin.userProperties.imageJob(id, jobLogId),
+    );
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error?.response?.data?.message || "Failed to read image job status.",
     );
   }
 };

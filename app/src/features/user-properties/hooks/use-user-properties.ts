@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "@/hooks/use-toast";
+import type { QueryClient } from "@tanstack/react-query";
 import {
   deleteAdminUserProperties,
   deleteAdminUserProperty,
@@ -22,6 +23,8 @@ import {
   migrateUserPropertyIntegrationImages,
   deleteAdminUserPropertyIntegrationImages,
   deleteUserPropertyIntegrationImages,
+  getAdminUserPropertyImageJob,
+  getUserPropertyImageJob,
   createAdminUserPropertyIntegrationImages,
   createUserPropertyIntegrationImages,
   copyUserPropertyNormalizedImages,
@@ -217,6 +220,49 @@ export const usePushUserPropertyImagesToCrm = () => {
   });
 };
 
+const IMAGE_JOB_POLL_INTERVAL_MS = 3000;
+const IMAGE_JOB_POLL_TIMEOUT_MS = 15 * 60 * 1000;
+
+// Users can't read job logs, so the property's photos are refetched once the queued job settles.
+function trackQueuedImageJob(
+  queryClient: QueryClient,
+  {
+    jobLogId,
+    propertyId,
+    admin,
+    label,
+  }: { jobLogId: string; propertyId: string; admin: boolean; label: string },
+) {
+  const queryKey = [admin ? "adminUserProperties" : "userProperties"];
+  const startedAt = Date.now();
+  const check = async () => {
+    try {
+      const job = admin
+        ? await getAdminUserPropertyImageJob(propertyId, jobLogId)
+        : await getUserPropertyImageJob(propertyId, jobLogId);
+      if (job.status === "COMPLETED" || job.status === "FAILED") {
+        queryClient.invalidateQueries({ queryKey });
+        if (job.status === "COMPLETED") {
+          toast({ title: `${label} finished`, duration: 3000, variant: "success" });
+        } else {
+          toast({
+            title: `${label} failed`,
+            description: job.error_message ?? undefined,
+            variant: "error",
+          });
+        }
+        return;
+      }
+    } catch {
+      // A failed status read is retried on the next tick.
+    }
+    if (Date.now() - startedAt < IMAGE_JOB_POLL_TIMEOUT_MS) {
+      setTimeout(check, IMAGE_JOB_POLL_INTERVAL_MS);
+    }
+  };
+  setTimeout(check, IMAGE_JOB_POLL_INTERVAL_MS);
+}
+
 export const useMigrateUserPropertyIntegrationImages = () => {
   const queryClient = useQueryClient();
 
@@ -290,13 +336,17 @@ export const useDeleteUserPropertyIntegrationImages = () => {
     mutationFn: ({ id, imageIds }: { id: string; imageIds: number[] }) =>
       deleteUserPropertyIntegrationImages(id, imageIds),
     onSuccess: (data, variables) => {
-      queryClient.setQueryData(["userProperties", "detail", data.id], data);
       queryClient.invalidateQueries({ queryKey: ["userProperties"] });
-      const count = variables.imageIds.length;
+      trackQueuedImageJob(queryClient, {
+        jobLogId: data.job_log_id,
+        propertyId: variables.id,
+        admin: false,
+        label: "CMS image delete",
+      });
       toast({
-        title: "CMS images deleted",
-        description: `Removed ${count} ${count === 1 ? "image" : "images"} from CMS.`,
-        duration: 2500,
+        title: "CMS image delete started",
+        description: data.message,
+        duration: 4000,
         variant: "success",
       });
     },
@@ -317,13 +367,17 @@ export const useDeleteAdminUserPropertyIntegrationImages = () => {
     mutationFn: ({ id, imageIds }: { id: string; imageIds: number[] }) =>
       deleteAdminUserPropertyIntegrationImages(id, imageIds),
     onSuccess: (data, variables) => {
-      queryClient.setQueryData(["adminUserProperties", "detail", data.id], data);
       queryClient.invalidateQueries({ queryKey: ["adminUserProperties"] });
-      const count = variables.imageIds.length;
+      trackQueuedImageJob(queryClient, {
+        jobLogId: data.job_log_id,
+        propertyId: variables.id,
+        admin: true,
+        label: "CMS image delete",
+      });
       toast({
-        title: "CMS images deleted",
-        description: `Removed ${count} ${count === 1 ? "image" : "images"} from CMS.`,
-        duration: 2500,
+        title: "CMS image delete started",
+        description: data.message,
+        duration: 4000,
         variant: "success",
       });
     },
@@ -370,6 +424,8 @@ export const useCreateUserPropertyIntegrationImages = () => {
 };
 
 export const useCopyUserPropertyNormalizedImages = () => {
+  const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: ({
       id,
@@ -380,7 +436,13 @@ export const useCopyUserPropertyNormalizedImages = () => {
       imageIndexes: number[];
       removeWatermark?: boolean;
     }) => copyUserPropertyNormalizedImages(id, imageIndexes, removeWatermark),
-    onSuccess: (data) => {
+    onSuccess: (data, variables) => {
+      trackQueuedImageJob(queryClient, {
+        jobLogId: data.job_log_id,
+        propertyId: variables.id,
+        admin: false,
+        label: "Copy to CRM",
+      });
       toast({
         title: "Copy to tracked images started",
         description: data.message,
@@ -465,13 +527,18 @@ export const useReorderUserPropertyIntegrationImages = () => {
       ...payload
     }: { id: string } & ReorderIntegrationImagesPayload) =>
       reorderUserPropertyIntegrationImages(id, payload),
-    onSuccess: (data) => {
-      queryClient.setQueryData(["userProperties", "detail", data.id], data);
+    onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["userProperties"] });
+      trackQueuedImageJob(queryClient, {
+        jobLogId: data.job_log_id,
+        propertyId: variables.id,
+        admin: false,
+        label: "Image reorder",
+      });
       toast({
-        title: "Image order saved",
-        description: "The new order was applied in your CRM.",
-        duration: 2500,
+        title: "Image reorder started",
+        description: data.message,
+        duration: 4000,
         variant: "success",
       });
     },
