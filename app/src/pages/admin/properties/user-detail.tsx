@@ -12,6 +12,7 @@ import { PropertyDetailView } from "@/components/ui/property-detail-view";
 import { getCrmPropertyAppUrl } from "@/config/constants/crm-app-urls";
 import {
   useAdminUserProperty,
+  usePendingImageOps,
   useDeleteAdminUserProperty,
   useDeleteAdminUserPropertyIntegrationImages,
   useCreateAdminUserPropertyIntegrationImages,
@@ -31,6 +32,7 @@ export default function UserPropertyDetailPage() {
   const createIntegrationImages = useCreateAdminUserPropertyIntegrationImages();
   const updateIntegrationImages = useUpdateAdminUserPropertyIntegrationImages();
   const removeWatermarkImages = useRemoveAdminUserPropertyWatermarkImages();
+  const pendingImageOps = usePendingImageOps(id);
 
   const headerActions = useMemo<TableRowAction[]>(() => {
     if (!property) return [];
@@ -102,6 +104,7 @@ export default function UserPropertyDetailPage() {
   return (
     <PropertyDetailView
       property={property}
+      pendingImageOps={pendingImageOps}
       backHref={Routes.admin.properties.userList}
       backLabel="← Back to user properties"
       onDeleteIntegrationImages={async (imageIds) => {

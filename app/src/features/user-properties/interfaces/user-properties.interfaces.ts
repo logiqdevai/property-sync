@@ -566,3 +566,7 @@ export interface ImageJobStatus {
   error_message: string | null;
   finished_at: string | null;
 }
+
+export type PendingImageOp =
+  | { id: string; kind: "add"; count: number }
+  | { id: string; kind: "remove"; crmImageIds: number[] };

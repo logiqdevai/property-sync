@@ -74,6 +74,7 @@ import type {
   FixEstateWebRemovalPayload,
   RenormalizeUserPropertiesPayload,
   BulkDeleteIntegrationImagesPayload,
+  PendingImageOp,
   BulkMigrateIntegrationImagesPayload,
   SplitUserPropertiesPayload,
   TruncateUserPropertyDescriptionsPayload,
@@ -223,6 +224,42 @@ export const usePushUserPropertyImagesToCrm = () => {
 const IMAGE_JOB_POLL_INTERVAL_MS = 3000;
 const IMAGE_JOB_POLL_TIMEOUT_MS = 15 * 60 * 1000;
 
+const pendingImageOpsKey = (propertyId: string) => ["imageOps", propertyId];
+
+function getPendingImageOps(queryClient: QueryClient, propertyId: string) {
+  return queryClient.getQueryData<PendingImageOp[]>(pendingImageOpsKey(propertyId)) ?? [];
+}
+
+function addPendingImageOp(queryClient: QueryClient, propertyId: string, op: PendingImageOp) {
+  queryClient.setQueryData(pendingImageOpsKey(propertyId), [...getPendingImageOps(queryClient, propertyId), op]);
+}
+
+function replacePendingImageOpId(queryClient: QueryClient, propertyId: string, tempId: string, jobLogId: string) {
+  queryClient.setQueryData(
+    pendingImageOpsKey(propertyId),
+    getPendingImageOps(queryClient, propertyId).map((op) => (op.id === tempId ? { ...op, id: jobLogId } : op)),
+  );
+}
+
+function removePendingImageOp(queryClient: QueryClient, propertyId: string, opId: string) {
+  queryClient.setQueryData(
+    pendingImageOpsKey(propertyId),
+    getPendingImageOps(queryClient, propertyId).filter((op) => op.id !== opId),
+  );
+}
+
+// Adds and removals show on the property's photos until their work settles (inline or queued).
+export const usePendingImageOps = (propertyId: string): PendingImageOp[] => {
+  const { data } = useQuery({
+    queryKey: pendingImageOpsKey(propertyId),
+    queryFn: () => [] as PendingImageOp[],
+    enabled: false,
+    initialData: [] as PendingImageOp[],
+    staleTime: Infinity,
+  });
+  return data;
+};
+
 // Users can't read job logs, so the property's photos are refetched once the queued job settles.
 function trackQueuedImageJob(
   queryClient: QueryClient,
@@ -241,7 +278,8 @@ function trackQueuedImageJob(
         ? await getAdminUserPropertyImageJob(propertyId, jobLogId)
         : await getUserPropertyImageJob(propertyId, jobLogId);
       if (job.status === "COMPLETED" || job.status === "FAILED") {
-        queryClient.invalidateQueries({ queryKey });
+        await queryClient.invalidateQueries({ queryKey });
+        removePendingImageOp(queryClient, propertyId, jobLogId);
         if (job.status === "COMPLETED") {
           toast({ title: `${label} finished`, duration: 3000, variant: "success" });
         } else {
@@ -258,6 +296,8 @@ function trackQueuedImageJob(
     }
     if (Date.now() - startedAt < IMAGE_JOB_POLL_TIMEOUT_MS) {
       setTimeout(check, IMAGE_JOB_POLL_INTERVAL_MS);
+    } else {
+      removePendingImageOp(queryClient, propertyId, jobLogId);
     }
   };
   setTimeout(check, IMAGE_JOB_POLL_INTERVAL_MS);
@@ -335,7 +375,13 @@ export const useDeleteUserPropertyIntegrationImages = () => {
   return useMutation({
     mutationFn: ({ id, imageIds }: { id: string; imageIds: number[] }) =>
       deleteUserPropertyIntegrationImages(id, imageIds),
-    onSuccess: (data, variables) => {
+    onMutate: ({ id, imageIds }) => {
+      const tempId = `temp-${Date.now()}`;
+      addPendingImageOp(queryClient, id, { id: tempId, kind: "remove", crmImageIds: imageIds });
+      return { tempId };
+    },
+    onSuccess: (data, variables, context) => {
+      replacePendingImageOpId(queryClient, variables.id, context.tempId, data.job_log_id);
       queryClient.invalidateQueries({ queryKey: ["userProperties"] });
       trackQueuedImageJob(queryClient, {
         jobLogId: data.job_log_id,
@@ -350,7 +396,8 @@ export const useDeleteUserPropertyIntegrationImages = () => {
         variant: "success",
       });
     },
-    onError: (error: Error) => {
+    onError: (error: Error, variables, context) => {
+      removePendingImageOp(queryClient, variables.id, context?.tempId ?? "");
       toast({
         title: "Could not delete CMS images",
         description: error.message,
@@ -366,7 +413,13 @@ export const useDeleteAdminUserPropertyIntegrationImages = () => {
   return useMutation({
     mutationFn: ({ id, imageIds }: { id: string; imageIds: number[] }) =>
       deleteAdminUserPropertyIntegrationImages(id, imageIds),
-    onSuccess: (data, variables) => {
+    onMutate: ({ id, imageIds }) => {
+      const tempId = `temp-${Date.now()}`;
+      addPendingImageOp(queryClient, id, { id: tempId, kind: "remove", crmImageIds: imageIds });
+      return { tempId };
+    },
+    onSuccess: (data, variables, context) => {
+      replacePendingImageOpId(queryClient, variables.id, context.tempId, data.job_log_id);
       queryClient.invalidateQueries({ queryKey: ["adminUserProperties"] });
       trackQueuedImageJob(queryClient, {
         jobLogId: data.job_log_id,
@@ -381,7 +434,8 @@ export const useDeleteAdminUserPropertyIntegrationImages = () => {
         variant: "success",
       });
     },
-    onError: (error: Error) => {
+    onError: (error: Error, variables, context) => {
+      removePendingImageOp(queryClient, variables.id, context?.tempId ?? "");
       toast({
         title: "Could not delete CMS images",
         description: error.message,
@@ -402,7 +456,13 @@ export const useCreateUserPropertyIntegrationImages = () => {
       id: string;
       imageIndexes: number[];
     }) => createUserPropertyIntegrationImages(id, imageIndexes),
-    onSuccess: (data, variables) => {
+    onMutate: ({ id, imageIndexes }) => {
+      const tempId = `temp-${Date.now()}`;
+      addPendingImageOp(queryClient, id, { id: tempId, kind: "add", count: imageIndexes.length });
+      return { tempId };
+    },
+    onSuccess: (data, variables, context) => {
+      removePendingImageOp(queryClient, variables.id, context.tempId);
       queryClient.setQueryData(["userProperties", "detail", data.id], data);
       queryClient.invalidateQueries({ queryKey: ["userProperties"] });
       const count = variables.imageIndexes.length;
@@ -413,7 +473,8 @@ export const useCreateUserPropertyIntegrationImages = () => {
         variant: "success",
       });
     },
-    onError: (error: Error) => {
+    onError: (error: Error, variables, context) => {
+      removePendingImageOp(queryClient, variables.id, context?.tempId ?? "");
       toast({
         title: "Could not upload photos",
         description: error.message,
@@ -436,7 +497,13 @@ export const useCopyUserPropertyNormalizedImages = () => {
       imageIndexes: number[];
       removeWatermark?: boolean;
     }) => copyUserPropertyNormalizedImages(id, imageIndexes, removeWatermark),
-    onSuccess: (data, variables) => {
+    onMutate: ({ id, imageIndexes }) => {
+      const tempId = `temp-${Date.now()}`;
+      addPendingImageOp(queryClient, id, { id: tempId, kind: "add", count: imageIndexes.length });
+      return { tempId };
+    },
+    onSuccess: (data, variables, context) => {
+      replacePendingImageOpId(queryClient, variables.id, context.tempId, data.job_log_id);
       trackQueuedImageJob(queryClient, {
         jobLogId: data.job_log_id,
         propertyId: variables.id,
@@ -450,7 +517,8 @@ export const useCopyUserPropertyNormalizedImages = () => {
         variant: "success",
       });
     },
-    onError: (error: Error) => {
+    onError: (error: Error, variables, context) => {
+      removePendingImageOp(queryClient, variables.id, context?.tempId ?? "");
       toast({
         title: "Could not copy photos",
         description: error.message,
@@ -471,7 +539,13 @@ export const useCreateAdminUserPropertyIntegrationImages = () => {
       id: string;
       imageIndexes: number[];
     }) => createAdminUserPropertyIntegrationImages(id, imageIndexes),
-    onSuccess: (data, variables) => {
+    onMutate: ({ id, imageIndexes }) => {
+      const tempId = `temp-${Date.now()}`;
+      addPendingImageOp(queryClient, id, { id: tempId, kind: "add", count: imageIndexes.length });
+      return { tempId };
+    },
+    onSuccess: (data, variables, context) => {
+      removePendingImageOp(queryClient, variables.id, context.tempId);
       queryClient.setQueryData(["adminUserProperties", "detail", data.id], data);
       queryClient.invalidateQueries({ queryKey: ["adminUserProperties"] });
       const count = variables.imageIndexes.length;
@@ -482,7 +556,8 @@ export const useCreateAdminUserPropertyIntegrationImages = () => {
         variant: "success",
       });
     },
-    onError: (error: Error) => {
+    onError: (error: Error, variables, context) => {
+      removePendingImageOp(queryClient, variables.id, context?.tempId ?? "");
       toast({
         title: "Could not upload photos",
         description: error.message,

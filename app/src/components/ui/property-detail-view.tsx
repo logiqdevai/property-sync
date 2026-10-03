@@ -45,7 +45,10 @@ import type {
   PropertyType,
 } from "@/features/properties/interfaces/properties.interfaces";
 import type { IntegrationProperty } from "@/features/integration-property/interfaces/integration-property.interfaces";
-import type { PropertyLocalizedContent } from "@/features/user-properties/interfaces/user-properties.interfaces";
+import type {
+  PendingImageOp,
+  PropertyLocalizedContent,
+} from "@/features/user-properties/interfaces/user-properties.interfaces";
 import { getContentLanguageLabel } from "@/config/constants/dropdowns/agencies/content-language-form.options";
 import {
   normalizeSourceImageIdentity,
@@ -277,6 +280,7 @@ interface PropertyDetailViewProps {
     removeWatermark: boolean,
   ) => Promise<void> | void;
   isCopyingNormalizedImages?: boolean;
+  pendingImageOps?: PendingImageOp[];
 }
 
 export function PropertyDetailView({
@@ -309,6 +313,7 @@ export function PropertyDetailView({
   canCopyNormalizedImages = false,
   onCopyNormalizedImages,
   isCopyingNormalizedImages = false,
+  pendingImageOps = [],
 }: PropertyDetailViewProps) {
   const sourceLinks = property.source_links ?? [];
   const cmsFieldEntries = (property.cms_fields ?? []) as CmsPropertyFieldEntry[];
@@ -356,6 +361,13 @@ export function PropertyDetailView({
     property.canonical_images !== undefined && normalizedImages.length > 0;
   const showAdvancedEditing = canCompareOriginals || canManageIntegrationImages;
   const compareOverlay = useOverlayState();
+  const pendingRemoveIds = pendingImageOps.flatMap((op) =>
+    op.kind === "remove" ? op.crmImageIds : [],
+  );
+  const pendingAddCount = pendingImageOps.reduce(
+    (sum, op) => (op.kind === "add" ? sum + op.count : sum),
+    0,
+  );
   const userImagesGridProps: PropertyImagesGridProps = {
     images: displayImages,
     fallbackImages,
@@ -383,6 +395,8 @@ export function PropertyDetailView({
     isRemoveWatermarkPending: isRemovingWatermark,
     isMigrateIntegrationImagesPending: isMigratingIntegrationImages,
     isReorderPending: isReorderingIntegrationImages,
+    pendingRemoveIds,
+    pendingAddCount,
   };
   const primaryLink =
     sourceLinks.find((link) => link.is_primary_source) ?? sourceLinks[0] ?? null;
@@ -805,7 +819,7 @@ export function PropertyDetailView({
           ) : null}
           <h2 className="text-sm font-semibold text-foreground">Images</h2>
         </div>
-        {displayImages.length === 0 ? (
+        {!displayImages.length ? (
           <p className="text-sm text-muted">No images yet.</p>
         ) : (
           <PropertyImagesGrid

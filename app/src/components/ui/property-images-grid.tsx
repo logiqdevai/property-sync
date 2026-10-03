@@ -1,6 +1,15 @@
 import { useEffect, useState, type DragEvent } from "react";
 import { Button, Checkbox, Tooltip, useOverlayState } from "@heroui/react";
-import { ArrowUpDown, Check, CloudCheck, Eye, Images, Sparkles, Trash2 } from "lucide-react";
+import {
+  ArrowUpDown,
+  Check,
+  CloudCheck,
+  Eye,
+  Images,
+  Loader2,
+  Sparkles,
+  Trash2,
+} from "lucide-react";
 import { BulkActionsMenu } from "@/components/ui/bulk-actions-menu";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import {
@@ -75,6 +84,8 @@ export interface PropertyImagesGridProps {
   showAll?: boolean;
   isMarked?: (image: PropertyDisplayImage) => boolean;
   copyLimitRemaining?: number | null;
+  pendingRemoveIds?: number[];
+  pendingAddCount?: number;
   onDragChange?: (count: number | null) => void;
   dropHint?: string | null;
   dropHintTone?: "default" | "error";
@@ -121,6 +132,8 @@ export function PropertyImagesGrid({
   showAll = false,
   isMarked,
   copyLimitRemaining = null,
+  pendingRemoveIds = [],
+  pendingAddCount = 0,
   onDragChange,
   dropHint = null,
   dropHintTone = "default",
@@ -175,6 +188,7 @@ export function PropertyImagesGrid({
   // the image doesn't actually support.
   const isImageSelectable = (image: PropertyDisplayImage) => {
     if (isMarked?.(image)) return false;
+    if (image.crmImageId != null && pendingRemoveIds.includes(image.crmImageId)) return false;
     if (image.crmImageId != null) {
       return (
         Boolean(onDeleteSelected) ||
@@ -518,10 +532,13 @@ export function PropertyImagesGrid({
         {images.map((image, index) => {
           const isSelected = selectedIndexes.has(index);
           const showCheckbox = canSelect && isImageSelectable(image);
+          const isPendingRemoval =
+            image.crmImageId != null && pendingRemoveIds.includes(image.crmImageId);
           const canDragTile =
             draggable &&
             image.propertyImageIndex != null &&
-            !isMarked?.(image);
+            !isMarked?.(image) &&
+            !isPendingRemoval;
 
           return (
             <div
@@ -555,8 +572,19 @@ export function PropertyImagesGrid({
                 src={image.url}
                 fallbackSrc={fallbackImages[index] ?? fallbackImages[0] ?? null}
                 alt={`${title} photo ${index + 1}`}
-                className="size-full object-cover"
+                className={cn(
+                  "size-full object-cover transition duration-300",
+                  isPendingRemoval && "opacity-40 grayscale blur-[3px]",
+                )}
               />
+              {isPendingRemoval ? (
+                <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center">
+                  <Loader2
+                    className="size-6 animate-spin text-foreground drop-shadow"
+                    aria-label="Removing photo"
+                  />
+                </div>
+              ) : null}
               {isMarked?.(image) ? (
                 <div className="absolute bottom-2 left-2 z-10">
                   <Tooltip delay={150}>
@@ -659,6 +687,13 @@ export function PropertyImagesGrid({
             </div>
           );
         })}
+        {Array.from({ length: pendingAddCount }, (_, index) => (
+          <div
+            key={`pending-add-${index}`}
+            aria-hidden
+            className="aspect-square animate-pulse rounded-lg border border-border bg-surface-secondary"
+          />
+        ))}
       </div>
       {canExpand && !showAll ? (
         <Button

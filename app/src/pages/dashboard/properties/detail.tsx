@@ -25,6 +25,7 @@ import {
 } from "@/features/estateweb/hooks/use-estateweb";
 import {
   useMigrateUserPropertyIntegrationImages,
+  usePendingImageOps,
   useDeleteUserPropertyIntegrationImages,
   useCreateUserPropertyIntegrationImages,
   useCopyUserPropertyNormalizedImages,
@@ -144,6 +145,7 @@ export default function DashboardPropertyDetailPage() {
   const removeWatermarkImages = useRemoveUserPropertyWatermarkImages();
   const removeWatermarksByCount = useRemoveUserPropertiesWatermarkImages();
   const resetImages = useResetUserPropertyImages();
+  const pendingImageOps = usePendingImageOps(id);
   const produceContent = useProduceUserPropertyContent();
   const truncateDescriptions = useTruncateUserPropertyDescriptions();
   const { data: locationCatalog = [] } = useEstateWebLocationCatalog(isEditing);
@@ -558,6 +560,7 @@ export default function DashboardPropertyDetailPage() {
 
       <PropertyDetailView
         property={property}
+        pendingImageOps={pendingImageOps}
         backHref={backHref}
         backLabel="← Back to my properties"
         showFieldDiff
