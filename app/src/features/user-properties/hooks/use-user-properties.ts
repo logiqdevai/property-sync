@@ -56,6 +56,8 @@ import {
   enqueueImageCapExcessImagesCleanup,
   calculateStaleCrmImages,
   enqueueStaleCrmImagesReplace,
+  previewCrmImageSync,
+  runCrmImageSync,
 } from "../services/user-properties.services";
 import type {
   AdminUserPropertyCountQuery,
@@ -68,6 +70,7 @@ import type {
   EnqueueImageCapExcessImagesCleanupPayload,
   CalculateStaleCrmImagesPayload,
   EnqueueStaleCrmImagesReplacePayload,
+  CrmImageSyncPayload,
   PushUserPropertiesToCrmPayload,
   PushUserPropertiesToCrmResult,
   PushUserPropertiesImagesToCrmPayload,
@@ -1247,6 +1250,32 @@ export const useEnqueueStaleCrmImagesReplace = () => {
     onError: (error: Error) => {
       toast({
         title: "Could not start stale CRM image replacement",
+        description: error.message,
+        variant: "error",
+      });
+    },
+  });
+};
+
+export const usePreviewCrmImageSync = () => {
+  return useMutation({
+    mutationFn: (payload: CrmImageSyncPayload) => previewCrmImageSync(payload),
+    onError: (error: Error) => {
+      toast({
+        title: "Could not preview the CRM image sync",
+        description: error.message,
+        variant: "error",
+      });
+    },
+  });
+};
+
+export const useRunCrmImageSync = () => {
+  return useMutation({
+    mutationFn: (payload: CrmImageSyncPayload) => runCrmImageSync(payload),
+    onError: (error: Error) => {
+      toast({
+        title: "Could not start the CRM image sync",
         description: error.message,
         variant: "error",
       });

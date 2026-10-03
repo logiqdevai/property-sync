@@ -92,6 +92,29 @@ const STORED_DETAIL_RAW_KEYS = [
   'longitude',
 ] as const;
 
+// Below this much visible body text a "loaded" detail page is not a real page.
+const MIN_DETAIL_BODY_TEXT_CHARS = 200;
+
+// A detail page that loaded with an essentially empty body and yielded
+// neither its configured gallery nor its description was not really read --
+// the origin returned a truncated document (head only) behind a 200.
+// Confirmed on cretahouses.gr: such a page was accepted as real, its 0
+// gallery photos fell back to the 3 listing-card photos, and that replaced a
+// stored 54-photo gallery. Treating it as a failed fetch makes the crawl keep
+// the stored data. The body-text check matters: a real, full page for a
+// listing that simply has no photos (e.g. some housemarket plots) must still
+// count as read so its price/title keep updating.
+export function isIncompleteDetailExtraction(
+  extracted: { images: string[]; raw_detail_text: string | null },
+  detailConfig: DetailPageConfig | null | undefined,
+  bodyTextLength: number,
+): boolean {
+  if (!detailConfig?.image_selector) return false;
+  if (extracted.images.length > 0) return false;
+  if (detailConfig.description_selector && extracted.raw_detail_text) return false;
+  return bodyTextLength < MIN_DETAIL_BODY_TEXT_CHARS;
+}
+
 export function getDetailEnrichedAt(
   raw: Record<string, unknown> | null | undefined,
 ): number | null {
@@ -944,6 +967,16 @@ export class DetailEnrichmentService {
           return {
             ...empty,
             error: `access barrier revealed after extraction: ${postExtractState}`,
+          };
+        }
+
+        const bodyTextLength = await page.evaluate(
+          () => document.body?.innerText.trim().length ?? 0,
+        );
+        if (isIncompleteDetailExtraction(extracted, detailConfig, bodyTextLength)) {
+          return {
+            ...empty,
+            error: 'incomplete detail page: no gallery images and no description',
           };
         }
 

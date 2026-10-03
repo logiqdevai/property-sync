@@ -4360,6 +4360,25 @@ export class UserPropertiesService {
     return false;
   }
 
+  // The exact image list syncForProperty would store for this property on its
+  // next crawl: the canonical gallery cut to the tracker's cap, with any
+  // already-processed (paid) GCS copy kept in its slot. Used by the CRM image
+  // sync so it targets the same list the crawl converges on.
+  computeTrackedImages(
+    existingImages: unknown,
+    canonicalImages: Prisma.JsonValue | null | undefined,
+    maxImageCount: number | null | undefined,
+  ): string[] {
+    const merged = this.mergeImagesPreservingProcessed(
+      existingImages,
+      this.truncateImages(canonicalImages, maxImageCount) ?? undefined,
+      maxImageCount === 0,
+    );
+    return Array.isArray(merged)
+      ? merged.filter((url): url is string => typeof url === 'string' && url.length > 0)
+      : [];
+  }
+
   private mergeImagesPreservingProcessed(
     existingImages: unknown,
     nextImages: Prisma.JsonValue | typeof Prisma.JsonNull | undefined,

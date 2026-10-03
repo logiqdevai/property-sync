@@ -39,6 +39,7 @@ import { EstateWebOrphanSitesModal } from "./components/estateweb-orphan-sites-m
 import { DuplicateWatermarkImagesModal } from "./components/duplicate-watermark-images-modal";
 import { ImageCapExcessImagesModal } from "./components/image-cap-excess-images-modal";
 import { StaleCrmImagesModal } from "./components/stale-crm-images-modal";
+import { CrmImageSyncModal } from "./components/crm-image-sync-modal";
 import { RemoveWatermarkByCountModal } from "./components/remove-watermark-by-count-modal";
 import { ProduceContentModal } from "./components/produce-content-modal";
 import { ChangePropertyStatusModal } from "./components/change-property-status-modal";
@@ -346,6 +347,7 @@ export default function DashboardPropertiesListPage() {
   const duplicateWatermarkImagesModal = useOverlayState();
   const imageCapExcessImagesModal = useOverlayState();
   const staleCrmImagesModal = useOverlayState();
+  const crmImageSyncModal = useOverlayState();
   const geocodeModal = useOverlayState();
   const resolveEstateWebLocationsModal = useOverlayState();
   const [manageSitesPropertyIds, setManageSitesPropertyIds] = useState<string[]>([]);
@@ -681,6 +683,12 @@ export default function DashboardPropertiesListPage() {
           adminOnly: true,
         },
         {
+          id: "sync-crm-images",
+          label: "Sync CRM images to \"images to keep\"",
+          icon: RefreshCw,
+          adminOnly: true,
+        },
+        {
           id: "find-duplicate-watermarked-photos",
           label: "Find duplicate watermarked photos",
           icon: Images,
@@ -993,6 +1001,10 @@ export default function DashboardPropertiesListPage() {
     }
     if (actionId === "find-image-cap-excess-images") {
       imageCapExcessImagesModal.open();
+      return;
+    }
+    if (actionId === "sync-crm-images") {
+      crmImageSyncModal.open();
       return;
     }
     if (actionId === "find-stale-crm-images") {
@@ -1953,6 +1965,7 @@ export default function DashboardPropertiesListPage() {
           <DuplicateWatermarkImagesModal state={duplicateWatermarkImagesModal} />
           <ImageCapExcessImagesModal state={imageCapExcessImagesModal} />
           <StaleCrmImagesModal state={staleCrmImagesModal} />
+          <CrmImageSyncModal state={crmImageSyncModal} />
           <CheckEstateWebRemovalModal
             state={checkEstateWebRemovalModal}
             propertyIds={checkEstateWebRemovalPropertyIds}

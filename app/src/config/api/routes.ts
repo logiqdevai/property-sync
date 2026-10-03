@@ -150,6 +150,8 @@ export const ApiRoutes = {
                 "/admin/user-properties/stale-crm-images/calculate",
             replaceStaleCrmImages:
                 "/admin/user-properties/stale-crm-images/replace",
+            previewCrmImageSync: "/admin/user-properties/crm-image-sync/preview",
+            runCrmImageSync: "/admin/user-properties/crm-image-sync/run",
         },
         notifications: {
             prefix: "/admin/notifications",

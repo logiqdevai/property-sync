@@ -67,6 +67,9 @@ import type {
   StaleCrmImagePropertyCandidate,
   EnqueueStaleCrmImagesReplacePayload,
   EnqueueStaleCrmImagesReplaceResponse,
+  CrmImageSyncPayload,
+  CrmImageSyncPreviewAgency,
+  CrmImageSyncRunResponse,
 } from "../interfaces/user-properties.interfaces";
 
 export const getUserProperties = async (
@@ -834,6 +837,38 @@ export const enqueueStaleCrmImagesReplace = async (
   } catch (error: any) {
     throw new Error(
       error?.response?.data?.message || "Failed to start stale CRM image replacement.",
+    );
+  }
+};
+
+export const previewCrmImageSync = async (
+  payload: CrmImageSyncPayload,
+): Promise<CrmImageSyncPreviewAgency[]> => {
+  try {
+    const response = await axiosInstance.post(
+      ApiRoutes.admin.userProperties.previewCrmImageSync,
+      payload,
+    );
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error?.response?.data?.message || "Failed to preview the CRM image sync.",
+    );
+  }
+};
+
+export const runCrmImageSync = async (
+  payload: CrmImageSyncPayload,
+): Promise<CrmImageSyncRunResponse> => {
+  try {
+    const response = await axiosInstance.post(
+      ApiRoutes.admin.userProperties.runCrmImageSync,
+      payload,
+    );
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error?.response?.data?.message || "Failed to start the CRM image sync.",
     );
   }
 };

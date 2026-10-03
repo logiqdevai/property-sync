@@ -2,8 +2,47 @@ import {
   applyStoredDetail,
   DetailEnrichmentService,
   getDetailEnrichedAt,
+  isIncompleteDetailExtraction,
 } from './detail-enrichment.service';
 import { CrawlItem } from '../interfaces/scraper-config.interface';
+
+describe('isIncompleteDetailExtraction', () => {
+  const cretahouses = {
+    image_selector: '.owl-carousel.single-property img',
+    description_selector: 'h3.property-heading + p',
+  };
+
+  const nothing = { images: [], raw_detail_text: null };
+
+  // cretahouses.gr returned a head-only document behind a 200: no body, no
+  // gallery, no description. It must count as a failed fetch.
+  it('flags a truncated page with no body, gallery or description', () => {
+    expect(isIncompleteDetailExtraction(nothing, cretahouses, 0)).toBe(true);
+  });
+
+  // A real full page for a listing with no photos (housemarket plots) must
+  // still count as read, so its price/title keep updating.
+  it('accepts a full page that simply has no photos', () => {
+    expect(isIncompleteDetailExtraction(nothing, cretahouses, 5000)).toBe(false);
+  });
+
+  it('accepts a page with gallery images', () => {
+    expect(
+      isIncompleteDetailExtraction({ images: ['a.jpg'], raw_detail_text: null }, cretahouses, 0),
+    ).toBe(false);
+  });
+
+  it('accepts a page with a description but no gallery', () => {
+    expect(
+      isIncompleteDetailExtraction({ images: [], raw_detail_text: 'Villa' }, cretahouses, 0),
+    ).toBe(false);
+  });
+
+  it('never flags scrapers without a configured gallery selector', () => {
+    expect(isIncompleteDetailExtraction(nothing, {}, 0)).toBe(false);
+    expect(isIncompleteDetailExtraction(nothing, null, 0)).toBe(false);
+  });
+});
 
 describe('getDetailEnrichedAt', () => {
   it('parses the stored ISO timestamp', () => {

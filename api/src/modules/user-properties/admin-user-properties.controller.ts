@@ -50,6 +50,8 @@ import { ImageCapExcessImagesService } from './services/image-cap-excess-images.
 import { CalculateStaleCrmImagesDto } from './dto/calculate-stale-crm-images.dto';
 import { EnqueueStaleCrmImagesReplaceDto } from './dto/enqueue-stale-crm-images-replace.dto';
 import { StaleCrmImagesService } from './services/stale-crm-images.service';
+import { CrmImageSyncDto } from './dto/crm-image-sync.dto';
+import { CrmImageSyncService } from './services/crm-image-sync.service';
 
 @ApiTags('Admin User Properties')
 @ApiBearerAuth()
@@ -62,6 +64,7 @@ export class AdminUserPropertiesController {
     private readonly duplicateWatermarkImagesService: DuplicateWatermarkImagesService,
     private readonly imageCapExcessImagesService: ImageCapExcessImagesService,
     private readonly staleCrmImagesService: StaleCrmImagesService,
+    private readonly crmImageSyncService: CrmImageSyncService,
   ) {}
 
   @Get()
@@ -304,6 +307,28 @@ export class AdminUserPropertiesController {
   })
   enqueueStaleCrmImagesReplace(@Body() dto: EnqueueStaleCrmImagesReplaceDto) {
     return this.staleCrmImagesService.enqueueReplace(dto.items);
+  }
+
+  @SkipAudit()
+  @Post('crm-image-sync/preview')
+  @Roles(AuthRole.ADMIN)
+  @ApiOperation({
+    summary:
+      'Preview what syncing CRM images to each property\'s "images to keep" would delete/upload, per agency (read-only)',
+  })
+  previewCrmImageSync(@Body() dto: CrmImageSyncDto) {
+    return this.crmImageSyncService.preview(dto.source_agency_ids);
+  }
+
+  @Audited({ action: 'user_property.crm_image_sync', entity: 'UserProperty' })
+  @Post('crm-image-sync/run')
+  @Roles(AuthRole.ADMIN)
+  @ApiOperation({
+    summary:
+      'Make every linked property of the given agencies hold exactly its "images to keep", locally and on the CRM',
+  })
+  runCrmImageSync(@Body() dto: CrmImageSyncDto) {
+    return this.crmImageSyncService.enqueue(dto.source_agency_ids, dto.user_property_ids);
   }
 
   @Get(':id')

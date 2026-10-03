@@ -57,6 +57,7 @@ import { EstateWebPropertyService } from './estateweb-property.service';
 import { ContentProductionService } from '@/modules/content-publishing/services/content-production.service';
 import { ContentResolutionService } from '@/modules/content-publishing/services/content-resolution.service';
 import { EstateWebAdLanguageMaps } from '@/modules/content-publishing/interfaces/content-publishing.interface';
+import { planImageReconcile } from '../utils/estateweb-image-reconcile.util';
 
 interface ImageEntry {
   url: string;
@@ -73,6 +74,18 @@ interface CachedIntegrationPropertyRow {
   linked_via_reconciliation: boolean;
   excluded_source_images: unknown;
   image_upload_failures: unknown;
+}
+
+export interface EstateWebImageReconcileResult {
+  status: 'in_sync' | 'reconciled' | 'planned' | 'skipped';
+  skip_reason?: string;
+  crm_before: number;
+  crm_after: number;
+  desired: number;
+  deleted_ids: number[];
+  uploaded: number;
+  upload_failed: string[];
+  reordered: boolean;
 }
 
 // A source image that has failed to download/upload this many times is left
@@ -1695,6 +1708,171 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
       userPropertyId,
       updatedFailures,
     );
+  }
+
+  // Makes the live EstateWeb gallery exactly equal `desiredImages`: each
+  // desired photo exactly once, in that order, nothing else. Identity of a
+  // live CRM image comes from our cached source_image (keyed by CRM id); a
+  // live image we have no record of is treated as not ours-to-keep. Uploads
+  // run before deletes so a failed upload never leaves the listing with fewer
+  // photos than it started with for that slot. Never empties a gallery.
+  async reconcileImages(params: {
+    userIntegrationId: string;
+    userPropertyId: string;
+    crmPropertyId: number | string;
+    desiredImages: string[];
+    dryRun?: boolean;
+  }): Promise<EstateWebImageReconcileResult> {
+    const propertyId = Number(params.crmPropertyId);
+    const result: EstateWebImageReconcileResult = {
+      status: 'in_sync',
+      crm_before: 0,
+      crm_after: 0,
+      desired: 0,
+      deleted_ids: [],
+      uploaded: 0,
+      upload_failed: [],
+      reordered: false,
+    };
+    if (!Number.isFinite(propertyId)) {
+      return { ...result, status: 'skipped', skip_reason: 'invalid_crm_property_id' };
+    }
+
+    const cachedRow = await this.loadCachedIntegrationPropertyRow(
+      params.userIntegrationId,
+      params.userPropertyId,
+    );
+    if (cachedRow?.linked_via_reconciliation) {
+      return { ...result, status: 'skipped', skip_reason: 'listing_not_created_by_us' };
+    }
+
+    const remote = await this.estateWebPropertyService.getProperty(
+      params.userIntegrationId,
+      propertyId,
+    );
+    const live = (Array.isArray(remote.images) ? remote.images : []).filter(
+      (image) => image != null && typeof image.id === 'number',
+    );
+    result.crm_before = live.length;
+
+    const failures = this.parseImageUploadFailures(cachedRow?.image_upload_failures);
+    const { desired, toDelete, toUpload, orderWrong } = planImageReconcile({
+      crmImageIds: live.map((image) => image.id),
+      sourceById: this.buildExistingSourceImageById(cachedRow?.images),
+      desiredImages: params.desiredImages,
+      excludedImages: this.parseSourceImageUrls(cachedRow?.excluded_source_images),
+      isUploadBlocked: (url) =>
+        (failures[url]?.attempts ?? 0) >= MAX_IMAGE_UPLOAD_ATTEMPTS,
+      normalize: (url) => this.normalizeSourceImageIdentity(url),
+    });
+    result.desired = desired.length;
+    if (desired.length === 0) {
+      return { ...result, status: 'skipped', skip_reason: 'no_desired_images' };
+    }
+
+    if (toDelete.length === 0 && toUpload.length === 0 && !orderWrong) {
+      result.crm_after = live.length;
+      return result;
+    }
+
+    if (params.dryRun) {
+      return {
+        ...result,
+        status: 'planned',
+        deleted_ids: toDelete,
+        uploaded: toUpload.length,
+        reordered: orderWrong || toUpload.length > 0,
+        crm_after: live.length - toDelete.length + toUpload.length,
+      };
+    }
+
+    const sourceByFilename = new Map<string, string>();
+    const updatedFailures = { ...failures };
+    for (let index = 0; index < toUpload.length; index++) {
+      const url = toUpload[index];
+      const filename = this.buildUniqueImageFilename(url, propertyId, index);
+      try {
+        const buffer = await this.downloadImage(url);
+        if (!buffer?.length) throw new Error('empty or unreachable source image');
+        await this.estateWebPropertyService.uploadPropertyImage(
+          params.userIntegrationId,
+          propertyId,
+          buffer,
+          {
+            filename,
+            show_on_site: 1,
+            show_on_groups: 1,
+            show_on_foreign_agents: 0,
+            zindex: live.length + index + 1,
+          },
+          'image/jpeg',
+        );
+        sourceByFilename.set(filename, url);
+        delete updatedFailures[url];
+        result.uploaded += 1;
+      } catch (error) {
+        this.recordImageUploadFailure(updatedFailures, url);
+        result.upload_failed.push(url);
+        this.logger.warn(
+          `[reconcileImages] upload failed property=${propertyId} user_property=${params.userPropertyId} url=${url}: ${error instanceof Error ? error.message : String(error)}`,
+        );
+      }
+    }
+
+    for (const imageId of toDelete) {
+      try {
+        await this.estateWebPropertyService.deletePropertyImage(
+          params.userIntegrationId,
+          imageId,
+        );
+        result.deleted_ids.push(imageId);
+      } catch (error) {
+        if (error instanceof EstateWebException && error.getStatus() === HttpStatus.NOT_FOUND) {
+          result.deleted_ids.push(imageId);
+          continue;
+        }
+        throw error;
+      }
+    }
+
+    const refreshed = await this.syncIntegrationPropertyImages({
+      userIntegrationId: params.userIntegrationId,
+      userPropertyId: params.userPropertyId,
+      estateWebPropertyId: propertyId,
+      sourceByFilename,
+      preserveExistingSourceImages: true,
+    });
+
+    const idByIdentity = new Map<string, number>();
+    for (const image of refreshed) {
+      if (!image.source_image) continue;
+      const identity = this.normalizeSourceImageIdentity(image.source_image);
+      if (!idByIdentity.has(identity)) idByIdentity.set(identity, image.id);
+    }
+    const finalOrder = desired
+      .map((url) => idByIdentity.get(this.normalizeSourceImageIdentity(url)))
+      .filter((id): id is number => id != null);
+    const leftovers = refreshed.map((image) => image.id).filter((id) => !finalOrder.includes(id));
+    const targetOrder = [...finalOrder, ...leftovers];
+    if (targetOrder.join(',') !== refreshed.map((image) => image.id).join(',')) {
+      await this.reorderImages({
+        userIntegrationId: params.userIntegrationId,
+        userPropertyId: params.userPropertyId,
+        crmPropertyId: String(propertyId),
+        imageIds: targetOrder,
+      });
+      result.reordered = true;
+    }
+
+    await this.persistImageUploadFailures(
+      params.userIntegrationId,
+      params.userPropertyId,
+      updatedFailures,
+    );
+
+    result.crm_after = refreshed.length;
+    result.status = 'reconciled';
+    return result;
   }
 
   private recordImageUploadFailure(
