@@ -883,7 +883,6 @@ interface PropertyDetailViewProps {
   canReorderIntegrationImages?: boolean;
   onReorderIntegrationImages?: (imageIds: number[]) => Promise<void> | void;
   isReorderingIntegrationImages?: boolean;
-  showSystemImages?: boolean;
   canCopyNormalizedImages?: boolean;
   onCopyNormalizedImages?: (
     imageIndexes: number[],
@@ -919,7 +918,6 @@ export function PropertyDetailView({
   canReorderIntegrationImages = false,
   onReorderIntegrationImages,
   isReorderingIntegrationImages = false,
-  showSystemImages = false,
   canCopyNormalizedImages = false,
   onCopyNormalizedImages,
   isCopyingNormalizedImages = false,
@@ -1428,14 +1426,14 @@ export function PropertyDetailView({
         )}
       </section>
 
-      {showSystemImages ? (
+      {property.canonical_images !== undefined ? (
         <section className="flex min-w-0 flex-col gap-4 rounded-xl border border-border bg-surface p-4 sm:p-5">
           <div className="flex min-w-0 flex-col gap-0.5">
             <h2 className="text-sm font-semibold text-foreground">
-              System images
+              Original images
             </h2>
             <p className="text-xs text-muted">
-              Images stored in our system for this property — separate from
+              The agency's original photos for this property — separate from
               the CRM/integration images shown above.
             </p>
           </div>
@@ -1448,7 +1446,7 @@ export function PropertyDetailView({
             }
           >
             <Tabs.ListContainer className="relative z-10">
-              <Tabs.List aria-label="System images">
+              <Tabs.List aria-label="Original images">
                 <Tabs.Tab id={SYSTEM_IMAGES_TABS.normalized}>
                   Normalized ({normalizedImages.length})
                   <Tabs.Indicator />
@@ -1493,7 +1491,7 @@ export function PropertyDetailView({
               </p>
               {fallbackImages.length === 0 ? (
                 <p className="text-sm text-muted">
-                  No images stored in our system.
+                  No tracked images stored for this property.
                 </p>
               ) : (
                 <PropertyImagesGrid

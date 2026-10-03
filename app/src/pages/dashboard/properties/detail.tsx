@@ -615,7 +615,6 @@ export default function DashboardPropertyDetailPage() {
           await migrateImages.mutateAsync({ id: property.id, mode });
         }}
         isMigratingIntegrationImages={migrateImages.isPending}
-        showSystemImages={isAdmin}
         canCopyNormalizedImages={isAdmin}
         onCopyNormalizedImages={async (imageIndexes, removeWatermark) => {
           await copyNormalizedImages.mutateAsync({
