@@ -671,6 +671,7 @@ exports.Prisma.PlatformConfigScalarFieldEnum = {
   dewatermark_cost_per_image: 'dewatermark_cost_per_image',
   google_translate_cost_per_million_chars: 'google_translate_cost_per_million_chars',
   azure_translate_cost_per_million_chars: 'azure_translate_cost_per_million_chars',
+  azure_translate_max_requests_per_second: 'azure_translate_max_requests_per_second',
   translation_provider: 'translation_provider',
   created_at: 'created_at',
   updated_at: 'updated_at'

@@ -13,7 +13,10 @@ import {
   DEFAULT_SELECTOR_TIMEOUT_MS,
 } from '@/integrations/crawler/constants/crawler.constants';
 import { ResolvedCrawlerConfig } from '@/integrations/crawler/interfaces/crawler-runtime-config.interface';
-import { DEFAULT_AZURE_TRANSLATE_COST_PER_MILLION_CHARS } from '@/integrations/azure-translate/constants/azure-translate.constants';
+import {
+  DEFAULT_AZURE_TRANSLATE_COST_PER_MILLION_CHARS,
+  DEFAULT_AZURE_TRANSLATE_MAX_REQUESTS_PER_SECOND,
+} from '@/integrations/azure-translate/constants/azure-translate.constants';
 import { DEFAULT_GOOGLE_TRANSLATE_COST_PER_MILLION_CHARS } from '@/integrations/google-translate/constants/google-translate.constants';
 import { DEFAULT_AI_RAW_DESCRIPTION_MAX_CHARS } from '@/modules/properties/constants/normalization.constants';
 import { UpdatePlatformConfigDto } from './dto/update-platform-config.dto';
@@ -98,6 +101,14 @@ export class PlatformConfigService {
     return value !== null && value !== undefined
       ? Number(value)
       : DEFAULT_AZURE_TRANSLATE_COST_PER_MILLION_CHARS;
+  }
+
+  async getAzureTranslateMaxRequestsPerSecond(): Promise<number> {
+    const row = await this.getCachedRow();
+    const value = row?.azure_translate_max_requests_per_second;
+    return value !== null && value !== undefined
+      ? value
+      : DEFAULT_AZURE_TRANSLATE_MAX_REQUESTS_PER_SECOND;
   }
 
   async getTranslationProvider(): Promise<TranslationProvider> {

@@ -91,6 +91,12 @@ export class PlatformConfig {
 
   @ApiProperty({
     nullable: true,
+    description: 'Null means the default value is used',
+  })
+  azure_translate_max_requests_per_second: number | null;
+
+  @ApiProperty({
+    nullable: true,
     enum: TranslationProvider,
     description: 'Null means the default value is used',
   })

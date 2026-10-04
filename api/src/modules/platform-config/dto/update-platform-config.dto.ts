@@ -1,5 +1,12 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEnum, IsInt, IsNumber, IsOptional, Min, ValidateIf } from 'class-validator';
+import {
+  IsEnum,
+  IsInt,
+  IsNumber,
+  IsOptional,
+  Min,
+  ValidateIf,
+} from 'class-validator';
 import { TranslationProvider } from 'generated/prisma';
 
 // Every field is nullable: null explicitly resets that setting back to its
@@ -166,6 +173,18 @@ export class UpdatePlatformConfigDto {
   @IsNumber()
   @Min(0)
   azure_translate_cost_per_million_chars?: number | null;
+
+  @ApiPropertyOptional({
+    nullable: true,
+    description:
+      'Max Azure Translator requests per second from this API process; null resets to the in-code default (5)',
+    example: 5,
+  })
+  @IsOptional()
+  @ValidateIf((_, value) => value !== null)
+  @IsInt()
+  @Min(1)
+  azure_translate_max_requests_per_second?: number | null;
 
   @ApiPropertyOptional({
     nullable: true,
