@@ -208,10 +208,9 @@ export class DetailEnrichmentService {
       }
       const listingImages =
         (item.raw._all_images as string[] | undefined) ?? [];
-      item.raw._all_images = mergeImagesDedupingSizeVariants(
-        detail.images,
-        listingImages,
-      );
+      item.raw._all_images = detailConfig?.listing_image_first
+        ? mergeImagesDedupingSizeVariants(listingImages, detail.images)
+        : mergeImagesDedupingSizeVariants(detail.images, listingImages);
       item.raw._detail_text = detail.raw_detail_text;
       item.raw._detail_enriched_at = new Date().toISOString();
       if (Object.keys(detail.detail_specs).length > 0) {

@@ -42,6 +42,10 @@ export interface DetailPageConfig {
   title_selector?: string;
   price_selector?: string;
   location_selector?: string;
+  // Put the listing card's photo first instead of last. For sites whose
+  // detail gallery leaves out the agency's main (featured) photo, which then
+  // only arrives from the listing card and would otherwise end up last.
+  listing_image_first?: boolean;
 }
 
 export interface ScraperConfig {
