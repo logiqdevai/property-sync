@@ -1,4 +1,10 @@
-import { planImageReconcile } from './estateweb-image-reconcile.util';
+import {
+  countDistinctPhotos,
+  isSourceGalleryShrunk,
+  peakDistinctPhotos,
+  planImageReconcile,
+} from './estateweb-image-reconcile.util';
+import { normalizeSourceImageIdentity } from '@/modules/user-properties/utils/duplicate-watermark-detection.util';
 
 const normalize = (url: string) => url.split('?')[0].toLowerCase();
 const u = (name: string) => `https://site/${name}`;
@@ -116,5 +122,65 @@ describe('planImageReconcile url validity', () => {
     const result = plan([[1, u('a')]], [u('a'), '/appFol/img_2.jpg']);
     expect(result.desired).toEqual([u('a')]);
     expect(result.toUpload).toEqual([]);
+  });
+});
+
+describe('shrunk source gallery, counted in distinct photos', () => {
+  const sp = (id: string, size: string) =>
+    `https://m2.spitogatos.gr/${id}_${size}.jpg?v=20130730`;
+  const photos = Array.from({ length: 25 }, (_, i) => String(329752873 + i));
+  const logo = 'https://im2.spitogatos.gr/270569992.jpg';
+
+  it('does not count a thumbnail of a photo as another photo', () => {
+    expect(
+      countDistinctPhotos(
+        [sp('1', '900x675'), sp('1', '150x110'), sp('2', '900x675')],
+        normalizeSourceImageIdentity,
+      ),
+    ).toBe(2);
+  });
+
+  it('ignores non-arrays and non-string entries', () => {
+    expect(countDistinctPhotos(null, normalizeSourceImageIdentity)).toBe(0);
+    expect(
+      countDistinctPhotos([null, 3, ' '], normalizeSourceImageIdentity),
+    ).toBe(0);
+    expect(
+      peakDistinctPhotos([], normalizeSourceImageIdentity),
+    ).toBeUndefined();
+    expect(
+      peakDistinctPhotos([null], normalizeSourceImageIdentity),
+    ).toBeUndefined();
+  });
+
+  it('a past crawl that also read thumbnails + logo is not a shrink (samson-homes)', () => {
+    const past = [
+      logo,
+      ...photos.map((p) => sp(p, '900x675')),
+      ...photos.map((p) => sp(p, '150x110')),
+    ];
+    expect(past).toHaveLength(51);
+    const peak = peakDistinctPhotos([past], normalizeSourceImageIdentity);
+    expect(peak).toBe(26);
+    const current = countDistinctPhotos(
+      photos.map((p) => sp(p, '900x675')),
+      normalizeSourceImageIdentity,
+    );
+    expect(isSourceGalleryShrunk(current, peak, null)).toBe(false);
+    // counted in raw URLs it used to be flagged
+    expect(isSourceGalleryShrunk(25, 51, null)).toBe(true);
+  });
+
+  it('a gallery that really lost its photos is still caught (cretahouses 11 -> 3)', () => {
+    const past = Array.from(
+      { length: 11 },
+      (_, i) => `https://cretahouses.gr/p/${i}.jpg`,
+    );
+    const peak = peakDistinctPhotos(
+      [past.slice(0, 5), past],
+      normalizeSourceImageIdentity,
+    );
+    expect(peak).toBe(11);
+    expect(isSourceGalleryShrunk(3, peak, 8)).toBe(true);
   });
 });

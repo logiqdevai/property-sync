@@ -221,7 +221,11 @@ describe('EstateWebCmsSyncAdapter.ensureImagesCached', () => {
     const upsertCalls: unknown[] = [];
     const gallery = options.sourceGallery;
     const prisma = {
-      $queryRaw: jest.fn().mockResolvedValue([{ peak: gallery?.peak ?? null }]),
+      $queryRaw: jest.fn().mockResolvedValue(
+        gallery
+          ? [{ old_value: Array.from({ length: gallery.peak }, (_, i) => `p${i}`) }]
+          : [],
+      ),
       userTrackedAgency: {
         findFirst: jest
           .fn()

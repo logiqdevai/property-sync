@@ -15,6 +15,37 @@ export function isSourceGalleryShrunk(
   return peakCount >= maxImageCount && currentCount < maxImageCount && lostHalf;
 }
 
+// Gallery sizes for isSourceGalleryShrunk() count distinct photos, not URLs:
+// a crawler that once also picked up every photo's thumbnail (samson-homes
+// before 2026-08-07: 25 photos + 25 "_150x110" thumbnails + the agency logo
+// = 52 URLs) would otherwise make today's correct 25 look like a halved
+// gallery and block the sync forever.
+export function countDistinctPhotos(
+  images: unknown,
+  normalize: (url: string) => string,
+): number {
+  if (!Array.isArray(images)) return 0;
+  const identities = new Set<string>();
+  for (const image of images) {
+    if (typeof image === 'string' && image.trim())
+      identities.add(normalize(image));
+  }
+  return identities.size;
+}
+
+// Largest distinct-photo count among a property's past galleries.
+export function peakDistinctPhotos(
+  pastGalleries: unknown[],
+  normalize: (url: string) => string,
+): number | undefined {
+  let peak: number | undefined;
+  for (const gallery of pastGalleries) {
+    if (!Array.isArray(gallery)) continue;
+    peak = Math.max(peak ?? 0, countDistinctPhotos(gallery, normalize));
+  }
+  return peak;
+}
+
 export interface ImageReconcilePlan {
   desired: string[];
   keptIdByIdentity: Map<string, number>;

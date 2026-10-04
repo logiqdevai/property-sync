@@ -58,7 +58,9 @@ import { ContentProductionService } from '@/modules/content-publishing/services/
 import { ContentResolutionService } from '@/modules/content-publishing/services/content-resolution.service';
 import { EstateWebAdLanguageMaps } from '@/modules/content-publishing/interfaces/content-publishing.interface';
 import {
+  countDistinctPhotos,
   isSourceGalleryShrunk,
+  peakDistinctPhotos,
   planImageReconcile,
 } from '../utils/estateweb-image-reconcile.util';
 
@@ -449,16 +451,19 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
       where: { user_id: property.user_id, source_agency_id: agencyId },
       select: { max_image_count: true },
     });
-    const rows = await this.prisma.$queryRaw<Array<{ peak: number | null }>>`
-      SELECT MAX(jsonb_array_length(old_value))::int AS peak
+    const rows = await this.prisma.$queryRaw<Array<{ old_value: unknown }>>`
+      SELECT old_value
       FROM property_history
       WHERE field = 'images'
         AND jsonb_typeof(old_value) = 'array'
         AND property_id = ${property.canonical_property_id}`;
-    const currentCount = Array.isArray(canonical.images) ? canonical.images.length : 0;
+    const normalize = (url: string) => this.normalizeSourceImageIdentity(url);
     return isSourceGalleryShrunk(
-      currentCount,
-      rows[0]?.peak ?? undefined,
+      countDistinctPhotos(canonical.images, normalize),
+      peakDistinctPhotos(
+        rows.map((row) => row.old_value),
+        normalize,
+      ),
       tracker?.max_image_count ?? null,
     );
   }

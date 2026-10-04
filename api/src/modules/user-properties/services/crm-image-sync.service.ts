@@ -6,7 +6,9 @@ import { PrismaService } from '@/core/databases/prisma/prisma.service';
 import { CRM_IMAGE_SYNC_QUEUE } from '@/core/queues/queues.constants';
 import { EstateWebCmsSyncAdapter } from '@/integrations/estateweb/services/estateweb-cms-sync-adapter.service';
 import {
+  countDistinctPhotos,
   isSourceGalleryShrunk,
+  peakDistinctPhotos,
   planImageReconcile,
 } from '@/integrations/estateweb/utils/estateweb-image-reconcile.util';
 import { UserPropertiesService } from '../user-properties.service';
@@ -55,21 +57,32 @@ export class CrmImageSyncService {
     });
   }
 
-  // Largest gallery each canonical property ever had, from its image history.
+  // Largest gallery (in distinct photos) each canonical property ever had,
+  // from its image history.
   private async loadPeakGallerySizes(
     canonicalIds: string[],
   ): Promise<Map<string, number>> {
     if (canonicalIds.length === 0) return new Map();
     const rows = await this.prisma.$queryRaw<
-      Array<{ property_id: string; peak: number }>
+      Array<{ property_id: string; old_value: unknown }>
     >`
-      SELECT property_id, MAX(jsonb_array_length(old_value))::int AS peak
+      SELECT property_id, old_value
       FROM property_history
       WHERE field = 'images'
         AND jsonb_typeof(old_value) = 'array'
-        AND property_id = ANY(${canonicalIds}::text[])
-      GROUP BY property_id`;
-    return new Map(rows.map((row) => [row.property_id, row.peak]));
+        AND property_id = ANY(${canonicalIds}::text[])`;
+    const galleriesById = new Map<string, unknown[]>();
+    for (const row of rows) {
+      const galleries = galleriesById.get(row.property_id) ?? [];
+      galleries.push(row.old_value);
+      galleriesById.set(row.property_id, galleries);
+    }
+    const peaks = new Map<string, number>();
+    for (const [propertyId, galleries] of galleriesById) {
+      const peak = peakDistinctPhotos(galleries, normalizeSourceImageIdentity);
+      if (peak != null) peaks.set(propertyId, peak);
+    }
+    return peaks;
   }
 
   // Read-only, from our cached copy of each CRM gallery. The real run re-reads
@@ -147,9 +160,10 @@ export class CrmImageSyncService {
             summary.skipped_not_ours += 1;
             continue;
           }
-          const sourceCount = Array.isArray(property.canonical_property.images)
-            ? property.canonical_property.images.length
-            : 0;
+          const sourceCount = countDistinctPhotos(
+            property.canonical_property.images,
+            normalizeSourceImageIdentity,
+          );
           const peak = peaks.get(property.canonical_property_id);
           if (
             property.images_curated_at == null &&
@@ -392,9 +406,10 @@ export class CrmImageSyncService {
       return { ...base, skip_reason: 'no_estateweb_integration' };
     }
 
-    const sourceCount = Array.isArray(property.canonical_property.images)
-      ? property.canonical_property.images.length
-      : 0;
+    const sourceCount = countDistinctPhotos(
+      property.canonical_property.images,
+      normalizeSourceImageIdentity,
+    );
     const peaks = await this.loadPeakGallerySizes([
       property.canonical_property_id,
     ]);
