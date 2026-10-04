@@ -27,7 +27,7 @@ most of it is non-obvious and was learned the hard way by inspecting the real sy
 ## 1. Find the agency, check for an existing scraper
 
 ```sql
-select id, name, base_url, is_visible, is_enabled, content_language, crawl_interval
+select id, name, base_url, is_visible, is_enabled, content_language, crawl_interval, city
 from source_agencies where base_url ilike '%<domain>%';   -- or: where id = '<uuid>'
 
 select id, name, status from scrapers where source_agency_id = '<agency-id>';
@@ -256,6 +256,27 @@ await client.query('COMMIT');
 Put the *investigation trail* in `notes` — what URL you found and why, what pagination mechanism, what
 category exclusion trick and its verified counts. Future you (or a teammate) will need this context
 far more than a generic "scraper for X" note.
+
+### Set the agency's main city
+
+`source_agencies.city` is the agency's main city. Set it whenever you create a scraper, so the agency
+is labelled correctly in the app.
+
+1. Find the main city from the agency's own site, in this order: the contact or about page address,
+   or the footer (an `<address>` block, or schema.org `PostalAddress`/`addressLocality` in JSON-LD);
+   then the office or location text in the header or footer. Only if the site shows no office address,
+   use the most common city in the listings' location field, and say in `notes` that it came from
+   listings, since listings can be in other cities than the office.
+2. Write the city name in the agency's `content_language` (for `EL` agencies, the Greek name), matching
+   how existing rows are written. Use the city name, not the region. If the site only documents the
+   region, use the region and say so in `notes`.
+3. Don't overwrite a value that is already set. If `city` is non-empty and differs from what you found,
+   report both values and ask before changing it. Set it only when it is null or blank:
+   ```sql
+   update source_agencies set city = $1, updated_at = now()
+   where id = $2 and (city is null or btrim(city) = '');
+   ```
+   Zero rows updated means the city is already set; compare it as above.
 
 New scrapers default to `status: 'TESTING'` — see §8 for what that actually means in this system
 (it is **not** inert).
