@@ -197,7 +197,7 @@ describe('Crawl update of a property (syncForProperty)', () => {
   const source = Array.from({ length: 15 }, (_, i) => u(`s${i + 1}`));
   const picked = [u('s1'), u('s12'), u('s3'), u('s14'), u('s5'), u('s6'), u('s7'), u('s8')];
 
-  function crawl(existing: Record<string, unknown>, cap: number | null) {
+  function crawl(existing: Record<string, unknown>, cap: number | null, shrunk = false) {
     const updates: Array<{ data: Record<string, unknown> }> = [];
     const pipeline = jest.fn(async () => false);
     const service = Object.create(UserPropertiesService.prototype) as UserPropertiesService;
@@ -236,7 +236,10 @@ describe('Crawl update of a property (syncForProperty)', () => {
           }),
         },
       },
-      imagesCuration: { loadExcludedSourceImages: jest.fn(async () => []) },
+      imagesCuration: {
+        loadExcludedSourceImages: jest.fn(async () => []),
+        isSourceGalleryShrunk: jest.fn(async () => shrunk),
+      },
       watermarkRemovalService: { applyTrackerWatermarkPipeline: pipeline },
     });
     const internals = service as unknown as Record<string, unknown>;
@@ -282,6 +285,53 @@ describe('Crawl update of a property (syncForProperty)', () => {
     await run(service);
     expect(updates[0].data.images).toEqual([...picked, u('s2'), u('s4')]);
     expect(updates[0].data.images_curated_cap).toBe(10);
+  });
+
+  it('a hand-edited property gets a photo the agency added, at the end', async () => {
+    const { service, updates, pipeline } = crawl(
+      {
+        images: picked.slice(0, 6),
+        images_curated_at: new Date(),
+        images_curated_cap: null,
+        images_curated_source_seen: source.slice(0, 14),
+      },
+      null,
+    );
+    await run(service);
+    expect(updates[0].data.images).toEqual([...picked.slice(0, 6), u('s15')]);
+    expect(updates[0].data.images_curated_source_seen).toEqual(source);
+    expect(pipeline).not.toHaveBeenCalled();
+  });
+
+  it('a hand-edited property drops a photo the agency removed', async () => {
+    const { service, updates } = crawl(
+      {
+        images: [u('gone'), ...picked.slice(0, 3)],
+        images_curated_at: new Date(),
+        images_curated_cap: null,
+        images_curated_source_seen: [...source, u('gone')],
+      },
+      null,
+    );
+    await run(service);
+    expect(updates[0].data.images).toEqual(picked.slice(0, 3));
+  });
+
+  it('a crawler gap never removes photos from a hand-edited property', async () => {
+    const { service, updates } = crawl(
+      {
+        images: [u('gone'), ...picked.slice(0, 3)],
+        images_curated_at: new Date(),
+        images_curated_cap: null,
+        images_curated_source_seen: [...source, u('gone')],
+      },
+      null,
+      true,
+    );
+    await run(service);
+    for (const update of updates) {
+      expect(update.data.images).toEqual([u('gone'), ...picked.slice(0, 3)]);
+    }
   });
 
   it('a property that was never edited by hand still follows the source', async () => {

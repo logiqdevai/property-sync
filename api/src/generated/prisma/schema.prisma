@@ -995,61 +995,65 @@ model PropertyHistory {
 /// `is_modified` / `last_synced_at` track whether (and when) this copy has diverged, so the UI
 /// can show a "this differs from the source listing" banner and offer a manual re-sync.
 model UserProperty {
-  id                      String         @id @default(uuid())
-  user_id                 String
-  canonical_property_id   String
-  property_id             String
-  internal_id             String?
-  integration_property_id String?
-  title                   String
-  description             String?
-  listing_type            ListingType    @default(UNKNOWN)
-  property_type           PropertyType   @default(UNKNOWN)
-  status                  PropertyStatus @default(ACTIVE)
-  price                   Decimal?       @db.Decimal(14, 2)
-  currency                String?        @default("EUR")
-  city                    String?
-  district                String?
-  address                 String?
-  postal_code             String?
-  country                 String?
-  latitude                Decimal?       @db.Decimal(10, 7)
-  longitude               Decimal?       @db.Decimal(10, 7)
-  square_meters           Decimal?       @db.Decimal(10, 2)
-  bedrooms                Int?
-  bathrooms               Int?
-  floor                   String?
-  construction_year       Int?
-  renovation_year         Int?
-  features                Json?
-  images                  Json?
+  id                         String         @id @default(uuid())
+  user_id                    String
+  canonical_property_id      String
+  property_id                String
+  internal_id                String?
+  integration_property_id    String?
+  title                      String
+  description                String?
+  listing_type               ListingType    @default(UNKNOWN)
+  property_type              PropertyType   @default(UNKNOWN)
+  status                     PropertyStatus @default(ACTIVE)
+  price                      Decimal?       @db.Decimal(14, 2)
+  currency                   String?        @default("EUR")
+  city                       String?
+  district                   String?
+  address                    String?
+  postal_code                String?
+  country                    String?
+  latitude                   Decimal?       @db.Decimal(10, 7)
+  longitude                  Decimal?       @db.Decimal(10, 7)
+  square_meters              Decimal?       @db.Decimal(10, 2)
+  bedrooms                   Int?
+  bathrooms                  Int?
+  floor                      String?
+  construction_year          Int?
+  renovation_year            Int?
+  features                   Json?
+  images                     Json?
   // Set once the user edits this property's photos by hand (deletes, reorders
   // or copies in photos). From then on the crawl keeps their selection instead
   // of rebuilding `images` from the source gallery; the tracker's
   // max_image_count still caps it. null = photos follow the source.
-  images_curated_at       DateTime?
+  images_curated_at          DateTime?
   // The max_image_count in effect when the selection was last edited/adjusted
   // (null = keep all). Lets the crawl tell a raised cap (top the selection up
   // from the source) from a lowered one (trim it).
-  images_curated_cap      Int?
-  normalized_data         Json?
-  estateweb_type_id       Int?
-  estateweb_location_id   Int?
-  estateweb_scope_id      Int?
-  cms_fields              Json?
-  cms_metadata            Json?
-  video_url               String?
-  distance_airport        String?
-  distance_port           String?
-  distance_beach          String?
-  price_start             Decimal?       @db.Decimal(14, 2)
-  price_web               Decimal?       @db.Decimal(14, 2)
-  duplicate_group_id      String?
-  is_modified             Boolean        @default(false)
-  pending_crm_update      Boolean        @default(false)
-  last_synced_at          DateTime? // last time this copy was refreshed from canonical_property
-  created_at              DateTime       @default(now())
-  updated_at              DateTime       @updatedAt
+  images_curated_cap         Int?
+  // The source gallery (raw URLs) as it was at the last edit or crawl of a
+  // hand-edited property. Lets the crawl tell photos the agency added since
+  // (appended) and removed since (dropped) from ones the user chose not to keep.
+  images_curated_source_seen Json?
+  normalized_data            Json?
+  estateweb_type_id          Int?
+  estateweb_location_id      Int?
+  estateweb_scope_id         Int?
+  cms_fields                 Json?
+  cms_metadata               Json?
+  video_url                  String?
+  distance_airport           String?
+  distance_port              String?
+  distance_beach             String?
+  price_start                Decimal?       @db.Decimal(14, 2)
+  price_web                  Decimal?       @db.Decimal(14, 2)
+  duplicate_group_id         String?
+  is_modified                Boolean        @default(false)
+  pending_crm_update         Boolean        @default(false)
+  last_synced_at             DateTime? // last time this copy was refreshed from canonical_property
+  created_at                 DateTime       @default(now())
+  updated_at                 DateTime       @updatedAt
 
   user                   User                       @relation(fields: [user_id], references: [id], onDelete: Cascade)
   canonical_property     Property                   @relation(fields: [canonical_property_id], references: [id], onDelete: Cascade)

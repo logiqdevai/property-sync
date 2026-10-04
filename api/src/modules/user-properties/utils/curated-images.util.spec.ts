@@ -50,7 +50,7 @@ describe('computeCuratedImages', () => {
   });
 
   it('cap lowered 8 -> 5 keeps the first five of the user order', () => {
-    expect(curated(picked, 5, 8)).toEqual({
+    expect(curated(picked, 5, 8)).toMatchObject({
       images: picked.slice(0, 5),
       curatedCap: 5,
     });
@@ -103,7 +103,7 @@ describe('computeCuratedImages', () => {
   });
 
   it('cap 0 empties the selection', () => {
-    expect(curated(picked, 0, 8)).toEqual({ images: [], curatedCap: 0 });
+    expect(curated(picked, 0, 8)).toMatchObject({ images: [], curatedCap: 0 });
   });
 
   it('drops deleted photos and duplicate copies from the selection', () => {
@@ -162,5 +162,103 @@ describe('computeResetImages', () => {
 
   it('cap 0 is empty', () => {
     expect(reset([u('s1')], source, 0)).toEqual([]);
+  });
+});
+
+describe('computeCuratedImages follows the agency after a hand edit', () => {
+  const hash = (identity: string) => identity.replace(/[^a-z0-9]/g, '');
+  const embedded = (url: string) => {
+    const m = url.match(/-src-(\w+)\.jpg$/);
+    return m ? m[1] : null;
+  };
+  const cleaned = (sourceUrl: string) =>
+    `https://gcs/property-images/clean-src-${hash(normalize(sourceUrl))}.jpg`;
+  const follow = (
+    selection: string[],
+    seen: string[] | null,
+    now: string[],
+    extra: {
+      cap?: number | null;
+      curatedCap?: number | null;
+      excluded?: string[];
+      shrunk?: boolean;
+    } = {},
+  ) =>
+    computeCuratedImages({
+      curated: selection,
+      canonical: now,
+      excluded: extra.excluded ?? [],
+      maxImageCount: extra.cap === undefined ? null : extra.cap,
+      curatedCap: extra.curatedCap === undefined ? null : extra.curatedCap,
+      normalize,
+      seenSource: seen,
+      sourceShrunk: extra.shrunk ?? false,
+      processedSourceHash: embedded,
+      hashOfIdentity: hash,
+    });
+
+  const a = u('a'),
+    b = u('b'),
+    c = u('c'),
+    d = u('d'),
+    e = u('e');
+
+  it('keeps the user order and appends a photo the agency added', () => {
+    const r = follow([c, a], [a, b, c], [a, b, c, d]);
+    expect(r.images).toEqual([c, a, d]);
+    expect(r.seenSource).toEqual([a, b, c, d]);
+  });
+
+  it('never brings back a photo the user left out', () => {
+    expect(follow([c, a], [a, b, c], [a, b, c]).images).toEqual([c, a]);
+  });
+
+  it('never appends a photo the user deleted (excluded), even if new', () => {
+    expect(follow([a], [a], [a, d], { excluded: [d] }).images).toEqual([a]);
+  });
+
+  it('drops a photo the agency removed from its listing', () => {
+    expect(follow([c, a, b], [a, b, c], [a, b]).images).toEqual([a, b]);
+  });
+
+  it('keeps everything when the source looks like a crawler gap', () => {
+    const r = follow([c, a, b], [a, b, c], [a], { shrunk: true });
+    expect(r.images).toEqual([c, a, b]);
+    expect(r.seenSource).toEqual([a, b, c]);
+  });
+
+  it('keeps everything when the source came back empty', () => {
+    expect(follow([c, a], [a, c], []).images).toEqual([c, a]);
+  });
+
+  it('nothing counts as added or removed before a baseline exists', () => {
+    const r = follow([c, a], null, [a, d]);
+    expect(r.images).toEqual([c, a]);
+    expect(r.seenSource).toEqual([a, d]);
+  });
+
+  it('does not grow past the cap', () => {
+    expect(
+      follow([c, a], [a, b, c], [a, b, c, d, e], { cap: 3, curatedCap: 3 })
+        .images,
+    ).toEqual([c, a, d]);
+  });
+
+  it('a cleaned copy stands for its source photo', () => {
+    const r = follow([cleaned(a), b], [a, b], [a, b]);
+    expect(r.images).toEqual([cleaned(a), b]);
+  });
+
+  it('a cleaned copy goes when the agency removes its source photo', () => {
+    expect(follow([cleaned(a), b], [a, b], [b, c]).images).toEqual([b, c]);
+  });
+
+  it('a cleaned copy without a known source is kept', () => {
+    const old = 'https://gcs/property-images/old-clean.jpg';
+    expect(follow([old, b], [a, b], [b]).images).toEqual([old, b]);
+  });
+
+  it('a photo the user copied in that is not from the agency list is kept', () => {
+    expect(follow([e, a], [a], [a]).images).toEqual([e, a]);
   });
 });

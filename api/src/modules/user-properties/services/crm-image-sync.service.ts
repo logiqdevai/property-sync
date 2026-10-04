@@ -120,6 +120,7 @@ export class CrmImageSyncService {
             images: true,
             images_curated_at: true,
             images_curated_cap: true,
+            images_curated_source_seen: true,
             canonical_property_id: true,
             canonical_property: { select: { images: true } },
             integration_properties: {
@@ -165,10 +166,12 @@ export class CrmImageSyncService {
             normalizeSourceImageIdentity,
           );
           const peak = peaks.get(property.canonical_property_id);
-          if (
-            property.images_curated_at == null &&
-            isSourceGalleryShrunk(sourceCount, peak, tracker.max_image_count)
-          ) {
+          const sourceShrunk = isSourceGalleryShrunk(
+            sourceCount,
+            peak,
+            tracker.max_image_count,
+          );
+          if (property.images_curated_at == null && sourceShrunk) {
             summary.skipped_source_shrank.push({
               user_property_id: property.id,
               title: property.title,
@@ -189,6 +192,7 @@ export class CrmImageSyncService {
             canonicalImages: property.canonical_property.images,
             maxImageCount: tracker.max_image_count,
             excludedImages,
+            sourceShrunk,
           }).images;
           if (desired.length === 0) continue;
 
@@ -371,6 +375,7 @@ export class CrmImageSyncService {
         images: true,
         images_curated_at: true,
         images_curated_cap: true,
+        images_curated_source_seen: true,
         integration_property_id: true,
         canonical_property_id: true,
         canonical_property: {
@@ -413,14 +418,12 @@ export class CrmImageSyncService {
     const peaks = await this.loadPeakGallerySizes([
       property.canonical_property_id,
     ]);
-    if (
-      property.images_curated_at == null &&
-      isSourceGalleryShrunk(
-        sourceCount,
-        peaks.get(property.canonical_property_id),
-        tracker.max_image_count,
-      )
-    ) {
+    const sourceShrunk = isSourceGalleryShrunk(
+      sourceCount,
+      peaks.get(property.canonical_property_id),
+      tracker.max_image_count,
+    );
+    if (property.images_curated_at == null && sourceShrunk) {
       return { ...base, skip_reason: 'source_gallery_shrank' };
     }
 
@@ -431,6 +434,7 @@ export class CrmImageSyncService {
       excludedImages: await this.imagesCuration.loadExcludedSourceImages(
         property.id,
       ),
+      sourceShrunk,
     });
     const desired = tracked.images;
     if (desired.length === 0) {
@@ -446,6 +450,9 @@ export class CrmImageSyncService {
           images: desired,
           ...(tracked.curatedCap !== undefined
             ? { images_curated_cap: tracked.curatedCap }
+            : {}),
+          ...(tracked.seenSource !== undefined
+            ? { images_curated_source_seen: tracked.seenSource }
             : {}),
         },
       });

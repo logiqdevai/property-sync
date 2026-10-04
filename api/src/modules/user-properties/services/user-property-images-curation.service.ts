@@ -1,6 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from 'generated/prisma';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
+import {
+  countDistinctPhotos,
+  isSourceGalleryShrunk,
+  peakDistinctPhotos,
+} from '@/integrations/estateweb/utils/estateweb-image-reconcile.util';
 import { normalizeSourceImageIdentity } from '../utils/duplicate-watermark-detection.util';
 
 // Bookkeeping for hand-edited ("curated") property photos, shared by every
@@ -43,19 +48,52 @@ export class UserPropertyImagesCurationService {
   }
 
   // Saves the user's own photo selection and pins it against future crawls.
+  // The agency's gallery right now is recorded too, so later crawls can tell
+  // photos the agency adds or removes afterwards from ones the user dropped.
   async saveCuratedImages(
     userPropertyId: string,
     images: string[],
   ): Promise<void> {
     const cap = await this.resolveImageCap(userPropertyId);
+    const property = await this.prisma.userProperty.findUnique({
+      where: { id: userPropertyId },
+      select: { canonical_property: { select: { images: true } } },
+    });
+    const sourceImages = property?.canonical_property.images;
     await this.prisma.userProperty.update({
       where: { id: userPropertyId },
       data: {
         images: images as unknown as Prisma.InputJsonValue,
         images_curated_at: new Date(),
         images_curated_cap: cap,
+        images_curated_source_seen: Array.isArray(sourceImages)
+          ? (sourceImages as Prisma.InputJsonValue)
+          : Prisma.JsonNull,
       },
     });
+  }
+
+  // Whether the source gallery looks like a crawler gap (lost half or more of
+  // the distinct photos it ever had) -- see isSourceGalleryShrunk().
+  async isSourceGalleryShrunk(
+    canonicalPropertyId: string,
+    canonicalImages: unknown,
+    maxImageCount: number | null,
+  ): Promise<boolean> {
+    const rows = await this.prisma.$queryRaw<Array<{ old_value: unknown }>>`
+      SELECT old_value
+      FROM property_history
+      WHERE field = 'images'
+        AND jsonb_typeof(old_value) = 'array'
+        AND property_id = ${canonicalPropertyId}`;
+    return isSourceGalleryShrunk(
+      countDistinctPhotos(canonicalImages, normalizeSourceImageIdentity),
+      peakDistinctPhotos(
+        rows.map((row) => row.old_value),
+        normalizeSourceImageIdentity,
+      ),
+      maxImageCount,
+    );
   }
 
   async loadExcludedSourceImages(userPropertyId: string): Promise<string[]> {

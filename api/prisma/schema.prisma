@@ -1033,6 +1033,10 @@ model UserProperty {
   // (null = keep all). Lets the crawl tell a raised cap (top the selection up
   // from the source) from a lowered one (trim it).
   images_curated_cap      Int?
+  // The source gallery (raw URLs) as it was at the last edit or crawl of a
+  // hand-edited property. Lets the crawl tell photos the agency added since
+  // (appended) and removed since (dropped) from ones the user chose not to keep.
+  images_curated_source_seen Json?
   normalized_data         Json?
   estateweb_type_id       Int?
   estateweb_location_id   Int?

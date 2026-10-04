@@ -3250,6 +3250,7 @@ export class UserPropertiesService {
             : Prisma.JsonNull,
           images_curated_at: null,
           images_curated_cap: null,
+          images_curated_source_seen: Prisma.JsonNull,
         },
       }),
       this.prisma.integrationProperty.updateMany({
@@ -4593,6 +4594,14 @@ export class UserPropertiesService {
             maxImageCount: tracker.max_image_count,
             curatedCap: existing.images_curated_cap,
             normalize: normalizeSourceImageIdentity,
+            seenSource: this.toImageUrlsOrNull(existing.images_curated_source_seen),
+            sourceShrunk: await this.imagesCuration.isSourceGalleryShrunk(
+              propertyId,
+              property.images,
+              tracker.max_image_count,
+            ),
+            processedSourceHash: extractEmbeddedSourceIdentityHash,
+            hashOfIdentity: hashSourceIdentity,
           })
         : null;
       const effectiveFields = {
@@ -4653,7 +4662,13 @@ export class UserPropertiesService {
             existing.estateweb_location_id,
           estateweb_type_id:
             effectiveFields.estateweb_type_id ?? existing.estateweb_type_id,
-          ...(curated ? { images_curated_cap: curated.curatedCap } : {}),
+          ...(curated
+            ? {
+                images_curated_cap: curated.curatedCap,
+                images_curated_source_seen:
+                  curated.seenSource as unknown as Prisma.InputJsonValue,
+              }
+            : {}),
         },
       });
 
@@ -4837,11 +4852,13 @@ export class UserPropertiesService {
       images: unknown;
       images_curated_at: Date | null;
       images_curated_cap: number | null;
+      images_curated_source_seen?: unknown;
     };
     canonicalImages: Prisma.JsonValue | null | undefined;
     maxImageCount: number | null | undefined;
     excludedImages: string[];
-  }): { images: string[]; curatedCap?: number | null } {
+    sourceShrunk?: boolean;
+  }): { images: string[]; curatedCap?: number | null; seenSource?: string[] } {
     const maxImageCount = params.maxImageCount ?? null;
     if (params.userProperty.images_curated_at != null) {
       return computeCuratedImages({
@@ -4851,6 +4868,12 @@ export class UserPropertiesService {
         maxImageCount,
         curatedCap: params.userProperty.images_curated_cap,
         normalize: normalizeSourceImageIdentity,
+        seenSource: this.toImageUrlsOrNull(
+          params.userProperty.images_curated_source_seen,
+        ),
+        sourceShrunk: params.sourceShrunk ?? false,
+        processedSourceHash: extractEmbeddedSourceIdentityHash,
+        hashOfIdentity: hashSourceIdentity,
       });
     }
     const merged = this.mergeImagesPreservingProcessed(
@@ -4859,6 +4882,10 @@ export class UserPropertiesService {
       maxImageCount === 0,
     );
     return { images: this.toImageUrls(merged) };
+  }
+
+  private toImageUrlsOrNull(value: unknown): string[] | null {
+    return Array.isArray(value) ? this.toImageUrls(value) : null;
   }
 
   private toImageUrls(value: unknown): string[] {
