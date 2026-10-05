@@ -732,15 +732,12 @@ export class UserPropertiesController {
 
   @Audited({ action: 'user_property.copy_normalized_images', entity: 'UserProperty', ids: { param: 'id' } })
   @Post(':id/copy-normalized-images')
-  @UseGuards(JwtGuard, RolesGuard)
-  @Roles(AuthRole.ADMIN)
   @ApiOperation({
     summary:
-      'Enqueue a background job that copies selected images from the canonical Property into this tracked UserProperty and uploads them to the linked CMS (admin only)',
+      'Enqueue a background job that copies selected images from the canonical Property into this tracked UserProperty and uploads them to the linked CMS',
   })
   @ApiResponse({ status: 200, type: CopyNormalizedImagesResponseEntity })
   @ApiResponse({ status: 400, description: 'Cannot enqueue copy' })
-  @ApiResponse({ status: 403, description: 'Admin only' })
   @ApiResponse({ status: 404, description: 'Saved property not found' })
   copyNormalizedImages(
     @CurrentUser('id') userId: string,

@@ -311,7 +311,6 @@ export function PropertyImagesGrid({
             icon: Images,
             isDisabled:
               isPending || selectedPropertyIndexes.length === 0 || overCopyLimit,
-            adminOnly: true,
           },
           {
             id: "copy-to-tracked-watermark",
@@ -320,7 +319,6 @@ export function PropertyImagesGrid({
             icon: Sparkles,
             isDisabled:
               isPending || selectedPropertyIndexes.length === 0 || overCopyLimit,
-            adminOnly: true,
           },
         ]
       : []),
