@@ -38,7 +38,14 @@ export const DEFAULT_CHROMIUM_MAX_CONTEXTS_BEFORE_RESTART = 250;
 // unbounded worst case (5 workers x up to 3 detail lanes each = 15).
 export const DEFAULT_MAX_CONCURRENT_BROWSER_PAGES = 8;
 export const CONTEXT_CLOSE_TIMEOUT_MS = 10_000;
-export const DETAIL_ENRICHMENT_SOFT_STOP_BUFFER_MS = 15_000;
+// How long before the hard crawl_job_timeout_ms detail enrichment stops picking
+// up new pages. Lanes only check the deadline BETWEEN pages, so this must cover
+// the slowest single in-flight page: managed-browser page timeout (120s) +
+// block-handling wait (20s) + HTML snapshot upload (30s). At the old 15s, a page
+// still loading when the soft deadline passed let the hard timeout fire first,
+// failing the whole run and discarding every page already fetched
+// (housemarket-realestate, 2026-10-06).
+export const DETAIL_ENRICHMENT_SOFT_STOP_BUFFER_MS = 180_000;
 export const DETAIL_HTML_UPLOAD_TIMEOUT_MS = 30_000;
 // Some sites render a fallback graphic (the agency's own header logo, a "no photo
 // available" banner, ...) inside a photo-less listing's image slot, using an opaque
