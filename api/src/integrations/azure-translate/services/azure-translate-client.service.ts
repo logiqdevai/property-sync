@@ -1,7 +1,9 @@
 import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { PlatformConfigService } from '@/modules/platform-config/platform-config.service';
 import {
+  AZURE_TRANSLATE_CHAR_WINDOW_MS,
   AZURE_TRANSLATE_MAX_ATTEMPTS,
+  AZURE_TRANSLATE_MAX_CHARS_PER_MINUTE,
   AZURE_TRANSLATE_RETRY_BASE_DELAY_MS,
   AZURE_TRANSLATE_RETRY_MAX_DELAY_MS,
 } from '../constants/azure-translate.constants';
@@ -26,6 +28,11 @@ const sleep = (ms: number) =>
 export class AzureTranslateClientService {
   private readonly logger = new Logger(AzureTranslateClientService.name);
   private nextRequestAt = 0;
+  // Set when Azure answers 429: every caller in this process pauses until then, instead of each
+  // one retrying on its own clock and keeping the Translator over its limit.
+  private cooldownUntil = 0;
+  // Characters sent in the last minute; Azure's limit is on characters, not request count.
+  private sentChars: Array<{ at: number; chars: number }> = [];
 
   constructor(
     private readonly azureTranslateConfig: AzureTranslateConfig,
@@ -59,7 +66,10 @@ export class AzureTranslateClientService {
       headers['Ocp-Apim-Subscription-Region'] = region;
     }
 
+    const chars = this.countChars(options.body);
+
     for (let attempt = 1; ; attempt++) {
+      await this.waitForCharBudget(chars);
       await this.waitForRequestSlot();
 
       let response: Response;
@@ -91,7 +101,7 @@ export class AzureTranslateClientService {
         this.logger.warn(
           `Azure Translator 429 on ${method} ${path} (attempt ${attempt}/${AZURE_TRANSLATE_MAX_ATTEMPTS}); retrying in ${delayMs}ms`,
         );
-        await sleep(delayMs);
+        this.cooldownUntil = Math.max(this.cooldownUntil, Date.now() + delayMs);
         continue;
       }
 
@@ -111,12 +121,45 @@ export class AzureTranslateClientService {
     const minRequestIntervalMs = 1000 / maxRequestsPerSecond;
 
     const now = Date.now();
-    const slotAt = Math.max(now, this.nextRequestAt);
+    const slotAt = Math.max(now, this.nextRequestAt, this.cooldownUntil);
     this.nextRequestAt = slotAt + minRequestIntervalMs;
 
     const waitMs = slotAt - now;
     if (waitMs > 0) {
       await sleep(waitMs);
+    }
+  }
+
+  private countChars(body: unknown): number {
+    if (!Array.isArray(body)) return 0;
+    return body.reduce(
+      (sum, item) =>
+        sum + (typeof item?.Text === 'string' ? item.Text.length : 0),
+      0,
+    );
+  }
+
+  /**
+   * Holds the request until it fits in the rolling per-minute character budget. A single
+   * request larger than the whole budget goes through once the window is empty.
+   */
+  private async waitForCharBudget(chars: number): Promise<void> {
+    for (;;) {
+      const now = Date.now();
+      this.sentChars = this.sentChars.filter(
+        (entry) => now - entry.at < AZURE_TRANSLATE_CHAR_WINDOW_MS,
+      );
+      const used = this.sentChars.reduce((sum, e) => sum + e.chars, 0);
+      if (
+        this.sentChars.length === 0 ||
+        used + chars <= AZURE_TRANSLATE_MAX_CHARS_PER_MINUTE
+      ) {
+        this.sentChars.push({ at: now, chars });
+        return;
+      }
+      const waitMs =
+        this.sentChars[0].at + AZURE_TRANSLATE_CHAR_WINDOW_MS - now + 50;
+      await sleep(Math.max(waitMs, 50));
     }
   }
 
