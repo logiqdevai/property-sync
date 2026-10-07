@@ -2,6 +2,7 @@ import {
   extractInternalIdFromSpecs,
   extractInternalIdFromText,
   extractSourcePropertyIds,
+  withQueryParams,
 } from './crawler.utils';
 
 describe('extractInternalIdFromSpecs', () => {
@@ -90,5 +91,25 @@ describe('extractSourcePropertyIds', () => {
     });
 
     expect(result).toEqual({ property_id: '1', internal_id: 'OVERRIDE-1' });
+  });
+});
+
+describe('withQueryParams', () => {
+  it('adds params without touching the path', () => {
+    expect(
+      withQueryParams('https://www.staspro.gr/property/4790/', { language: 'gr' }),
+    ).toBe('https://www.staspro.gr/property/4790/?language=gr');
+  });
+
+  it('overrides an existing value and keeps other params', () => {
+    expect(
+      withQueryParams('https://a.com/p?x=1&language=en', { language: 'gr' }),
+    ).toBe('https://a.com/p?x=1&language=gr');
+  });
+
+  it('returns the url unchanged with no params or an unparseable url', () => {
+    expect(withQueryParams('https://a.com/p', undefined)).toBe('https://a.com/p');
+    expect(withQueryParams('https://a.com/p', {})).toBe('https://a.com/p');
+    expect(withQueryParams('not a url', { a: 'b' })).toBe('not a url');
   });
 });

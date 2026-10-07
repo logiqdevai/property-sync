@@ -229,6 +229,24 @@ export function isBotChallengeUrl(url: string): boolean {
   }
 }
 
+// Returns `url` with `params` set as query params (overriding any existing
+// value); `url` unchanged when there is nothing to add or it isn't parseable.
+export function withQueryParams(
+  url: string,
+  params?: Record<string, string> | null,
+): string {
+  if (!params || Object.keys(params).length === 0) return url;
+  try {
+    const parsed = new URL(url);
+    for (const [key, value] of Object.entries(params)) {
+      parsed.searchParams.set(key, String(value));
+    }
+    return parsed.toString();
+  } catch {
+    return url;
+  }
+}
+
 export function isDetailPageRedirectAway(
   sourceUrl: string,
   finalUrl: string,

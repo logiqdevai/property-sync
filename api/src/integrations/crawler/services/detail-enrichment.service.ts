@@ -29,6 +29,7 @@ import {
   isManagedSessionDeadError,
   mergeImagesDedupingSizeVariants,
   retryTransient,
+  withQueryParams,
 } from '../utils/crawler.utils';
 import {
   MANAGED_SESSION_MAX_AGE_MS,
@@ -389,10 +390,14 @@ export class DetailEnrichmentService {
           proxySession,
         });
 
+    const detailNavUrl = withQueryParams(
+      item.source_url,
+      detailConfig?.url_query,
+    );
     const gotoDetailPage = () =>
       retryTransient(
         () =>
-          page.goto(item.source_url, {
+          page.goto(detailNavUrl, {
             waitUntil: 'domcontentloaded',
             timeout: pageTimeoutMs,
           }),

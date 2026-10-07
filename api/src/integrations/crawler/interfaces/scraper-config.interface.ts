@@ -46,6 +46,12 @@ export interface DetailPageConfig {
   // detail gallery leaves out the agency's main (featured) photo, which then
   // only arrives from the listing card and would otherwise end up last.
   listing_image_first?: boolean;
+  // Query params added to the URL when a detail page is OPENED (never to the
+  // stored source_url, which is the listing's identity). For sites that pick
+  // the page language from a cookie/param and default a cookie-less visitor
+  // (every detail page opens in a fresh browser context) to another language,
+  // e.g. { language: 'gr' }. Pair with the same param on start_url.
+  url_query?: Record<string, string>;
 }
 
 export interface ScraperConfig {
