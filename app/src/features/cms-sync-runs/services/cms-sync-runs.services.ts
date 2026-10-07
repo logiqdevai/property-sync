@@ -3,6 +3,7 @@ import { ApiRoutes } from "@/config/api/routes";
 import type {
   AdminCmsSyncRunListQuery,
   CancelCmsSyncRunsResult,
+  CancelPendingCmsSyncRunsResult,
   CmsSyncRun,
   CmsSyncRunBulkActionPayload,
   CmsSyncRunListQuery,
@@ -43,6 +44,21 @@ export const cancelUserCmsSyncRuns = async (
   } catch (error: any) {
     throw new Error(
       error?.response?.data?.message ?? "Failed to cancel sync runs. Please try again.",
+    );
+  }
+};
+
+export const cancelPendingCmsSyncRunsForAgency = async (
+  sourceAgencyId: string,
+): Promise<CancelPendingCmsSyncRunsResult> => {
+  try {
+    const response = await axiosInstance.post(ApiRoutes.cmsSyncRuns.cancelPending, {
+      source_agency_id: sourceAgencyId,
+    });
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error?.response?.data?.message ?? "Failed to cancel pending syncs. Please try again.",
     );
   }
 };

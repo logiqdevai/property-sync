@@ -32,7 +32,10 @@ import {
   type BulkInsertionSettingsPayload,
 } from "./components/bulk-insertion-settings-modal";
 import { useBulkSetAiBatch } from "@/features/content-publishing/hooks/use-content-publishing";
+import { useCancelPendingCmsSyncRunsForAgency } from "@/features/cms-sync-runs/hooks/use-cms-sync-runs";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useAuthStore } from "@/stores/auth";
+import { RoleTypes } from "@/features/user/interfaces/user.interface";
 import { useMemo, useState } from "react";
 import {
   Button,
@@ -63,7 +66,9 @@ function AgencyRow({
   onOpenWatermarkSettings,
   onOpenImageLimitSettings,
   onOpenPublishingSettings,
+  showPendingColumn,
 }: {
+  showPendingColumn: boolean;
   agency: TrackableAgency;
   rowNumber: number;
   onUntrackRequest: (agency: TrackableAgency) => void;
@@ -81,6 +86,11 @@ function AgencyRow({
     savePrefs,
     handleTrackToggle,
   } = useAgencyTrackingControls(agency, onUntrackRequest);
+  const cancelPending = useCancelPendingCmsSyncRunsForAgency();
+  const role = useAuthStore((state) => state.role);
+  const canCancelPending =
+    (role === RoleTypes.ADMIN || role === RoleTypes.SUPER_ADMIN) &&
+    (agency.pending_sync_count ?? 0) > 0;
 
   return (
     <Table.Row id={agency.id}>
@@ -223,6 +233,20 @@ function AgencyRow({
           Settings
         </Button>
       </Table.Cell>
+      {showPendingColumn ? (
+        <Table.Cell>
+          {canCancelPending ? (
+            <Button
+              size="sm"
+              variant="danger-soft"
+              isDisabled={cancelPending.isPending}
+              onPress={() => cancelPending.mutate(agency.id)}
+            >
+              Cancel pending ({agency.pending_sync_count})
+            </Button>
+          ) : null}
+        </Table.Cell>
+      ) : null}
     </Table.Row>
   );
 }
@@ -277,6 +301,10 @@ export default function DashboardAgenciesPage() {
     .map((agency) => agency.id);
 
   const agencies = data?.data ?? [];
+  const role = useAuthStore((state) => state.role);
+  const showPendingColumn =
+    (role === RoleTypes.ADMIN || role === RoleTypes.SUPER_ADMIN) &&
+    agencies.some((agency) => (agency.pending_sync_count ?? 0) > 0);
   const pagination = data?.pagination;
 
   const activeSettingsAgency =
@@ -591,6 +619,9 @@ export default function DashboardAgenciesPage() {
                     <Table.Column>
                       <AgencyTrackingColumnHeader columnId="publishing" />
                     </Table.Column>
+                    {showPendingColumn ? (
+                      <Table.Column>Pending syncs</Table.Column>
+                    ) : null}
                   </Table.Header>
                   <Table.Body>
                     {agencies.map((agency, index) => (
@@ -604,6 +635,7 @@ export default function DashboardAgenciesPage() {
                         onOpenWatermarkSettings={openWatermarkSettings}
                         onOpenImageLimitSettings={openImageLimitSettings}
                         onOpenPublishingSettings={openPublishingSettings}
+                        showPendingColumn={showPendingColumn}
                       />
                     ))}
                   </Table.Body>

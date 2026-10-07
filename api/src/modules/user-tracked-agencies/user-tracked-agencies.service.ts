@@ -15,7 +15,7 @@ import {
   BulkAgencyTrackingDto,
 } from './dto/bulk-agency-tracking.dto';
 import { TrackAgencyDto } from './dto/track-agency.dto';
-import { IntegrationType, Prisma } from 'generated/prisma';
+import { CmsSyncStatus, IntegrationType, Prisma } from 'generated/prisma';
 import { normalizeTextTruncatePieces } from './utils/apply-text-truncate-pieces.util';
 
 const LINKABLE_INTEGRATION_TYPE = IntegrationType.ESTATEWEB;
@@ -75,6 +75,27 @@ export class UserTrackedAgenciesService {
       trackers.map((tracker) => [tracker.source_agency_id, tracker]),
     );
 
+    // Pending/retrying CMS sync runs per tracked agency, so the UI can show
+    // "Cancel pending" only where something is actually in flight.
+    const pendingRuns = await this.prisma.cmsSyncRun.findMany({
+      where: {
+        status: { in: [CmsSyncStatus.PENDING, CmsSyncStatus.RETRYING] },
+        user_integration: { user_id: userId },
+      },
+      select: { payload: true },
+    });
+    const pendingByTrackerId = new Map<string, number>();
+    for (const run of pendingRuns) {
+      const payload = run.payload as { user_tracked_agency_id?: unknown } | null;
+      const trackerId = payload?.user_tracked_agency_id;
+      if (typeof trackerId === 'string') {
+        pendingByTrackerId.set(
+          trackerId,
+          (pendingByTrackerId.get(trackerId) ?? 0) + 1,
+        );
+      }
+    }
+
     const totalPages = unlimited ? 1 : Math.ceil(total / query.limit);
 
     return {
@@ -84,6 +105,7 @@ export class UserTrackedAgenciesService {
           ...agency,
           is_tracked: Boolean(tracker?.enabled),
           user_tracked_agency_id: tracker?.id ?? null,
+          pending_sync_count: tracker ? (pendingByTrackerId.get(tracker.id) ?? 0) : 0,
           tracking_prefs: tracker?.enabled
             ? {
                 track_new_listings: tracker.track_new_listings,

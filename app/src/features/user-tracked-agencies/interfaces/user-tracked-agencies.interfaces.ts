@@ -30,6 +30,7 @@ export interface TrackableAgency {
   use_ai_batching: boolean;
   is_tracked: boolean;
   user_tracked_agency_id: string | null;
+  pending_sync_count?: number;
   tracking_prefs?: TrackingPrefs;
 }
 

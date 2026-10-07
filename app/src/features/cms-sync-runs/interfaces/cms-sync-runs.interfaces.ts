@@ -109,6 +109,10 @@ export interface CancelCmsSyncRunsResult {
   failed: Array<{ id: string; error: string }>;
 }
 
+export interface CancelPendingCmsSyncRunsResult {
+  cancelled: number;
+}
+
 export interface ResumeCmsSyncRunsResult {
   resumed: string[];
   failed: Array<{ id: string; error: string }>;

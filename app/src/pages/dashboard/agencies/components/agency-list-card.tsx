@@ -7,8 +7,11 @@ import {
   useTrackAgency,
   useUpdateAgencyTracking,
 } from "@/features/user-tracked-agencies/hooks/use-user-tracked-agencies";
+import { useCancelPendingCmsSyncRunsForAgency } from "@/features/cms-sync-runs/hooks/use-cms-sync-runs";
+import { useAuthStore } from "@/stores/auth";
+import { RoleTypes } from "@/features/user/interfaces/user.interface";
 import { Button, Switch } from "@heroui/react";
-import { ExternalLink, Images, Settings } from "lucide-react";
+import { ExternalLink, Images, Settings, StopCircle } from "lucide-react";
 
 function PrefSwitch({
   isSelected,
@@ -136,6 +139,11 @@ export function AgencyListCard({
     savePrefs,
     handleTrackToggle,
   } = useAgencyTrackingControls(agency, onUntrackRequest);
+  const cancelPending = useCancelPendingCmsSyncRunsForAgency();
+  const role = useAuthStore((state) => state.role);
+  const canCancelPending =
+    (role === RoleTypes.ADMIN || role === RoleTypes.SUPER_ADMIN) &&
+    (agency.pending_sync_count ?? 0) > 0;
 
   return (
     <article className="flex min-w-0 flex-col gap-3 rounded-xl border border-border bg-surface p-4">
@@ -274,6 +282,18 @@ export function AgencyListCard({
           >
             Publishing settings
           </Button>
+          {canCancelPending ? (
+            <Button
+              size="sm"
+              variant="danger-soft"
+              className="w-full"
+              isDisabled={cancelPending.isPending}
+              onPress={() => cancelPending.mutate(agency.id)}
+            >
+              <StopCircle className="size-3.5" />
+              Cancel pending CRM syncs ({agency.pending_sync_count})
+            </Button>
+          ) : null}
         </div>
       ) : !isAgencyDisabled ? (
         <p className="border-t border-border pt-3 text-xs text-muted">

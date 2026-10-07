@@ -217,6 +217,7 @@ export const ApiRoutes = {
         list: "/cms-sync-runs",
         detail: (id: string) => `/cms-sync-runs/${id}`,
         bulkCancel: "/cms-sync-runs/bulk-cancel",
+        cancelPending: "/cms-sync-runs/cancel-pending",
         bulkResume: "/cms-sync-runs/bulk-resume",
     },
     costLogs: {

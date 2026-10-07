@@ -340,6 +340,52 @@ export class CmsSyncRunsService {
     return { cancelled, failed };
   }
 
+  // Cancel every PENDING/RETRYING sync run the user has queued for one tracked
+  // agency (e.g. a bulk push of hundreds of properties started by mistake).
+  // A run already ACTIVE finishes on its own -- see cancel() for the caveat.
+  async cancelPendingForAgency(userId: string, sourceAgencyId: string) {
+    const tracker = await this.prisma.userTrackedAgency.findFirst({
+      where: { user_id: userId, source_agency_id: sourceAgencyId },
+      select: { id: true },
+    });
+    if (!tracker) throw new NotFoundException('Tracked agency not found');
+
+    const runs = await this.prisma.cmsSyncRun.findMany({
+      where: {
+        status: { in: CANCELLABLE_STATUSES },
+        user_integration: { user_id: userId },
+        payload: { path: ['user_tracked_agency_id'], equals: tracker.id },
+      },
+      select: { id: true },
+    });
+    const ids = runs.map((run) => run.id);
+
+    // Remove the BullMQ jobs first so none start while the rows flip; Redis
+    // round-trips are slow, so go in parallel chunks.
+    const REMOVE_CHUNK = 50;
+    for (let i = 0; i < ids.length; i += REMOVE_CHUNK) {
+      await Promise.all(
+        ids.slice(i, i + REMOVE_CHUNK).map((id) =>
+          this.cmsSyncQueue
+            .getJob(`cms-sync-${id}`)
+            .then((job) => job?.remove())
+            .catch(() => undefined),
+        ),
+      );
+    }
+
+    const updated = await this.prisma.cmsSyncRun.updateMany({
+      where: { id: { in: ids }, status: { in: CANCELLABLE_STATUSES } },
+      data: {
+        status: CmsSyncStatus.CANCELLED,
+        error_message: 'Cancelled by user',
+        finished_at: new Date(),
+      },
+    });
+
+    return { cancelled: updated.count };
+  }
+
   async rerun(id: string) {
     const run = await this.prisma.cmsSyncRun.findUnique({ where: { id } });
     if (!run) throw new NotFoundException('CMS sync run not found');

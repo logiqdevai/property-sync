@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "@/hooks/use-toast";
 import {
+  cancelPendingCmsSyncRunsForAgency,
   cancelUserCmsSyncRuns,
   deleteAdminCmsSyncRun,
   deleteAdminCmsSyncRuns,
@@ -62,6 +63,33 @@ export const useCancelUserCmsSyncRuns = () => {
     onError: (error: Error) => {
       toast({
         title: "Could not cancel sync runs",
+        description: error.message,
+        variant: "error",
+      });
+    },
+  });
+};
+
+export const useCancelPendingCmsSyncRunsForAgency = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (sourceAgencyId: string) => cancelPendingCmsSyncRunsForAgency(sourceAgencyId),
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ["cmsSyncRuns"] });
+      toast({
+        title: "Pending syncs cancelled",
+        description:
+          result.cancelled === 0
+            ? "Nothing was waiting to sync."
+            : `${result.cancelled} ${result.cancelled === 1 ? "sync" : "syncs"} cancelled.`,
+        duration: 2500,
+        variant: "success",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Could not cancel pending syncs",
         description: error.message,
         variant: "error",
       });
