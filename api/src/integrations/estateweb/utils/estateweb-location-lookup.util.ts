@@ -914,6 +914,26 @@ export function resolveEstateWebLocation(
   const { labels: cityLabels, preferPeripheral } = expandCityLabels(city);
   const districtLabels = expandDistrictLabels(district);
 
+  // "Χαλκιδική / Παλλήνη": the catalog's only Παλλήνη is in Athens, and as a unique district
+  // name it would win below. Stop at the prefecture the city names; refineBarePrefecture
+  // takes it down to the aliased municipality (or the village, from coordinates). Not when
+  // another district part already names a place there ("Παλλήνη, Πευκοχώρι").
+  for (const cityLabel of cityLabels) {
+    const aliases = PREFECTURE_AREA_ALIASES[cityLabel];
+    if (!aliases || !districtLabels.some((label) => aliases[label] != null)) continue;
+    const prefecture = (LOCATION_BY_NORMALIZED_NAME.get(cityLabel) ?? []).find(
+      (loc) => loc.level === PREFECTURE_LEVEL,
+    );
+    const districtNamesPlaceInside =
+      !!prefecture &&
+      districtLabels.some((label) =>
+        (LOCATION_BY_NORMALIZED_NAME.get(label) ?? []).some((loc) =>
+          isDescendantOf(loc, prefecture.id),
+        ),
+      );
+    if (prefecture && !districtNamesPlaceInside) return prefecture;
+  }
+
   for (const districtLabel of districtLabels) {
     const byDistrict = resolveByDistrict(
       districtLabel,
@@ -1195,11 +1215,13 @@ function resolveEstateWebLocationFromSourcesCore(
   // structured data -- when it resolves to a deeper catalog node than the free-text
   // city/district match (which can bottom out as broad as the whole island "Κρήτη"),
   // trust the more specific one instead of always favoring city/district.
-  if (primary && fromRaw) {
-    return fromRaw.level > primary.level ? fromRaw : primary;
-  }
-  if (primary) return primary;
-  if (fromRaw) return fromRaw;
+  const textResult =
+    primary && fromRaw
+      ? fromRaw.level > primary.level
+        ? fromRaw
+        : primary
+      : (primary ?? fromRaw);
+  if (textResult) return refineBarePrefecture(textResult, input, googleSegments);
 
   // The scraped city/district text only matched homonyms outside the prefecture the
   // coordinates are in (e.g. city "Φούρνοι" -> only Samos/Argolida/Evia/... nodes, while the
@@ -1283,6 +1305,217 @@ function resolveEstateWebLocationFromSourcesCore(
   }
 
   return undefined;
+}
+
+const PREFECTURE_LEVEL = 1;
+const MUNICIPALITY_LEVEL = 2;
+
+// Area names the catalog doesn't carry, per prefecture segment -> catalog node id. Only used
+// once the property is already known to be in that prefecture, so a name that means
+// something else elsewhere (Athens' Παλλήνη) is unaffected.
+const PREFECTURE_AREA_ALIASES: Record<string, Record<string, number>> = {
+  // "Παλλήνη" is the Kassandra peninsula's other name and the pre-2011 municipality merged
+  // into Δήμος Κασσάνδρας (Google still returns "Δήμος Παλλήνης Χαλκιδικής").
+  χαλκιδικη: {
+    παλληνη: 50301,
+    'δημος παλληνης χαλκιδικης': 50301,
+  },
+};
+
+const GOOGLE_COMMUNITY_PREFIXES = ['τοπικη κοινοτητα ', 'δημοτικη κοινοτητα '];
+
+// Google names a village's local community in genitive ("Τοπική Κοινότητα Πευκοχωρίου",
+// "... Νέας Σκιώνης"); the catalog names the village in nominative ("Πευκοχώρι", "Νέα Σκιώνη").
+const COMMUNITY_GENITIVE_REWRITES: Array<[suffix: string, replacements: string[]]> = [
+  ['ιου', ['ι']],
+  ['ου', ['ος', 'ο', 'ι']],
+  ['ης', ['η', 'α']],
+  ['ας', ['α']],
+  ['ων', ['α', 'ες', 'οι']],
+  ['η', ['ης']],
+];
+
+function genitiveWordVariants(word: string): string[] {
+  const variants = [word];
+  for (const [suffix, replacements] of COMMUNITY_GENITIVE_REWRITES) {
+    if (!word.endsWith(suffix) || word.length <= suffix.length + 1) continue;
+    for (const replacement of replacements) {
+      variants.push(word.slice(0, -suffix.length) + replacement);
+    }
+  }
+  return variants;
+}
+
+function googleCommunityNames(normalizedSegment: string): string[] {
+  const prefix = GOOGLE_COMMUNITY_PREFIXES.find((p) => normalizedSegment.startsWith(p));
+  if (!prefix) return [];
+  const words = normalizedSegment.slice(prefix.length).trim().split(' ').filter(Boolean);
+  if (words.length === 0 || words.length > 3) return [];
+  return words.reduce<string[]>(
+    (phrases, word) =>
+      phrases.flatMap((phrase) =>
+        genitiveWordVariants(word).map((variant) => (phrase ? `${phrase} ${variant}` : variant)),
+      ),
+    [''],
+  );
+}
+
+// "Κασσάνδρα" -> "κασσανδρας", "Δάφνη-Υμηττός" -> "δαφνης-υμηττου": the bare-indexed genitive
+// of a "Δήμος <Genitive>" node (guessMunicipalityGenitivePhrase doesn't split hyphenated
+// double municipalities).
+function guessHyphenatedMunicipalityGenitive(normalized: string): string | null {
+  const parts = normalized.split(/(\s+|-)/);
+  const converted = parts.map((part, i) => (i % 2 === 1 ? part : guessGreekGenitiveWord(part)));
+  if (converted.some((part) => part == null)) return null;
+  return converted.join('');
+}
+
+function ancestorAtLevel(
+  loc: EstateWebLocation,
+  level: number,
+): EstateWebLocation | undefined {
+  let current: EstateWebLocation | undefined = loc;
+  while (current && current.level > level) {
+    current =
+      current.parent_id != null ? LOCATION_BY_ID.get(current.parent_id) : undefined;
+  }
+  return current?.level === level ? current : undefined;
+}
+
+// Municipalities (inside `loc`) of the places the text labels name, prefecture names aside.
+function municipalitiesNamedInside(loc: EstateWebLocation, labels: string[]): Set<number> {
+  const ids = new Set<number>();
+  for (const label of labels) {
+    if (PREFECTURE_SEGMENTS.has(label)) continue;
+    const named = [
+      ...(LOCATION_BY_NORMALIZED_NAME.get(label) ?? []),
+      ...(LOCATION_BY_NORMALIZED_NAME.get(guessMunicipalityGenitivePhrase(label) ?? '') ?? []),
+    ];
+    for (const candidate of named) {
+      if (candidate.id === loc.id || !isDescendantOf(candidate, loc.id)) continue;
+      const municipality = ancestorAtLevel(candidate, MUNICIPALITY_LEVEL);
+      if (municipality) ids.add(municipality.id);
+    }
+  }
+  return ids;
+}
+
+/**
+ * The text only pinned a whole prefecture (e.g. "Χαλκιδική / Παλλήνη": the catalog's only
+ * Παλλήνη is the Athens suburb), so the CRM listing would show a prefecture with no
+ * municipality. Step down to a node INSIDE that prefecture -- never to another region -- from
+ * the property's reverse-geocoded coordinates, else from PREFECTURE_AREA_ALIASES.
+ */
+function refineBarePrefecture(
+  loc: EstateWebLocation,
+  input: EstateWebLocationSourcesInput,
+  googleSegments: string[],
+): EstateWebLocation {
+  if (loc.level !== PREFECTURE_LEVEL) return loc;
+  const labels = [...expandDistrictLabels(input.district), ...expandCityLabels(input.city).labels];
+  // Coordinates only: forward-geocoded names can belong to a homonym (root cause #11).
+  if (input.googleCoordinatePrefectures?.length) {
+    const refined = refinePrefectureWithCoordinates(
+      loc,
+      googleSegments,
+      input.googleCoordinatePrefectures,
+    );
+    // The text named a place in this prefecture that just didn't resolve on its own ("Αθήνα /
+    // Γκύζη - Πεδίον Άρεως", "Αθήνα / Αγία Παρασκευή"): coordinates in a different
+    // municipality are a generic fallback point (several of those sat in Άλιμος), not the
+    // listing.
+    const textMunicipalities = municipalitiesNamedInside(loc, labels);
+    const refinedMunicipality = refined && ancestorAtLevel(refined, MUNICIPALITY_LEVEL);
+    if (
+      refinedMunicipality &&
+      (textMunicipalities.size === 0 || textMunicipalities.has(refinedMunicipality.id))
+    ) {
+      return refined;
+    }
+  }
+  const aliases = PREFECTURE_AREA_ALIASES[LOCATION_NORMALIZED_SEGMENTS.get(loc.id)?.[1] ?? ''];
+  if (aliases) {
+    for (const label of labels) {
+      const aliased = aliases[label] != null ? LOCATION_BY_ID.get(aliases[label]) : undefined;
+      if (aliased) return aliased;
+    }
+  }
+  return loc;
+}
+
+/**
+ * 1. The municipality, from the Google names below the coordinates' own prefecture entry
+ *    (broader ones can collide with a neighborhood: Athens has one called "Αττική"): the
+ *    first one naming a municipality node ("ΔΗΜΟΣ ΓΛΥΦΑΔΑΣ", Google's admin_level_4
+ *    "Κασσάνδρα"), else the first whose nodes all sit in one municipality.
+ * 2. The village, only from Google's local-community admin unit ("Τοπική Κοινότητα
+ *    Πευκοχωρίου" -> Πευκοχώρι) inside that municipality. Plain locality names aren't used for
+ *    this: the merged reverse-geocode results carry nearby towns too (every Kassandra point
+ *    came back with "Παλιούρι").
+ */
+function refinePrefectureWithCoordinates(
+  loc: EstateWebLocation,
+  googleSegments: string[],
+  googleCoordinatePrefectures: string[],
+): EstateWebLocation | undefined {
+  const rawPrefectures = googleCoordinatePrefectures.map(normalizeEstateWebPlaceLabel);
+  // Coordinates in another prefecture are a bad geocode, not a refinement. Attica's Google
+  // prefectures ("Νότιος Τομέας Αθηνών") aren't catalog prefectures, so none known is fine.
+  const coordinatePrefectures = rawPrefectures
+    .flatMap(expandGoogleAdminSegment)
+    .filter((segment) => PREFECTURE_SEGMENTS.has(segment));
+  if (coordinatePrefectures.length > 0 && !isInRequiredPrefecture(loc, coordinatePrefectures)) {
+    return undefined;
+  }
+  const lastPrefectureIndex = Math.max(
+    ...rawPrefectures.map((segment) => googleSegments.lastIndexOf(segment)),
+  );
+  const localSegments = googleSegments
+    .slice(lastPrefectureIndex + 1)
+    .filter((segment) => !PREFECTURE_SEGMENTS.has(segment));
+  if (localSegments.length === 0) return undefined;
+
+  const insideLoc = (label: string | null) =>
+    (label ? (LOCATION_BY_NORMALIZED_NAME.get(label) ?? []) : []).filter(
+      (candidate) => candidate.id !== loc.id && isDescendantOf(candidate, loc.id),
+    );
+  const aliases = PREFECTURE_AREA_ALIASES[LOCATION_NORMALIZED_SEGMENTS.get(loc.id)?.[1] ?? ''];
+
+  let municipality: EstateWebLocation | undefined;
+  for (const segment of localSegments) {
+    const aliasId = aliases?.[segment];
+    municipality = [
+      ...(aliasId != null ? [LOCATION_BY_ID.get(aliasId)] : []),
+      ...insideLoc(segment),
+      ...insideLoc(guessHyphenatedMunicipalityGenitive(segment)),
+    ].find((candidate) => candidate?.level === MUNICIPALITY_LEVEL);
+    if (municipality) break;
+  }
+  if (!municipality) {
+    for (const segment of localSegments) {
+      const municipalities = new Map<number, EstateWebLocation>();
+      for (const candidate of insideLoc(segment)) {
+        const ancestor = ancestorAtLevel(candidate, MUNICIPALITY_LEVEL);
+        if (ancestor) municipalities.set(ancestor.id, ancestor);
+      }
+      if (municipalities.size === 1) {
+        municipality = [...municipalities.values()][0];
+        break;
+      }
+    }
+  }
+  if (!municipality) return undefined;
+
+  const municipalityId = municipality.id;
+  for (const segment of localSegments) {
+    for (const name of googleCommunityNames(segment)) {
+      const villages = insideLoc(name).filter(
+        (candidate) => candidate.id !== municipalityId && isDescendantOf(candidate, municipalityId),
+      );
+      if (villages.length === 1) return villages[0];
+    }
+  }
+  return municipality;
 }
 
 /**

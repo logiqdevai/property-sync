@@ -1,6 +1,6 @@
 # EstateWeb Location Resolution — Accuracy Debugging Session
 
-**Date:** 2026-08-31 (updated 2026-09-02 — root cause #8 + its backfill; updated 2026-09-03 — root cause #9 + its backfill; updated 2026-09-21 — root cause #12; updated 2026-09-29 — root cause #13 + its backfill; updated 2026-09-30 — agencyCity regional scope + its housemarket-realestate.gr backfill; updated 2026-10-01 — root cause #14 + its backfill, plus discovery that the general post-fix backfill was never run — see "Known-stale backfill" section)
+**Date:** 2026-08-31 (updated 2026-09-02 — root cause #8 + its backfill; updated 2026-09-03 — root cause #9 + its backfill; updated 2026-09-21 — root cause #12; updated 2026-09-29 — root cause #13 + its backfill; updated 2026-09-30 — agencyCity regional scope + its housemarket-realestate.gr backfill; updated 2026-10-01 — root cause #14 + its backfill, plus discovery that the general post-fix backfill was never run — see "Known-stale backfill" section; updated 2026-10-08 — root cause #15 + its backfill)
 **Status:** ✅ Root causes fixed and verified against production data. One optional follow-up (AI tie-break) not started. Root cause #8's backfill (2026-09-02), root cause #9's backfill (2026-09-03), root cause #13's backfill (2026-09-29), the agencyCity backfill for housemarket-realestate.gr (2026-09-30), and root cause #14's backfill (2026-10-01) are complete. ⚠️ The GENERAL full-catalog backfill (re-running the resolve job against every property to pick up ALL fixes #1-#14 for properties never reprocessed since they landed) has still never been run — see "Known-stale backfill" section.
 **Related doc:** `docs/ESTATEWEB-LOCATION-MAPPING.md` (original build/handoff doc — read that first for the base architecture; this doc covers a follow-up debugging session that found and fixed several correctness bugs in what that doc shipped).
 
@@ -291,6 +291,32 @@ All 3 changed rows verified independently live against Google before writing (sa
 
 ### Known-stale backfill (found while investigating this report, not fixed)
 Two of the client's 3 reported properties (a Λαγκαδάς/Θεσσαλονίκη plot wrongly resolved to a same-named Chania village, and an Apokoronas villa wrongly resolved to a same-named village in Magnesia) turned out **not** to be a resolver bug at all: both already resolve correctly through the *current* code (verified live and with zero Google hints, respectively) — they were just never reprocessed since **2026-08-31**, when they got their wrong value from the pre-fix resolver that predates root causes #2/#3/#6/#9. The doc's own "Known follow-ups" section already flagged this exact gap ("No backfill has been run yet against the fixed pipeline... Run the admin bulk action... to backfill the rest") and it was never actioned. Manually fixed the 2 reported instances plus a 3rd (`445b1ab8`/`2e3b26bb`) found by searching for the same wrong id, all verified live against Google before writing. **The general sweep — re-running the resolve job against every property still holding a result computed before whichever fix would have corrected it — has still not been run**, and is very likely affecting many more properties across other agencies, not just this client's.
+
+---
+
+## Root cause #15 — text that only pins a prefecture never steps down to a municipality (found 2026-10-08, staspro / Halkidiki)
+
+Client (tracker `d00081a5-7d28-4be8-8427-11b3b564a5a5`, agency staspro, `SourceAgency.city = 'Θεσσαλονίκη'`) reported that many Halkidiki listings in the CRM had a prefecture but no municipality. 81 of their 498 pushed properties sat on a prefecture-level node (`level 1`); 76 of them were `512 "Μακεδονία » Χαλκιδική"`, almost all with city `Χαλκιδική` / district `Παλλήνη`.
+
+- "Παλλήνη" is the Kassandra peninsula's other name and the pre-2011 municipality now merged into Δήμος Κασσάνδρας. The catalog's only Παλλήνη is the **Athens** suburb (`101058`).
+- Creation-time (no Google): the district is unique nationwide, so `resolveByDistrict`'s unique-district fallback put these rows in **Athens**. The async job's hard prefecture constraint (#12) then pulled them back to `512` — right region, but just the prefecture.
+- Every row had real coordinates, and Google named the municipality (`administrative_area_level_4 = "Κασσάνδρα"`) and the village (`"Τοπική Κοινότητα Πευκοχωρίου"`). Nothing used them: once the city step returns a node, Google segments only act as soft filters among *candidates*, and the candidate here was the prefecture itself.
+
+### Fix (`estateweb-location-lookup.util.ts`)
+- `refineBarePrefecture()`, applied to the city/district/rawLocation result in `resolveEstateWebLocationFromSourcesCore`, only when that result is a prefecture node. It only ever moves to a node **inside** that prefecture.
+  - From coordinates (`googleCoordinatePrefectures` present, i.e. the reverse-geocode path only; forward geocoding stays out per #11): only Google segments after the coordinates' own admin_level_3 entry (Athens has a neighborhood called "Αττική"). Municipality = first segment naming a level-2 node (`"ΔΗΜΟΣ ΓΛΥΦΑΔΑΣ"`, or a genitive guess: `"Κασσάνδρα"`→`κασσανδρας`, `"Δάφνη-Υμηττός"`→`δαφνης-υμηττου`), else the first segment whose nodes all sit in one municipality. Village = only from `Τοπική/Δημοτική Κοινότητα <genitive>` (multi-word, per-word rewrites), never from plain locality names: the merged reverse results put `"Παλιούρι"` on every Kassandra point.
+  - Skipped if the coordinates' prefecture is a different catalog prefecture, or if the text names a place in this prefecture that lies in another municipality (`Αθήνα / Αγία Παρασκευή` with a generic point in Άλιμος).
+  - Otherwise `PREFECTURE_AREA_ALIASES` (curated, per prefecture): `χαλκιδικη: { παλληνη, 'δημος παλληνης χαλκιδικης' } → 50301`.
+- `resolveEstateWebLocation` stops at the prefecture the city names when the district is one of those aliases and no other district part names a place there, so "Χαλκιδική / Παλλήνη" no longer lands in Athens at creation ("Χαλκιδική / Παλλήνη, Πευκοχώρι" still gives Πευκοχώρι).
+
+### Old-vs-new diff (all 6,991 `properties`)
+- Synchronous: 104 rows, all `Χαλκιδική / Παλλήνη`: Athens Παλλήνη → Δήμος Κασσάνδρας.
+- Reverse-geocoded (158 candidates whose stored or text result is prefecture-level, real Google calls): 113 rows, every one prefecture → municipality/village in the same prefecture. Two (`Αθήνα / Γκύζη - Πεδίον Άρεως`, descriptions say "Γκύζη - Άρειος Πάγος") have a junk shared point in Άλιμος; the text guard misses them because the catalog spells it "Πεδίο Άρεως", so they were set by hand to `113237`.
+
+### Backfill run 2026-10-08
+112 `Property` rows + their 112 `UserProperty` rows (guarded on the old value, one transaction), `property_history` entry per property, `is_modified = true` + `pending_crm_update = true` on the user rows. 108 staspro (79 already in the CRM; tracker `auto_update_to_crm = false`, so they need "Push to CRM"), 2 realeze, 1 bitsimis. Not written: one `realty properties` row (`Αθήνα / Κέντρο Παγκρατίου`) that stores `Παγκράτι, Δήμος Καλαβρύτων` (Achaia) — wrong, but a stale value from before #12, not this fix.
+
+**Still prefecture-only in that client's list:** `Πειραιάς / Πειραιάς` (Google's `"ΔΗΜΟΣ ΠΕΙΡΑΙΩΣ"` ≠ catalog name) and `Ν. Κέρκυρας / Κέρκυρα` (Google only gives `"Δημοτική Κοινότητα Κερκυραίων"`).
 
 ---
 

@@ -508,6 +508,100 @@ describe('resolveEstateWebLocation', () => {
     ).toBe(113138);
   });
 
+  describe('refining a bare prefecture match', () => {
+    // Real staspro rows: the catalog's only Παλλήνη is the Athens suburb, so the text stops at
+    // the prefecture node 512 and the CRM listing showed no municipality.
+    const kassandraSegments = (community?: string) => [
+      'Αποκεντρωμένη Διοίκηση Μακεδονίας - Θράκης', 'Κεντρική Μακεδονία', 'Χαλκιδική',
+      'Κασσάνδρα', 'Παλλήνη', ...(community ? [community] : []), 'Παλιούρι',
+    ];
+
+    it('steps down to the village Google names as the local community', () => {
+      expect(
+        resolveEstateWebLocationFromSources({
+          city: 'Χαλκιδική',
+          district: 'Παλλήνη',
+          googleAddressSegments: kassandraSegments('Τοπική Κοινότητα Πευκοχωρίου'),
+          googleCoordinatePrefectures: ['Χαλκιδική'],
+        }),
+      ).toEqual(
+        expect.objectContaining({ id: 106885, path: 'Μακεδονία » Χαλκιδική » Δήμος Κασσάνδρας » Πευκοχώρι' }),
+      );
+      expect(
+        resolveEstateWebLocationFromSources({
+          city: 'Χαλκιδική',
+          district: 'Παλλήνη',
+          googleAddressSegments: kassandraSegments('Τοπική Κοινότητα Νέας Σκιώνης'),
+          googleCoordinatePrefectures: ['Χαλκιδική'],
+        })?.id,
+      ).toBe(106883);
+    });
+
+    it('stops at the municipality without a local community (locality names are not trusted)', () => {
+      expect(
+        resolveEstateWebLocationFromSources({
+          city: 'Χαλκιδική',
+          district: 'Παλλήνη',
+          googleAddressSegments: kassandraSegments(),
+          googleCoordinatePrefectures: ['Χαλκιδική'],
+        })?.id,
+      ).toBe(50301);
+    });
+
+    it('maps Halkidiki "Παλλήνη" to Δήμος Κασσάνδρας without coordinates, leaving Athens alone', () => {
+      expect(resolveEstateWebLocationFromSources({ city: 'Χαλκιδική', district: 'Παλλήνη' })?.id).toBe(50301);
+      expect(
+        resolveEstateWebLocationFromSources({
+          city: 'Χαλκιδική',
+          district: 'Παλλήνη',
+          googleAddressSegments: ['Χαλκιδική', 'Παλλήνη', 'Δήμος Παλλήνης Χαλκιδικής'],
+          googleCoordinatePrefectures: ['Χαλκιδική'],
+        })?.id,
+      ).toBe(50301);
+      expect(resolveEstateWebLocationFromSources({ city: 'Παλλήνη' })?.path).toContain('Δήμος Παλλήνης');
+      // A village named next to it stays the more specific answer.
+      expect(
+        resolveEstateWebLocationFromSources({ city: 'Χαλκιδική', district: 'Παλλήνη, Πευκοχώρι' })?.id,
+      ).toBe(106885);
+    });
+
+    it('ignores Google names above the prefecture ("Αττική" is also an Athens neighborhood)', () => {
+      expect(
+        resolveEstateWebLocationFromSources({
+          city: 'Αθήνα',
+          district: 'Γλυφάδα',
+          googleAddressSegments: [
+            'Αποκεντρωμένη Διοίκηση Αττικής', 'Αττική', 'Νότιος Τομέας Αθηνών', 'Γλυφάδα', 'ΔΗΜΟΣ ΓΛΥΦΑΔΑΣ',
+          ],
+          googleCoordinatePrefectures: ['Νότιος Τομέας Αθηνών'],
+        })?.id,
+      ).toBe(90011);
+    });
+
+    it('keeps the prefecture when the text names a place in another municipality than the coordinates', () => {
+      expect(
+        resolveEstateWebLocationFromSources({
+          city: 'Αθήνα',
+          district: 'Αγία Παρασκευή',
+          googleAddressSegments: [
+            'Αποκεντρωμένη Διοίκηση Αττικής', 'Αττική', 'Νότιος Τομέας Αθηνών', 'Άλιμος', 'ΔΗΜΟΣ ΑΛΙΜΟΥ',
+          ],
+          googleCoordinatePrefectures: ['Νότιος Τομέας Αθηνών'],
+        })?.path,
+      ).not.toContain('Αλίμου');
+    });
+
+    it('does not refine from coordinates in a different prefecture', () => {
+      expect(
+        resolveEstateWebLocationFromSources({
+          city: 'Χαλκιδική',
+          googleAddressSegments: ['Κεντρική Μακεδονία', 'Θεσσαλονίκη', 'Καλαμαριά'],
+          googleCoordinatePrefectures: ['Θεσσαλονίκη'],
+        })?.id,
+      ).toBe(512);
+    });
+  });
+
   describe('agencyCity scoping (SourceAgency.city)', () => {
     it('resolves a SourceAgency.city label to its own catalog prefecture segment', () => {
       expect(resolveAgencyPrefectureSegments('Αθήνα')).toEqual(['αθηνα']);
