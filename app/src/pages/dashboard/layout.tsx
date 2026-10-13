@@ -5,6 +5,7 @@ import { AppLogo } from '@/components/layout/app-logo';
 import DashboardNavbar from '@/components/layout/dashboard-navbar';
 import SidebarContent from '@/components/layout/sidebar-content';
 import UserMenuPopover from '@/components/layout/user-menu-popover';
+import { DelistedClientsAlertModal } from '@/components/property-clients/delisted-clients-alert-modal';
 import { environments } from '@/config/environments';
 
 export default function DashboardLayout() {
@@ -22,6 +23,8 @@ export default function DashboardLayout() {
           </div>
         </main>
       </div>
+
+      <DelistedClientsAlertModal />
 
       <Drawer state={drawerState}>
         <Drawer.Backdrop

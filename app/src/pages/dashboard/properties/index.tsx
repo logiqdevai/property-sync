@@ -39,6 +39,7 @@ import { EstateWebOrphanSitesModal } from "./components/estateweb-orphan-sites-m
 import { CrmImageSyncModal } from "./components/crm-image-sync-modal";
 import { RemoveWatermarkByCountModal } from "./components/remove-watermark-by-count-modal";
 import { ProduceContentModal } from "./components/produce-content-modal";
+import { PropertyClientsModal } from "./components/property-clients-modal";
 import { ChangePropertyStatusModal } from "./components/change-property-status-modal";
 import {
   PropertyStatuses,
@@ -181,6 +182,12 @@ const PROPERTY_RENORMALIZE_ACTION: TableRowAction = {
   icon: RefreshCw,
 };
 
+const PROPERTY_CLIENTS_ACTION: TableRowAction = {
+  id: "clients",
+  label: "Clients & notes",
+  icon: NotebookPen,
+};
+
 const PROPERTY_DELETE_ACTION: TableRowAction = {
   id: "delete",
   label: "Delete",
@@ -285,6 +292,7 @@ function buildPropertyRowActions(options: {
   }
 
   const entries: TableRowActionEntry[] = [
+    PROPERTY_CLIENTS_ACTION,
     {
       id: "crm",
       label: "CRM",
@@ -332,6 +340,11 @@ export default function DashboardPropertiesListPage() {
   const removeWatermarkModal = useOverlayState();
   const produceContentModal = useOverlayState();
   const changeStatusModal = useOverlayState();
+  const clientsModal = useOverlayState();
+  const [clientsProperty, setClientsProperty] = useState<{
+    id: string;
+    title: string;
+  } | null>(null);
   const updateSalesPricesConfirm = useOverlayState();
   const syncCrmClientNotesConfirm = useOverlayState();
   const checkEstateWebRemovalModal = useOverlayState();
@@ -1550,6 +1563,11 @@ export default function DashboardPropertiesListPage() {
                   detailLinkState={detailLinkState}
                   rowActions={rowActions}
                   onAction={(actionId) => {
+                    if (actionId === "clients") {
+                      setClientsProperty({ id: property.id, title: property.title });
+                      clientsModal.open();
+                      return;
+                    }
                     if (actionId === "push-to-crm") {
                       pushToCrm.mutate(property.id);
                       return;
@@ -1648,7 +1666,8 @@ export default function DashboardPropertiesListPage() {
                         property.duplicate_group_id
                           ? getDuplicateGroupRowClasses(property.duplicate_group_id)
                           : undefined,
-                        isRemoved && "opacity-60",
+                        isRemoved && !property.clients_delisted && "opacity-60",
+                        property.clients_delisted && "bg-warning/15",
                       );
                       const rowActions = buildPropertyRowActions({
                         canManageBulk,
@@ -1702,6 +1721,28 @@ export default function DashboardPropertiesListPage() {
                               >
                                 {property.title}
                               </Link>
+                              {property.clients_count ? (
+                                <button
+                                  type="button"
+                                  className="shrink-0 cursor-pointer"
+                                  aria-label="Open clients and notes"
+                                  onClick={(event) => {
+                                    event.stopPropagation();
+                                    setClientsProperty({ id: property.id, title: property.title });
+                                    clientsModal.open();
+                                  }}
+                                >
+                                  {property.clients_delisted ? (
+                                    <Chip size="sm" variant="soft" color="warning">
+                                      Shown to {property.clients_count} · delisted
+                                    </Chip>
+                                  ) : (
+                                    <Chip size="sm" variant="soft">
+                                      Shown to {property.clients_count}
+                                    </Chip>
+                                  )}
+                                </button>
+                              ) : null}
                               {property.source_url ? (
                                 <a
                                   href={property.source_url}
@@ -1779,6 +1820,11 @@ export default function DashboardPropertiesListPage() {
                           <TableRowActionsMenu
                             actions={rowActions}
                             onAction={(actionId) => {
+                              if (actionId === "clients") {
+                                setClientsProperty({ id: property.id, title: property.title });
+                                clientsModal.open();
+                                return;
+                              }
                               if (actionId === "push-to-crm") {
                                 pushToCrm.mutate(property.id);
                                 return;
@@ -2047,6 +2093,7 @@ export default function DashboardPropertiesListPage() {
         }}
         isPending={produceContent.isPending}
       />
+      <PropertyClientsModal state={clientsModal} property={clientsProperty} />
       <ChangePropertyStatusModal
         state={changeStatusModal}
         propertyCount={changeStatusPropertyIds.length}

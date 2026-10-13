@@ -164,6 +164,14 @@ export type PropertyHistory = $Result.DefaultSelection<Prisma.$PropertyHistoryPa
  */
 export type UserProperty = $Result.DefaultSelection<Prisma.$UserPropertyPayload>
 /**
+ * Model UserPropertyClient
+ * A client the user showed a property to. Deliberately NOT cascaded from UserProperty: when an
+ * office/property is purged and re-crawled the UserProperty row (and its id) is recreated, so the
+ * history is also keyed by the stable identity snapshot (user + source agency + property_id) and
+ * re-attached to the new row on creation. user_tracked_agency_id is kept for the same reason.
+ */
+export type UserPropertyClient = $Result.DefaultSelection<Prisma.$UserPropertyClientPayload>
+/**
  * Model ContentPublishingConfig
  * 
  */
@@ -1095,6 +1103,16 @@ export class PrismaClient<
   get userProperty(): Prisma.UserPropertyDelegate<ExtArgs, ClientOptions>;
 
   /**
+   * `prisma.userPropertyClient`: Exposes CRUD operations for the **UserPropertyClient** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more UserPropertyClients
+    * const userPropertyClients = await prisma.userPropertyClient.findMany()
+    * ```
+    */
+  get userPropertyClient(): Prisma.UserPropertyClientDelegate<ExtArgs, ClientOptions>;
+
+  /**
    * `prisma.contentPublishingConfig`: Exposes CRUD operations for the **ContentPublishingConfig** model.
     * Example usage:
     * ```ts
@@ -1661,6 +1679,7 @@ export namespace Prisma {
     PropertySourceLink: 'PropertySourceLink',
     PropertyHistory: 'PropertyHistory',
     UserProperty: 'UserProperty',
+    UserPropertyClient: 'UserPropertyClient',
     ContentPublishingConfig: 'ContentPublishingConfig',
     ContentOutput: 'ContentOutput',
     AiTitleFamily: 'AiTitleFamily',
@@ -1687,7 +1706,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user" | "integrationTarget" | "userIntegrationSettings" | "userIntegration" | "sourceAgency" | "blockRule" | "userTrackedAgency" | "userTrackedAgencyIntegrationLink" | "scraper" | "scraperVersion" | "scraperExecutionTrace" | "crawlRun" | "diagnosticsPackage" | "diagnosticsArtifact" | "jobLog" | "jobLogItem" | "notification" | "notificationSetting" | "cmsSyncRun" | "sourceProperty" | "property" | "propertySourceLink" | "propertyHistory" | "userProperty" | "contentPublishingConfig" | "contentOutput" | "aiTitleFamily" | "propertyLocalizedContent" | "aiBatchRun" | "costLog" | "integrationProperty" | "platformConfig" | "document" | "activityLog" | "activityLogChange"
+      modelProps: "user" | "integrationTarget" | "userIntegrationSettings" | "userIntegration" | "sourceAgency" | "blockRule" | "userTrackedAgency" | "userTrackedAgencyIntegrationLink" | "scraper" | "scraperVersion" | "scraperExecutionTrace" | "crawlRun" | "diagnosticsPackage" | "diagnosticsArtifact" | "jobLog" | "jobLogItem" | "notification" | "notificationSetting" | "cmsSyncRun" | "sourceProperty" | "property" | "propertySourceLink" | "propertyHistory" | "userProperty" | "userPropertyClient" | "contentPublishingConfig" | "contentOutput" | "aiTitleFamily" | "propertyLocalizedContent" | "aiBatchRun" | "costLog" | "integrationProperty" | "platformConfig" | "document" | "activityLog" | "activityLogChange"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -3467,6 +3486,80 @@ export namespace Prisma {
           }
         }
       }
+      UserPropertyClient: {
+        payload: Prisma.$UserPropertyClientPayload<ExtArgs>
+        fields: Prisma.UserPropertyClientFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.UserPropertyClientFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserPropertyClientPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.UserPropertyClientFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserPropertyClientPayload>
+          }
+          findFirst: {
+            args: Prisma.UserPropertyClientFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserPropertyClientPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.UserPropertyClientFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserPropertyClientPayload>
+          }
+          findMany: {
+            args: Prisma.UserPropertyClientFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserPropertyClientPayload>[]
+          }
+          create: {
+            args: Prisma.UserPropertyClientCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserPropertyClientPayload>
+          }
+          createMany: {
+            args: Prisma.UserPropertyClientCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.UserPropertyClientCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserPropertyClientPayload>[]
+          }
+          delete: {
+            args: Prisma.UserPropertyClientDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserPropertyClientPayload>
+          }
+          update: {
+            args: Prisma.UserPropertyClientUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserPropertyClientPayload>
+          }
+          deleteMany: {
+            args: Prisma.UserPropertyClientDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.UserPropertyClientUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.UserPropertyClientUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserPropertyClientPayload>[]
+          }
+          upsert: {
+            args: Prisma.UserPropertyClientUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserPropertyClientPayload>
+          }
+          aggregate: {
+            args: Prisma.UserPropertyClientAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateUserPropertyClient>
+          }
+          groupBy: {
+            args: Prisma.UserPropertyClientGroupByArgs<ExtArgs>
+            result: $Utils.Optional<UserPropertyClientGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.UserPropertyClientCountArgs<ExtArgs>
+            result: $Utils.Optional<UserPropertyClientCountAggregateOutputType> | number
+          }
+        }
+      }
       ContentPublishingConfig: {
         payload: Prisma.$ContentPublishingConfigPayload<ExtArgs>
         fields: Prisma.ContentPublishingConfigFieldRefs
@@ -4413,6 +4506,7 @@ export namespace Prisma {
     propertySourceLink?: PropertySourceLinkOmit
     propertyHistory?: PropertyHistoryOmit
     userProperty?: UserPropertyOmit
+    userPropertyClient?: UserPropertyClientOmit
     contentPublishingConfig?: ContentPublishingConfigOmit
     contentOutput?: ContentOutputOmit
     aiTitleFamily?: AiTitleFamilyOmit
@@ -4506,6 +4600,7 @@ export namespace Prisma {
   export type UserCountOutputType = {
     tracked_agencies: number
     saved_properties: number
+    property_clients: number
     user_integrations: number
     user_integration_settings: number
     integration_properties: number
@@ -4515,6 +4610,7 @@ export namespace Prisma {
   export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     tracked_agencies?: boolean | UserCountOutputTypeCountTracked_agenciesArgs
     saved_properties?: boolean | UserCountOutputTypeCountSaved_propertiesArgs
+    property_clients?: boolean | UserCountOutputTypeCountProperty_clientsArgs
     user_integrations?: boolean | UserCountOutputTypeCountUser_integrationsArgs
     user_integration_settings?: boolean | UserCountOutputTypeCountUser_integration_settingsArgs
     integration_properties?: boolean | UserCountOutputTypeCountIntegration_propertiesArgs
@@ -4544,6 +4640,13 @@ export namespace Prisma {
    */
   export type UserCountOutputTypeCountSaved_propertiesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: UserPropertyWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountProperty_clientsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: UserPropertyClientWhereInput
   }
 
   /**
@@ -4768,11 +4871,13 @@ export namespace Prisma {
 
   export type UserTrackedAgencyCountOutputType = {
     crawl_runs: number
+    property_clients: number
     cost_logs: number
   }
 
   export type UserTrackedAgencyCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     crawl_runs?: boolean | UserTrackedAgencyCountOutputTypeCountCrawl_runsArgs
+    property_clients?: boolean | UserTrackedAgencyCountOutputTypeCountProperty_clientsArgs
     cost_logs?: boolean | UserTrackedAgencyCountOutputTypeCountCost_logsArgs
   }
 
@@ -4792,6 +4897,13 @@ export namespace Prisma {
    */
   export type UserTrackedAgencyCountOutputTypeCountCrawl_runsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: CrawlRunWhereInput
+  }
+
+  /**
+   * UserTrackedAgencyCountOutputType without action
+   */
+  export type UserTrackedAgencyCountOutputTypeCountProperty_clientsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: UserPropertyClientWhereInput
   }
 
   /**
@@ -5104,12 +5216,14 @@ export namespace Prisma {
     integration_properties: number
     localized_contents: number
     cost_logs: number
+    clients: number
   }
 
   export type UserPropertyCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     integration_properties?: boolean | UserPropertyCountOutputTypeCountIntegration_propertiesArgs
     localized_contents?: boolean | UserPropertyCountOutputTypeCountLocalized_contentsArgs
     cost_logs?: boolean | UserPropertyCountOutputTypeCountCost_logsArgs
+    clients?: boolean | UserPropertyCountOutputTypeCountClientsArgs
   }
 
   // Custom InputTypes
@@ -5142,6 +5256,13 @@ export namespace Prisma {
    */
   export type UserPropertyCountOutputTypeCountCost_logsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: CostLogWhereInput
+  }
+
+  /**
+   * UserPropertyCountOutputType without action
+   */
+  export type UserPropertyCountOutputTypeCountClientsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: UserPropertyClientWhereInput
   }
 
 
@@ -5482,6 +5603,7 @@ export namespace Prisma {
     updated_at?: boolean
     tracked_agencies?: boolean | User$tracked_agenciesArgs<ExtArgs>
     saved_properties?: boolean | User$saved_propertiesArgs<ExtArgs>
+    property_clients?: boolean | User$property_clientsArgs<ExtArgs>
     user_integrations?: boolean | User$user_integrationsArgs<ExtArgs>
     user_integration_settings?: boolean | User$user_integration_settingsArgs<ExtArgs>
     integration_properties?: boolean | User$integration_propertiesArgs<ExtArgs>
@@ -5523,6 +5645,7 @@ export namespace Prisma {
   export type UserInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     tracked_agencies?: boolean | User$tracked_agenciesArgs<ExtArgs>
     saved_properties?: boolean | User$saved_propertiesArgs<ExtArgs>
+    property_clients?: boolean | User$property_clientsArgs<ExtArgs>
     user_integrations?: boolean | User$user_integrationsArgs<ExtArgs>
     user_integration_settings?: boolean | User$user_integration_settingsArgs<ExtArgs>
     integration_properties?: boolean | User$integration_propertiesArgs<ExtArgs>
@@ -5537,6 +5660,7 @@ export namespace Prisma {
     objects: {
       tracked_agencies: Prisma.$UserTrackedAgencyPayload<ExtArgs>[]
       saved_properties: Prisma.$UserPropertyPayload<ExtArgs>[]
+      property_clients: Prisma.$UserPropertyClientPayload<ExtArgs>[]
       user_integrations: Prisma.$UserIntegrationPayload<ExtArgs>[]
       user_integration_settings: Prisma.$UserIntegrationSettingsPayload<ExtArgs>[]
       integration_properties: Prisma.$IntegrationPropertyPayload<ExtArgs>[]
@@ -5946,6 +6070,7 @@ export namespace Prisma {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     tracked_agencies<T extends User$tracked_agenciesArgs<ExtArgs> = {}>(args?: Subset<T, User$tracked_agenciesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserTrackedAgencyPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     saved_properties<T extends User$saved_propertiesArgs<ExtArgs> = {}>(args?: Subset<T, User$saved_propertiesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserPropertyPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    property_clients<T extends User$property_clientsArgs<ExtArgs> = {}>(args?: Subset<T, User$property_clientsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserPropertyClientPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     user_integrations<T extends User$user_integrationsArgs<ExtArgs> = {}>(args?: Subset<T, User$user_integrationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserIntegrationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     user_integration_settings<T extends User$user_integration_settingsArgs<ExtArgs> = {}>(args?: Subset<T, User$user_integration_settingsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserIntegrationSettingsPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     integration_properties<T extends User$integration_propertiesArgs<ExtArgs> = {}>(args?: Subset<T, User$integration_propertiesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$IntegrationPropertyPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -6419,6 +6544,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: UserPropertyScalarFieldEnum | UserPropertyScalarFieldEnum[]
+  }
+
+  /**
+   * User.property_clients
+   */
+  export type User$property_clientsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserPropertyClient
+     */
+    select?: UserPropertyClientSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserPropertyClient
+     */
+    omit?: UserPropertyClientOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserPropertyClientInclude<ExtArgs> | null
+    where?: UserPropertyClientWhereInput
+    orderBy?: UserPropertyClientOrderByWithRelationInput | UserPropertyClientOrderByWithRelationInput[]
+    cursor?: UserPropertyClientWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: UserPropertyClientScalarFieldEnum | UserPropertyClientScalarFieldEnum[]
   }
 
   /**
@@ -12980,6 +13129,7 @@ export namespace Prisma {
     user?: boolean | UserDefaultArgs<ExtArgs>
     source_agency?: boolean | SourceAgencyDefaultArgs<ExtArgs>
     crawl_runs?: boolean | UserTrackedAgency$crawl_runsArgs<ExtArgs>
+    property_clients?: boolean | UserTrackedAgency$property_clientsArgs<ExtArgs>
     integration_link?: boolean | UserTrackedAgency$integration_linkArgs<ExtArgs>
     content_publishing_config?: boolean | UserTrackedAgency$content_publishing_configArgs<ExtArgs>
     cost_logs?: boolean | UserTrackedAgency$cost_logsArgs<ExtArgs>
@@ -13061,6 +13211,7 @@ export namespace Prisma {
     user?: boolean | UserDefaultArgs<ExtArgs>
     source_agency?: boolean | SourceAgencyDefaultArgs<ExtArgs>
     crawl_runs?: boolean | UserTrackedAgency$crawl_runsArgs<ExtArgs>
+    property_clients?: boolean | UserTrackedAgency$property_clientsArgs<ExtArgs>
     integration_link?: boolean | UserTrackedAgency$integration_linkArgs<ExtArgs>
     content_publishing_config?: boolean | UserTrackedAgency$content_publishing_configArgs<ExtArgs>
     cost_logs?: boolean | UserTrackedAgency$cost_logsArgs<ExtArgs>
@@ -13081,6 +13232,7 @@ export namespace Prisma {
       user: Prisma.$UserPayload<ExtArgs>
       source_agency: Prisma.$SourceAgencyPayload<ExtArgs>
       crawl_runs: Prisma.$CrawlRunPayload<ExtArgs>[]
+      property_clients: Prisma.$UserPropertyClientPayload<ExtArgs>[]
       integration_link: Prisma.$UserTrackedAgencyIntegrationLinkPayload<ExtArgs> | null
       content_publishing_config: Prisma.$ContentPublishingConfigPayload<ExtArgs> | null
       cost_logs: Prisma.$CostLogPayload<ExtArgs>[]
@@ -13502,6 +13654,7 @@ export namespace Prisma {
     user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     source_agency<T extends SourceAgencyDefaultArgs<ExtArgs> = {}>(args?: Subset<T, SourceAgencyDefaultArgs<ExtArgs>>): Prisma__SourceAgencyClient<$Result.GetResult<Prisma.$SourceAgencyPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     crawl_runs<T extends UserTrackedAgency$crawl_runsArgs<ExtArgs> = {}>(args?: Subset<T, UserTrackedAgency$crawl_runsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CrawlRunPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    property_clients<T extends UserTrackedAgency$property_clientsArgs<ExtArgs> = {}>(args?: Subset<T, UserTrackedAgency$property_clientsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserPropertyClientPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     integration_link<T extends UserTrackedAgency$integration_linkArgs<ExtArgs> = {}>(args?: Subset<T, UserTrackedAgency$integration_linkArgs<ExtArgs>>): Prisma__UserTrackedAgencyIntegrationLinkClient<$Result.GetResult<Prisma.$UserTrackedAgencyIntegrationLinkPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     content_publishing_config<T extends UserTrackedAgency$content_publishing_configArgs<ExtArgs> = {}>(args?: Subset<T, UserTrackedAgency$content_publishing_configArgs<ExtArgs>>): Prisma__ContentPublishingConfigClient<$Result.GetResult<Prisma.$ContentPublishingConfigPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     cost_logs<T extends UserTrackedAgency$cost_logsArgs<ExtArgs> = {}>(args?: Subset<T, UserTrackedAgency$cost_logsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CostLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -13970,6 +14123,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: CrawlRunScalarFieldEnum | CrawlRunScalarFieldEnum[]
+  }
+
+  /**
+   * UserTrackedAgency.property_clients
+   */
+  export type UserTrackedAgency$property_clientsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserPropertyClient
+     */
+    select?: UserPropertyClientSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserPropertyClient
+     */
+    omit?: UserPropertyClientOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserPropertyClientInclude<ExtArgs> | null
+    where?: UserPropertyClientWhereInput
+    orderBy?: UserPropertyClientOrderByWithRelationInput | UserPropertyClientOrderByWithRelationInput[]
+    cursor?: UserPropertyClientWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: UserPropertyClientScalarFieldEnum | UserPropertyClientScalarFieldEnum[]
   }
 
   /**
@@ -34708,6 +34885,7 @@ export namespace Prisma {
     integration_properties?: boolean | UserProperty$integration_propertiesArgs<ExtArgs>
     localized_contents?: boolean | UserProperty$localized_contentsArgs<ExtArgs>
     cost_logs?: boolean | UserProperty$cost_logsArgs<ExtArgs>
+    clients?: boolean | UserProperty$clientsArgs<ExtArgs>
     _count?: boolean | UserPropertyCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["userProperty"]>
 
@@ -34878,6 +35056,7 @@ export namespace Prisma {
     integration_properties?: boolean | UserProperty$integration_propertiesArgs<ExtArgs>
     localized_contents?: boolean | UserProperty$localized_contentsArgs<ExtArgs>
     cost_logs?: boolean | UserProperty$cost_logsArgs<ExtArgs>
+    clients?: boolean | UserProperty$clientsArgs<ExtArgs>
     _count?: boolean | UserPropertyCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type UserPropertyIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -34897,6 +35076,7 @@ export namespace Prisma {
       integration_properties: Prisma.$IntegrationPropertyPayload<ExtArgs>[]
       localized_contents: Prisma.$PropertyLocalizedContentPayload<ExtArgs>[]
       cost_logs: Prisma.$CostLogPayload<ExtArgs>[]
+      clients: Prisma.$UserPropertyClientPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -35347,6 +35527,7 @@ export namespace Prisma {
     integration_properties<T extends UserProperty$integration_propertiesArgs<ExtArgs> = {}>(args?: Subset<T, UserProperty$integration_propertiesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$IntegrationPropertyPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     localized_contents<T extends UserProperty$localized_contentsArgs<ExtArgs> = {}>(args?: Subset<T, UserProperty$localized_contentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PropertyLocalizedContentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     cost_logs<T extends UserProperty$cost_logsArgs<ExtArgs> = {}>(args?: Subset<T, UserProperty$cost_logsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CostLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    clients<T extends UserProperty$clientsArgs<ExtArgs> = {}>(args?: Subset<T, UserProperty$clientsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserPropertyClientPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -35893,6 +36074,30 @@ export namespace Prisma {
   }
 
   /**
+   * UserProperty.clients
+   */
+  export type UserProperty$clientsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserPropertyClient
+     */
+    select?: UserPropertyClientSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserPropertyClient
+     */
+    omit?: UserPropertyClientOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserPropertyClientInclude<ExtArgs> | null
+    where?: UserPropertyClientWhereInput
+    orderBy?: UserPropertyClientOrderByWithRelationInput | UserPropertyClientOrderByWithRelationInput[]
+    cursor?: UserPropertyClientWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: UserPropertyClientScalarFieldEnum | UserPropertyClientScalarFieldEnum[]
+  }
+
+  /**
    * UserProperty without action
    */
   export type UserPropertyDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -35908,6 +36113,1290 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: UserPropertyInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model UserPropertyClient
+   */
+
+  export type AggregateUserPropertyClient = {
+    _count: UserPropertyClientCountAggregateOutputType | null
+    _min: UserPropertyClientMinAggregateOutputType | null
+    _max: UserPropertyClientMaxAggregateOutputType | null
+  }
+
+  export type UserPropertyClientMinAggregateOutputType = {
+    id: string | null
+    user_id: string | null
+    user_property_id: string | null
+    user_tracked_agency_id: string | null
+    source_agency_id: string | null
+    property_id: string | null
+    internal_id: string | null
+    property_title: string | null
+    source_url: string | null
+    name: string | null
+    phone: string | null
+    email: string | null
+    notes: string | null
+    shown_at: Date | null
+    delisted_at: Date | null
+    delisted_ack_at: Date | null
+    created_at: Date | null
+    updated_at: Date | null
+  }
+
+  export type UserPropertyClientMaxAggregateOutputType = {
+    id: string | null
+    user_id: string | null
+    user_property_id: string | null
+    user_tracked_agency_id: string | null
+    source_agency_id: string | null
+    property_id: string | null
+    internal_id: string | null
+    property_title: string | null
+    source_url: string | null
+    name: string | null
+    phone: string | null
+    email: string | null
+    notes: string | null
+    shown_at: Date | null
+    delisted_at: Date | null
+    delisted_ack_at: Date | null
+    created_at: Date | null
+    updated_at: Date | null
+  }
+
+  export type UserPropertyClientCountAggregateOutputType = {
+    id: number
+    user_id: number
+    user_property_id: number
+    user_tracked_agency_id: number
+    source_agency_id: number
+    property_id: number
+    internal_id: number
+    property_title: number
+    source_url: number
+    name: number
+    phone: number
+    email: number
+    notes: number
+    shown_at: number
+    delisted_at: number
+    delisted_ack_at: number
+    created_at: number
+    updated_at: number
+    _all: number
+  }
+
+
+  export type UserPropertyClientMinAggregateInputType = {
+    id?: true
+    user_id?: true
+    user_property_id?: true
+    user_tracked_agency_id?: true
+    source_agency_id?: true
+    property_id?: true
+    internal_id?: true
+    property_title?: true
+    source_url?: true
+    name?: true
+    phone?: true
+    email?: true
+    notes?: true
+    shown_at?: true
+    delisted_at?: true
+    delisted_ack_at?: true
+    created_at?: true
+    updated_at?: true
+  }
+
+  export type UserPropertyClientMaxAggregateInputType = {
+    id?: true
+    user_id?: true
+    user_property_id?: true
+    user_tracked_agency_id?: true
+    source_agency_id?: true
+    property_id?: true
+    internal_id?: true
+    property_title?: true
+    source_url?: true
+    name?: true
+    phone?: true
+    email?: true
+    notes?: true
+    shown_at?: true
+    delisted_at?: true
+    delisted_ack_at?: true
+    created_at?: true
+    updated_at?: true
+  }
+
+  export type UserPropertyClientCountAggregateInputType = {
+    id?: true
+    user_id?: true
+    user_property_id?: true
+    user_tracked_agency_id?: true
+    source_agency_id?: true
+    property_id?: true
+    internal_id?: true
+    property_title?: true
+    source_url?: true
+    name?: true
+    phone?: true
+    email?: true
+    notes?: true
+    shown_at?: true
+    delisted_at?: true
+    delisted_ack_at?: true
+    created_at?: true
+    updated_at?: true
+    _all?: true
+  }
+
+  export type UserPropertyClientAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which UserPropertyClient to aggregate.
+     */
+    where?: UserPropertyClientWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of UserPropertyClients to fetch.
+     */
+    orderBy?: UserPropertyClientOrderByWithRelationInput | UserPropertyClientOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: UserPropertyClientWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` UserPropertyClients from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` UserPropertyClients.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned UserPropertyClients
+    **/
+    _count?: true | UserPropertyClientCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: UserPropertyClientMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: UserPropertyClientMaxAggregateInputType
+  }
+
+  export type GetUserPropertyClientAggregateType<T extends UserPropertyClientAggregateArgs> = {
+        [P in keyof T & keyof AggregateUserPropertyClient]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateUserPropertyClient[P]>
+      : GetScalarType<T[P], AggregateUserPropertyClient[P]>
+  }
+
+
+
+
+  export type UserPropertyClientGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: UserPropertyClientWhereInput
+    orderBy?: UserPropertyClientOrderByWithAggregationInput | UserPropertyClientOrderByWithAggregationInput[]
+    by: UserPropertyClientScalarFieldEnum[] | UserPropertyClientScalarFieldEnum
+    having?: UserPropertyClientScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: UserPropertyClientCountAggregateInputType | true
+    _min?: UserPropertyClientMinAggregateInputType
+    _max?: UserPropertyClientMaxAggregateInputType
+  }
+
+  export type UserPropertyClientGroupByOutputType = {
+    id: string
+    user_id: string
+    user_property_id: string | null
+    user_tracked_agency_id: string | null
+    source_agency_id: string | null
+    property_id: string
+    internal_id: string | null
+    property_title: string
+    source_url: string | null
+    name: string
+    phone: string | null
+    email: string | null
+    notes: string | null
+    shown_at: Date
+    delisted_at: Date | null
+    delisted_ack_at: Date | null
+    created_at: Date
+    updated_at: Date
+    _count: UserPropertyClientCountAggregateOutputType | null
+    _min: UserPropertyClientMinAggregateOutputType | null
+    _max: UserPropertyClientMaxAggregateOutputType | null
+  }
+
+  type GetUserPropertyClientGroupByPayload<T extends UserPropertyClientGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<UserPropertyClientGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof UserPropertyClientGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], UserPropertyClientGroupByOutputType[P]>
+            : GetScalarType<T[P], UserPropertyClientGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type UserPropertyClientSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    user_id?: boolean
+    user_property_id?: boolean
+    user_tracked_agency_id?: boolean
+    source_agency_id?: boolean
+    property_id?: boolean
+    internal_id?: boolean
+    property_title?: boolean
+    source_url?: boolean
+    name?: boolean
+    phone?: boolean
+    email?: boolean
+    notes?: boolean
+    shown_at?: boolean
+    delisted_at?: boolean
+    delisted_ack_at?: boolean
+    created_at?: boolean
+    updated_at?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    user_property?: boolean | UserPropertyClient$user_propertyArgs<ExtArgs>
+    user_tracked_agency?: boolean | UserPropertyClient$user_tracked_agencyArgs<ExtArgs>
+  }, ExtArgs["result"]["userPropertyClient"]>
+
+  export type UserPropertyClientSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    user_id?: boolean
+    user_property_id?: boolean
+    user_tracked_agency_id?: boolean
+    source_agency_id?: boolean
+    property_id?: boolean
+    internal_id?: boolean
+    property_title?: boolean
+    source_url?: boolean
+    name?: boolean
+    phone?: boolean
+    email?: boolean
+    notes?: boolean
+    shown_at?: boolean
+    delisted_at?: boolean
+    delisted_ack_at?: boolean
+    created_at?: boolean
+    updated_at?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    user_property?: boolean | UserPropertyClient$user_propertyArgs<ExtArgs>
+    user_tracked_agency?: boolean | UserPropertyClient$user_tracked_agencyArgs<ExtArgs>
+  }, ExtArgs["result"]["userPropertyClient"]>
+
+  export type UserPropertyClientSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    user_id?: boolean
+    user_property_id?: boolean
+    user_tracked_agency_id?: boolean
+    source_agency_id?: boolean
+    property_id?: boolean
+    internal_id?: boolean
+    property_title?: boolean
+    source_url?: boolean
+    name?: boolean
+    phone?: boolean
+    email?: boolean
+    notes?: boolean
+    shown_at?: boolean
+    delisted_at?: boolean
+    delisted_ack_at?: boolean
+    created_at?: boolean
+    updated_at?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    user_property?: boolean | UserPropertyClient$user_propertyArgs<ExtArgs>
+    user_tracked_agency?: boolean | UserPropertyClient$user_tracked_agencyArgs<ExtArgs>
+  }, ExtArgs["result"]["userPropertyClient"]>
+
+  export type UserPropertyClientSelectScalar = {
+    id?: boolean
+    user_id?: boolean
+    user_property_id?: boolean
+    user_tracked_agency_id?: boolean
+    source_agency_id?: boolean
+    property_id?: boolean
+    internal_id?: boolean
+    property_title?: boolean
+    source_url?: boolean
+    name?: boolean
+    phone?: boolean
+    email?: boolean
+    notes?: boolean
+    shown_at?: boolean
+    delisted_at?: boolean
+    delisted_ack_at?: boolean
+    created_at?: boolean
+    updated_at?: boolean
+  }
+
+  export type UserPropertyClientOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "user_id" | "user_property_id" | "user_tracked_agency_id" | "source_agency_id" | "property_id" | "internal_id" | "property_title" | "source_url" | "name" | "phone" | "email" | "notes" | "shown_at" | "delisted_at" | "delisted_ack_at" | "created_at" | "updated_at", ExtArgs["result"]["userPropertyClient"]>
+  export type UserPropertyClientInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    user_property?: boolean | UserPropertyClient$user_propertyArgs<ExtArgs>
+    user_tracked_agency?: boolean | UserPropertyClient$user_tracked_agencyArgs<ExtArgs>
+  }
+  export type UserPropertyClientIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    user_property?: boolean | UserPropertyClient$user_propertyArgs<ExtArgs>
+    user_tracked_agency?: boolean | UserPropertyClient$user_tracked_agencyArgs<ExtArgs>
+  }
+  export type UserPropertyClientIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    user_property?: boolean | UserPropertyClient$user_propertyArgs<ExtArgs>
+    user_tracked_agency?: boolean | UserPropertyClient$user_tracked_agencyArgs<ExtArgs>
+  }
+
+  export type $UserPropertyClientPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "UserPropertyClient"
+    objects: {
+      user: Prisma.$UserPayload<ExtArgs>
+      user_property: Prisma.$UserPropertyPayload<ExtArgs> | null
+      user_tracked_agency: Prisma.$UserTrackedAgencyPayload<ExtArgs> | null
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      user_id: string
+      user_property_id: string | null
+      user_tracked_agency_id: string | null
+      source_agency_id: string | null
+      property_id: string
+      internal_id: string | null
+      property_title: string
+      source_url: string | null
+      name: string
+      phone: string | null
+      email: string | null
+      notes: string | null
+      shown_at: Date
+      /**
+       * Set when the property was delisted from the agency site; popup shows until acknowledged.
+       */
+      delisted_at: Date | null
+      delisted_ack_at: Date | null
+      created_at: Date
+      updated_at: Date
+    }, ExtArgs["result"]["userPropertyClient"]>
+    composites: {}
+  }
+
+  type UserPropertyClientGetPayload<S extends boolean | null | undefined | UserPropertyClientDefaultArgs> = $Result.GetResult<Prisma.$UserPropertyClientPayload, S>
+
+  type UserPropertyClientCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<UserPropertyClientFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: UserPropertyClientCountAggregateInputType | true
+    }
+
+  export interface UserPropertyClientDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['UserPropertyClient'], meta: { name: 'UserPropertyClient' } }
+    /**
+     * Find zero or one UserPropertyClient that matches the filter.
+     * @param {UserPropertyClientFindUniqueArgs} args - Arguments to find a UserPropertyClient
+     * @example
+     * // Get one UserPropertyClient
+     * const userPropertyClient = await prisma.userPropertyClient.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends UserPropertyClientFindUniqueArgs>(args: SelectSubset<T, UserPropertyClientFindUniqueArgs<ExtArgs>>): Prisma__UserPropertyClientClient<$Result.GetResult<Prisma.$UserPropertyClientPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one UserPropertyClient that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {UserPropertyClientFindUniqueOrThrowArgs} args - Arguments to find a UserPropertyClient
+     * @example
+     * // Get one UserPropertyClient
+     * const userPropertyClient = await prisma.userPropertyClient.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends UserPropertyClientFindUniqueOrThrowArgs>(args: SelectSubset<T, UserPropertyClientFindUniqueOrThrowArgs<ExtArgs>>): Prisma__UserPropertyClientClient<$Result.GetResult<Prisma.$UserPropertyClientPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first UserPropertyClient that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserPropertyClientFindFirstArgs} args - Arguments to find a UserPropertyClient
+     * @example
+     * // Get one UserPropertyClient
+     * const userPropertyClient = await prisma.userPropertyClient.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends UserPropertyClientFindFirstArgs>(args?: SelectSubset<T, UserPropertyClientFindFirstArgs<ExtArgs>>): Prisma__UserPropertyClientClient<$Result.GetResult<Prisma.$UserPropertyClientPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first UserPropertyClient that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserPropertyClientFindFirstOrThrowArgs} args - Arguments to find a UserPropertyClient
+     * @example
+     * // Get one UserPropertyClient
+     * const userPropertyClient = await prisma.userPropertyClient.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends UserPropertyClientFindFirstOrThrowArgs>(args?: SelectSubset<T, UserPropertyClientFindFirstOrThrowArgs<ExtArgs>>): Prisma__UserPropertyClientClient<$Result.GetResult<Prisma.$UserPropertyClientPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more UserPropertyClients that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserPropertyClientFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all UserPropertyClients
+     * const userPropertyClients = await prisma.userPropertyClient.findMany()
+     * 
+     * // Get first 10 UserPropertyClients
+     * const userPropertyClients = await prisma.userPropertyClient.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const userPropertyClientWithIdOnly = await prisma.userPropertyClient.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends UserPropertyClientFindManyArgs>(args?: SelectSubset<T, UserPropertyClientFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserPropertyClientPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a UserPropertyClient.
+     * @param {UserPropertyClientCreateArgs} args - Arguments to create a UserPropertyClient.
+     * @example
+     * // Create one UserPropertyClient
+     * const UserPropertyClient = await prisma.userPropertyClient.create({
+     *   data: {
+     *     // ... data to create a UserPropertyClient
+     *   }
+     * })
+     * 
+     */
+    create<T extends UserPropertyClientCreateArgs>(args: SelectSubset<T, UserPropertyClientCreateArgs<ExtArgs>>): Prisma__UserPropertyClientClient<$Result.GetResult<Prisma.$UserPropertyClientPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many UserPropertyClients.
+     * @param {UserPropertyClientCreateManyArgs} args - Arguments to create many UserPropertyClients.
+     * @example
+     * // Create many UserPropertyClients
+     * const userPropertyClient = await prisma.userPropertyClient.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends UserPropertyClientCreateManyArgs>(args?: SelectSubset<T, UserPropertyClientCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many UserPropertyClients and returns the data saved in the database.
+     * @param {UserPropertyClientCreateManyAndReturnArgs} args - Arguments to create many UserPropertyClients.
+     * @example
+     * // Create many UserPropertyClients
+     * const userPropertyClient = await prisma.userPropertyClient.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many UserPropertyClients and only return the `id`
+     * const userPropertyClientWithIdOnly = await prisma.userPropertyClient.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends UserPropertyClientCreateManyAndReturnArgs>(args?: SelectSubset<T, UserPropertyClientCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserPropertyClientPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a UserPropertyClient.
+     * @param {UserPropertyClientDeleteArgs} args - Arguments to delete one UserPropertyClient.
+     * @example
+     * // Delete one UserPropertyClient
+     * const UserPropertyClient = await prisma.userPropertyClient.delete({
+     *   where: {
+     *     // ... filter to delete one UserPropertyClient
+     *   }
+     * })
+     * 
+     */
+    delete<T extends UserPropertyClientDeleteArgs>(args: SelectSubset<T, UserPropertyClientDeleteArgs<ExtArgs>>): Prisma__UserPropertyClientClient<$Result.GetResult<Prisma.$UserPropertyClientPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one UserPropertyClient.
+     * @param {UserPropertyClientUpdateArgs} args - Arguments to update one UserPropertyClient.
+     * @example
+     * // Update one UserPropertyClient
+     * const userPropertyClient = await prisma.userPropertyClient.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends UserPropertyClientUpdateArgs>(args: SelectSubset<T, UserPropertyClientUpdateArgs<ExtArgs>>): Prisma__UserPropertyClientClient<$Result.GetResult<Prisma.$UserPropertyClientPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more UserPropertyClients.
+     * @param {UserPropertyClientDeleteManyArgs} args - Arguments to filter UserPropertyClients to delete.
+     * @example
+     * // Delete a few UserPropertyClients
+     * const { count } = await prisma.userPropertyClient.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends UserPropertyClientDeleteManyArgs>(args?: SelectSubset<T, UserPropertyClientDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more UserPropertyClients.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserPropertyClientUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many UserPropertyClients
+     * const userPropertyClient = await prisma.userPropertyClient.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends UserPropertyClientUpdateManyArgs>(args: SelectSubset<T, UserPropertyClientUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more UserPropertyClients and returns the data updated in the database.
+     * @param {UserPropertyClientUpdateManyAndReturnArgs} args - Arguments to update many UserPropertyClients.
+     * @example
+     * // Update many UserPropertyClients
+     * const userPropertyClient = await prisma.userPropertyClient.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more UserPropertyClients and only return the `id`
+     * const userPropertyClientWithIdOnly = await prisma.userPropertyClient.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends UserPropertyClientUpdateManyAndReturnArgs>(args: SelectSubset<T, UserPropertyClientUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserPropertyClientPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one UserPropertyClient.
+     * @param {UserPropertyClientUpsertArgs} args - Arguments to update or create a UserPropertyClient.
+     * @example
+     * // Update or create a UserPropertyClient
+     * const userPropertyClient = await prisma.userPropertyClient.upsert({
+     *   create: {
+     *     // ... data to create a UserPropertyClient
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the UserPropertyClient we want to update
+     *   }
+     * })
+     */
+    upsert<T extends UserPropertyClientUpsertArgs>(args: SelectSubset<T, UserPropertyClientUpsertArgs<ExtArgs>>): Prisma__UserPropertyClientClient<$Result.GetResult<Prisma.$UserPropertyClientPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of UserPropertyClients.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserPropertyClientCountArgs} args - Arguments to filter UserPropertyClients to count.
+     * @example
+     * // Count the number of UserPropertyClients
+     * const count = await prisma.userPropertyClient.count({
+     *   where: {
+     *     // ... the filter for the UserPropertyClients we want to count
+     *   }
+     * })
+    **/
+    count<T extends UserPropertyClientCountArgs>(
+      args?: Subset<T, UserPropertyClientCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], UserPropertyClientCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a UserPropertyClient.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserPropertyClientAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends UserPropertyClientAggregateArgs>(args: Subset<T, UserPropertyClientAggregateArgs>): Prisma.PrismaPromise<GetUserPropertyClientAggregateType<T>>
+
+    /**
+     * Group by UserPropertyClient.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserPropertyClientGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends UserPropertyClientGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: UserPropertyClientGroupByArgs['orderBy'] }
+        : { orderBy?: UserPropertyClientGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, UserPropertyClientGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetUserPropertyClientGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the UserPropertyClient model
+   */
+  readonly fields: UserPropertyClientFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for UserPropertyClient.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__UserPropertyClientClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    user_property<T extends UserPropertyClient$user_propertyArgs<ExtArgs> = {}>(args?: Subset<T, UserPropertyClient$user_propertyArgs<ExtArgs>>): Prisma__UserPropertyClient<$Result.GetResult<Prisma.$UserPropertyPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    user_tracked_agency<T extends UserPropertyClient$user_tracked_agencyArgs<ExtArgs> = {}>(args?: Subset<T, UserPropertyClient$user_tracked_agencyArgs<ExtArgs>>): Prisma__UserTrackedAgencyClient<$Result.GetResult<Prisma.$UserTrackedAgencyPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the UserPropertyClient model
+   */
+  interface UserPropertyClientFieldRefs {
+    readonly id: FieldRef<"UserPropertyClient", 'String'>
+    readonly user_id: FieldRef<"UserPropertyClient", 'String'>
+    readonly user_property_id: FieldRef<"UserPropertyClient", 'String'>
+    readonly user_tracked_agency_id: FieldRef<"UserPropertyClient", 'String'>
+    readonly source_agency_id: FieldRef<"UserPropertyClient", 'String'>
+    readonly property_id: FieldRef<"UserPropertyClient", 'String'>
+    readonly internal_id: FieldRef<"UserPropertyClient", 'String'>
+    readonly property_title: FieldRef<"UserPropertyClient", 'String'>
+    readonly source_url: FieldRef<"UserPropertyClient", 'String'>
+    readonly name: FieldRef<"UserPropertyClient", 'String'>
+    readonly phone: FieldRef<"UserPropertyClient", 'String'>
+    readonly email: FieldRef<"UserPropertyClient", 'String'>
+    readonly notes: FieldRef<"UserPropertyClient", 'String'>
+    readonly shown_at: FieldRef<"UserPropertyClient", 'DateTime'>
+    readonly delisted_at: FieldRef<"UserPropertyClient", 'DateTime'>
+    readonly delisted_ack_at: FieldRef<"UserPropertyClient", 'DateTime'>
+    readonly created_at: FieldRef<"UserPropertyClient", 'DateTime'>
+    readonly updated_at: FieldRef<"UserPropertyClient", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * UserPropertyClient findUnique
+   */
+  export type UserPropertyClientFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserPropertyClient
+     */
+    select?: UserPropertyClientSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserPropertyClient
+     */
+    omit?: UserPropertyClientOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserPropertyClientInclude<ExtArgs> | null
+    /**
+     * Filter, which UserPropertyClient to fetch.
+     */
+    where: UserPropertyClientWhereUniqueInput
+  }
+
+  /**
+   * UserPropertyClient findUniqueOrThrow
+   */
+  export type UserPropertyClientFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserPropertyClient
+     */
+    select?: UserPropertyClientSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserPropertyClient
+     */
+    omit?: UserPropertyClientOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserPropertyClientInclude<ExtArgs> | null
+    /**
+     * Filter, which UserPropertyClient to fetch.
+     */
+    where: UserPropertyClientWhereUniqueInput
+  }
+
+  /**
+   * UserPropertyClient findFirst
+   */
+  export type UserPropertyClientFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserPropertyClient
+     */
+    select?: UserPropertyClientSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserPropertyClient
+     */
+    omit?: UserPropertyClientOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserPropertyClientInclude<ExtArgs> | null
+    /**
+     * Filter, which UserPropertyClient to fetch.
+     */
+    where?: UserPropertyClientWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of UserPropertyClients to fetch.
+     */
+    orderBy?: UserPropertyClientOrderByWithRelationInput | UserPropertyClientOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for UserPropertyClients.
+     */
+    cursor?: UserPropertyClientWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` UserPropertyClients from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` UserPropertyClients.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of UserPropertyClients.
+     */
+    distinct?: UserPropertyClientScalarFieldEnum | UserPropertyClientScalarFieldEnum[]
+  }
+
+  /**
+   * UserPropertyClient findFirstOrThrow
+   */
+  export type UserPropertyClientFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserPropertyClient
+     */
+    select?: UserPropertyClientSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserPropertyClient
+     */
+    omit?: UserPropertyClientOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserPropertyClientInclude<ExtArgs> | null
+    /**
+     * Filter, which UserPropertyClient to fetch.
+     */
+    where?: UserPropertyClientWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of UserPropertyClients to fetch.
+     */
+    orderBy?: UserPropertyClientOrderByWithRelationInput | UserPropertyClientOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for UserPropertyClients.
+     */
+    cursor?: UserPropertyClientWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` UserPropertyClients from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` UserPropertyClients.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of UserPropertyClients.
+     */
+    distinct?: UserPropertyClientScalarFieldEnum | UserPropertyClientScalarFieldEnum[]
+  }
+
+  /**
+   * UserPropertyClient findMany
+   */
+  export type UserPropertyClientFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserPropertyClient
+     */
+    select?: UserPropertyClientSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserPropertyClient
+     */
+    omit?: UserPropertyClientOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserPropertyClientInclude<ExtArgs> | null
+    /**
+     * Filter, which UserPropertyClients to fetch.
+     */
+    where?: UserPropertyClientWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of UserPropertyClients to fetch.
+     */
+    orderBy?: UserPropertyClientOrderByWithRelationInput | UserPropertyClientOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing UserPropertyClients.
+     */
+    cursor?: UserPropertyClientWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` UserPropertyClients from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` UserPropertyClients.
+     */
+    skip?: number
+    distinct?: UserPropertyClientScalarFieldEnum | UserPropertyClientScalarFieldEnum[]
+  }
+
+  /**
+   * UserPropertyClient create
+   */
+  export type UserPropertyClientCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserPropertyClient
+     */
+    select?: UserPropertyClientSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserPropertyClient
+     */
+    omit?: UserPropertyClientOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserPropertyClientInclude<ExtArgs> | null
+    /**
+     * The data needed to create a UserPropertyClient.
+     */
+    data: XOR<UserPropertyClientCreateInput, UserPropertyClientUncheckedCreateInput>
+  }
+
+  /**
+   * UserPropertyClient createMany
+   */
+  export type UserPropertyClientCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many UserPropertyClients.
+     */
+    data: UserPropertyClientCreateManyInput | UserPropertyClientCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * UserPropertyClient createManyAndReturn
+   */
+  export type UserPropertyClientCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserPropertyClient
+     */
+    select?: UserPropertyClientSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserPropertyClient
+     */
+    omit?: UserPropertyClientOmit<ExtArgs> | null
+    /**
+     * The data used to create many UserPropertyClients.
+     */
+    data: UserPropertyClientCreateManyInput | UserPropertyClientCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserPropertyClientIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * UserPropertyClient update
+   */
+  export type UserPropertyClientUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserPropertyClient
+     */
+    select?: UserPropertyClientSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserPropertyClient
+     */
+    omit?: UserPropertyClientOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserPropertyClientInclude<ExtArgs> | null
+    /**
+     * The data needed to update a UserPropertyClient.
+     */
+    data: XOR<UserPropertyClientUpdateInput, UserPropertyClientUncheckedUpdateInput>
+    /**
+     * Choose, which UserPropertyClient to update.
+     */
+    where: UserPropertyClientWhereUniqueInput
+  }
+
+  /**
+   * UserPropertyClient updateMany
+   */
+  export type UserPropertyClientUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update UserPropertyClients.
+     */
+    data: XOR<UserPropertyClientUpdateManyMutationInput, UserPropertyClientUncheckedUpdateManyInput>
+    /**
+     * Filter which UserPropertyClients to update
+     */
+    where?: UserPropertyClientWhereInput
+    /**
+     * Limit how many UserPropertyClients to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * UserPropertyClient updateManyAndReturn
+   */
+  export type UserPropertyClientUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserPropertyClient
+     */
+    select?: UserPropertyClientSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserPropertyClient
+     */
+    omit?: UserPropertyClientOmit<ExtArgs> | null
+    /**
+     * The data used to update UserPropertyClients.
+     */
+    data: XOR<UserPropertyClientUpdateManyMutationInput, UserPropertyClientUncheckedUpdateManyInput>
+    /**
+     * Filter which UserPropertyClients to update
+     */
+    where?: UserPropertyClientWhereInput
+    /**
+     * Limit how many UserPropertyClients to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserPropertyClientIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * UserPropertyClient upsert
+   */
+  export type UserPropertyClientUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserPropertyClient
+     */
+    select?: UserPropertyClientSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserPropertyClient
+     */
+    omit?: UserPropertyClientOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserPropertyClientInclude<ExtArgs> | null
+    /**
+     * The filter to search for the UserPropertyClient to update in case it exists.
+     */
+    where: UserPropertyClientWhereUniqueInput
+    /**
+     * In case the UserPropertyClient found by the `where` argument doesn't exist, create a new UserPropertyClient with this data.
+     */
+    create: XOR<UserPropertyClientCreateInput, UserPropertyClientUncheckedCreateInput>
+    /**
+     * In case the UserPropertyClient was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<UserPropertyClientUpdateInput, UserPropertyClientUncheckedUpdateInput>
+  }
+
+  /**
+   * UserPropertyClient delete
+   */
+  export type UserPropertyClientDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserPropertyClient
+     */
+    select?: UserPropertyClientSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserPropertyClient
+     */
+    omit?: UserPropertyClientOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserPropertyClientInclude<ExtArgs> | null
+    /**
+     * Filter which UserPropertyClient to delete.
+     */
+    where: UserPropertyClientWhereUniqueInput
+  }
+
+  /**
+   * UserPropertyClient deleteMany
+   */
+  export type UserPropertyClientDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which UserPropertyClients to delete
+     */
+    where?: UserPropertyClientWhereInput
+    /**
+     * Limit how many UserPropertyClients to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * UserPropertyClient.user_property
+   */
+  export type UserPropertyClient$user_propertyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserProperty
+     */
+    select?: UserPropertySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserProperty
+     */
+    omit?: UserPropertyOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserPropertyInclude<ExtArgs> | null
+    where?: UserPropertyWhereInput
+  }
+
+  /**
+   * UserPropertyClient.user_tracked_agency
+   */
+  export type UserPropertyClient$user_tracked_agencyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserTrackedAgency
+     */
+    select?: UserTrackedAgencySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserTrackedAgency
+     */
+    omit?: UserTrackedAgencyOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserTrackedAgencyInclude<ExtArgs> | null
+    where?: UserTrackedAgencyWhereInput
+  }
+
+  /**
+   * UserPropertyClient without action
+   */
+  export type UserPropertyClientDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserPropertyClient
+     */
+    select?: UserPropertyClientSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserPropertyClient
+     */
+    omit?: UserPropertyClientOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserPropertyClientInclude<ExtArgs> | null
   }
 
 
@@ -49668,6 +51157,30 @@ export namespace Prisma {
   export type UserPropertyScalarFieldEnum = (typeof UserPropertyScalarFieldEnum)[keyof typeof UserPropertyScalarFieldEnum]
 
 
+  export const UserPropertyClientScalarFieldEnum: {
+    id: 'id',
+    user_id: 'user_id',
+    user_property_id: 'user_property_id',
+    user_tracked_agency_id: 'user_tracked_agency_id',
+    source_agency_id: 'source_agency_id',
+    property_id: 'property_id',
+    internal_id: 'internal_id',
+    property_title: 'property_title',
+    source_url: 'source_url',
+    name: 'name',
+    phone: 'phone',
+    email: 'email',
+    notes: 'notes',
+    shown_at: 'shown_at',
+    delisted_at: 'delisted_at',
+    delisted_ack_at: 'delisted_ack_at',
+    created_at: 'created_at',
+    updated_at: 'updated_at'
+  };
+
+  export type UserPropertyClientScalarFieldEnum = (typeof UserPropertyClientScalarFieldEnum)[keyof typeof UserPropertyClientScalarFieldEnum]
+
+
   export const ContentPublishingConfigScalarFieldEnum: {
     id: 'id',
     user_tracked_agency_id: 'user_tracked_agency_id',
@@ -50456,6 +51969,7 @@ export namespace Prisma {
     updated_at?: DateTimeFilter<"User"> | Date | string
     tracked_agencies?: UserTrackedAgencyListRelationFilter
     saved_properties?: UserPropertyListRelationFilter
+    property_clients?: UserPropertyClientListRelationFilter
     user_integrations?: UserIntegrationListRelationFilter
     user_integration_settings?: UserIntegrationSettingsListRelationFilter
     integration_properties?: IntegrationPropertyListRelationFilter
@@ -50472,6 +51986,7 @@ export namespace Prisma {
     updated_at?: SortOrder
     tracked_agencies?: UserTrackedAgencyOrderByRelationAggregateInput
     saved_properties?: UserPropertyOrderByRelationAggregateInput
+    property_clients?: UserPropertyClientOrderByRelationAggregateInput
     user_integrations?: UserIntegrationOrderByRelationAggregateInput
     user_integration_settings?: UserIntegrationSettingsOrderByRelationAggregateInput
     integration_properties?: IntegrationPropertyOrderByRelationAggregateInput
@@ -50491,6 +52006,7 @@ export namespace Prisma {
     updated_at?: DateTimeFilter<"User"> | Date | string
     tracked_agencies?: UserTrackedAgencyListRelationFilter
     saved_properties?: UserPropertyListRelationFilter
+    property_clients?: UserPropertyClientListRelationFilter
     user_integrations?: UserIntegrationListRelationFilter
     user_integration_settings?: UserIntegrationSettingsListRelationFilter
     integration_properties?: IntegrationPropertyListRelationFilter
@@ -51038,6 +52554,7 @@ export namespace Prisma {
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
     source_agency?: XOR<SourceAgencyScalarRelationFilter, SourceAgencyWhereInput>
     crawl_runs?: CrawlRunListRelationFilter
+    property_clients?: UserPropertyClientListRelationFilter
     integration_link?: XOR<UserTrackedAgencyIntegrationLinkNullableScalarRelationFilter, UserTrackedAgencyIntegrationLinkWhereInput> | null
     content_publishing_config?: XOR<ContentPublishingConfigNullableScalarRelationFilter, ContentPublishingConfigWhereInput> | null
     cost_logs?: CostLogListRelationFilter
@@ -51066,6 +52583,7 @@ export namespace Prisma {
     user?: UserOrderByWithRelationInput
     source_agency?: SourceAgencyOrderByWithRelationInput
     crawl_runs?: CrawlRunOrderByRelationAggregateInput
+    property_clients?: UserPropertyClientOrderByRelationAggregateInput
     integration_link?: UserTrackedAgencyIntegrationLinkOrderByWithRelationInput
     content_publishing_config?: ContentPublishingConfigOrderByWithRelationInput
     cost_logs?: CostLogOrderByRelationAggregateInput
@@ -51098,6 +52616,7 @@ export namespace Prisma {
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
     source_agency?: XOR<SourceAgencyScalarRelationFilter, SourceAgencyWhereInput>
     crawl_runs?: CrawlRunListRelationFilter
+    property_clients?: UserPropertyClientListRelationFilter
     integration_link?: XOR<UserTrackedAgencyIntegrationLinkNullableScalarRelationFilter, UserTrackedAgencyIntegrationLinkWhereInput> | null
     content_publishing_config?: XOR<ContentPublishingConfigNullableScalarRelationFilter, ContentPublishingConfigWhereInput> | null
     cost_logs?: CostLogListRelationFilter
@@ -52950,6 +54469,7 @@ export namespace Prisma {
     integration_properties?: IntegrationPropertyListRelationFilter
     localized_contents?: PropertyLocalizedContentListRelationFilter
     cost_logs?: CostLogListRelationFilter
+    clients?: UserPropertyClientListRelationFilter
   }
 
   export type UserPropertyOrderByWithRelationInput = {
@@ -53007,6 +54527,7 @@ export namespace Prisma {
     integration_properties?: IntegrationPropertyOrderByRelationAggregateInput
     localized_contents?: PropertyLocalizedContentOrderByRelationAggregateInput
     cost_logs?: CostLogOrderByRelationAggregateInput
+    clients?: UserPropertyClientOrderByRelationAggregateInput
   }
 
   export type UserPropertyWhereUniqueInput = Prisma.AtLeast<{
@@ -53068,6 +54589,7 @@ export namespace Prisma {
     integration_properties?: IntegrationPropertyListRelationFilter
     localized_contents?: PropertyLocalizedContentListRelationFilter
     cost_logs?: CostLogListRelationFilter
+    clients?: UserPropertyClientListRelationFilter
   }, "id" | "user_id_canonical_property_id">
 
   export type UserPropertyOrderByWithAggregationInput = {
@@ -53180,6 +54702,132 @@ export namespace Prisma {
     last_synced_at?: DateTimeNullableWithAggregatesFilter<"UserProperty"> | Date | string | null
     created_at?: DateTimeWithAggregatesFilter<"UserProperty"> | Date | string
     updated_at?: DateTimeWithAggregatesFilter<"UserProperty"> | Date | string
+  }
+
+  export type UserPropertyClientWhereInput = {
+    AND?: UserPropertyClientWhereInput | UserPropertyClientWhereInput[]
+    OR?: UserPropertyClientWhereInput[]
+    NOT?: UserPropertyClientWhereInput | UserPropertyClientWhereInput[]
+    id?: StringFilter<"UserPropertyClient"> | string
+    user_id?: StringFilter<"UserPropertyClient"> | string
+    user_property_id?: StringNullableFilter<"UserPropertyClient"> | string | null
+    user_tracked_agency_id?: StringNullableFilter<"UserPropertyClient"> | string | null
+    source_agency_id?: StringNullableFilter<"UserPropertyClient"> | string | null
+    property_id?: StringFilter<"UserPropertyClient"> | string
+    internal_id?: StringNullableFilter<"UserPropertyClient"> | string | null
+    property_title?: StringFilter<"UserPropertyClient"> | string
+    source_url?: StringNullableFilter<"UserPropertyClient"> | string | null
+    name?: StringFilter<"UserPropertyClient"> | string
+    phone?: StringNullableFilter<"UserPropertyClient"> | string | null
+    email?: StringNullableFilter<"UserPropertyClient"> | string | null
+    notes?: StringNullableFilter<"UserPropertyClient"> | string | null
+    shown_at?: DateTimeFilter<"UserPropertyClient"> | Date | string
+    delisted_at?: DateTimeNullableFilter<"UserPropertyClient"> | Date | string | null
+    delisted_ack_at?: DateTimeNullableFilter<"UserPropertyClient"> | Date | string | null
+    created_at?: DateTimeFilter<"UserPropertyClient"> | Date | string
+    updated_at?: DateTimeFilter<"UserPropertyClient"> | Date | string
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    user_property?: XOR<UserPropertyNullableScalarRelationFilter, UserPropertyWhereInput> | null
+    user_tracked_agency?: XOR<UserTrackedAgencyNullableScalarRelationFilter, UserTrackedAgencyWhereInput> | null
+  }
+
+  export type UserPropertyClientOrderByWithRelationInput = {
+    id?: SortOrder
+    user_id?: SortOrder
+    user_property_id?: SortOrderInput | SortOrder
+    user_tracked_agency_id?: SortOrderInput | SortOrder
+    source_agency_id?: SortOrderInput | SortOrder
+    property_id?: SortOrder
+    internal_id?: SortOrderInput | SortOrder
+    property_title?: SortOrder
+    source_url?: SortOrderInput | SortOrder
+    name?: SortOrder
+    phone?: SortOrderInput | SortOrder
+    email?: SortOrderInput | SortOrder
+    notes?: SortOrderInput | SortOrder
+    shown_at?: SortOrder
+    delisted_at?: SortOrderInput | SortOrder
+    delisted_ack_at?: SortOrderInput | SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+    user?: UserOrderByWithRelationInput
+    user_property?: UserPropertyOrderByWithRelationInput
+    user_tracked_agency?: UserTrackedAgencyOrderByWithRelationInput
+  }
+
+  export type UserPropertyClientWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: UserPropertyClientWhereInput | UserPropertyClientWhereInput[]
+    OR?: UserPropertyClientWhereInput[]
+    NOT?: UserPropertyClientWhereInput | UserPropertyClientWhereInput[]
+    user_id?: StringFilter<"UserPropertyClient"> | string
+    user_property_id?: StringNullableFilter<"UserPropertyClient"> | string | null
+    user_tracked_agency_id?: StringNullableFilter<"UserPropertyClient"> | string | null
+    source_agency_id?: StringNullableFilter<"UserPropertyClient"> | string | null
+    property_id?: StringFilter<"UserPropertyClient"> | string
+    internal_id?: StringNullableFilter<"UserPropertyClient"> | string | null
+    property_title?: StringFilter<"UserPropertyClient"> | string
+    source_url?: StringNullableFilter<"UserPropertyClient"> | string | null
+    name?: StringFilter<"UserPropertyClient"> | string
+    phone?: StringNullableFilter<"UserPropertyClient"> | string | null
+    email?: StringNullableFilter<"UserPropertyClient"> | string | null
+    notes?: StringNullableFilter<"UserPropertyClient"> | string | null
+    shown_at?: DateTimeFilter<"UserPropertyClient"> | Date | string
+    delisted_at?: DateTimeNullableFilter<"UserPropertyClient"> | Date | string | null
+    delisted_ack_at?: DateTimeNullableFilter<"UserPropertyClient"> | Date | string | null
+    created_at?: DateTimeFilter<"UserPropertyClient"> | Date | string
+    updated_at?: DateTimeFilter<"UserPropertyClient"> | Date | string
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    user_property?: XOR<UserPropertyNullableScalarRelationFilter, UserPropertyWhereInput> | null
+    user_tracked_agency?: XOR<UserTrackedAgencyNullableScalarRelationFilter, UserTrackedAgencyWhereInput> | null
+  }, "id">
+
+  export type UserPropertyClientOrderByWithAggregationInput = {
+    id?: SortOrder
+    user_id?: SortOrder
+    user_property_id?: SortOrderInput | SortOrder
+    user_tracked_agency_id?: SortOrderInput | SortOrder
+    source_agency_id?: SortOrderInput | SortOrder
+    property_id?: SortOrder
+    internal_id?: SortOrderInput | SortOrder
+    property_title?: SortOrder
+    source_url?: SortOrderInput | SortOrder
+    name?: SortOrder
+    phone?: SortOrderInput | SortOrder
+    email?: SortOrderInput | SortOrder
+    notes?: SortOrderInput | SortOrder
+    shown_at?: SortOrder
+    delisted_at?: SortOrderInput | SortOrder
+    delisted_ack_at?: SortOrderInput | SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+    _count?: UserPropertyClientCountOrderByAggregateInput
+    _max?: UserPropertyClientMaxOrderByAggregateInput
+    _min?: UserPropertyClientMinOrderByAggregateInput
+  }
+
+  export type UserPropertyClientScalarWhereWithAggregatesInput = {
+    AND?: UserPropertyClientScalarWhereWithAggregatesInput | UserPropertyClientScalarWhereWithAggregatesInput[]
+    OR?: UserPropertyClientScalarWhereWithAggregatesInput[]
+    NOT?: UserPropertyClientScalarWhereWithAggregatesInput | UserPropertyClientScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"UserPropertyClient"> | string
+    user_id?: StringWithAggregatesFilter<"UserPropertyClient"> | string
+    user_property_id?: StringNullableWithAggregatesFilter<"UserPropertyClient"> | string | null
+    user_tracked_agency_id?: StringNullableWithAggregatesFilter<"UserPropertyClient"> | string | null
+    source_agency_id?: StringNullableWithAggregatesFilter<"UserPropertyClient"> | string | null
+    property_id?: StringWithAggregatesFilter<"UserPropertyClient"> | string
+    internal_id?: StringNullableWithAggregatesFilter<"UserPropertyClient"> | string | null
+    property_title?: StringWithAggregatesFilter<"UserPropertyClient"> | string
+    source_url?: StringNullableWithAggregatesFilter<"UserPropertyClient"> | string | null
+    name?: StringWithAggregatesFilter<"UserPropertyClient"> | string
+    phone?: StringNullableWithAggregatesFilter<"UserPropertyClient"> | string | null
+    email?: StringNullableWithAggregatesFilter<"UserPropertyClient"> | string | null
+    notes?: StringNullableWithAggregatesFilter<"UserPropertyClient"> | string | null
+    shown_at?: DateTimeWithAggregatesFilter<"UserPropertyClient"> | Date | string
+    delisted_at?: DateTimeNullableWithAggregatesFilter<"UserPropertyClient"> | Date | string | null
+    delisted_ack_at?: DateTimeNullableWithAggregatesFilter<"UserPropertyClient"> | Date | string | null
+    created_at?: DateTimeWithAggregatesFilter<"UserPropertyClient"> | Date | string
+    updated_at?: DateTimeWithAggregatesFilter<"UserPropertyClient"> | Date | string
   }
 
   export type ContentPublishingConfigWhereInput = {
@@ -54283,6 +55931,7 @@ export namespace Prisma {
     updated_at?: Date | string
     tracked_agencies?: UserTrackedAgencyCreateNestedManyWithoutUserInput
     saved_properties?: UserPropertyCreateNestedManyWithoutUserInput
+    property_clients?: UserPropertyClientCreateNestedManyWithoutUserInput
     user_integrations?: UserIntegrationCreateNestedManyWithoutUserInput
     user_integration_settings?: UserIntegrationSettingsCreateNestedManyWithoutUserInput
     integration_properties?: IntegrationPropertyCreateNestedManyWithoutUserInput
@@ -54299,6 +55948,7 @@ export namespace Prisma {
     updated_at?: Date | string
     tracked_agencies?: UserTrackedAgencyUncheckedCreateNestedManyWithoutUserInput
     saved_properties?: UserPropertyUncheckedCreateNestedManyWithoutUserInput
+    property_clients?: UserPropertyClientUncheckedCreateNestedManyWithoutUserInput
     user_integrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
     user_integration_settings?: UserIntegrationSettingsUncheckedCreateNestedManyWithoutUserInput
     integration_properties?: IntegrationPropertyUncheckedCreateNestedManyWithoutUserInput
@@ -54315,6 +55965,7 @@ export namespace Prisma {
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     tracked_agencies?: UserTrackedAgencyUpdateManyWithoutUserNestedInput
     saved_properties?: UserPropertyUpdateManyWithoutUserNestedInput
+    property_clients?: UserPropertyClientUpdateManyWithoutUserNestedInput
     user_integrations?: UserIntegrationUpdateManyWithoutUserNestedInput
     user_integration_settings?: UserIntegrationSettingsUpdateManyWithoutUserNestedInput
     integration_properties?: IntegrationPropertyUpdateManyWithoutUserNestedInput
@@ -54331,6 +55982,7 @@ export namespace Prisma {
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     tracked_agencies?: UserTrackedAgencyUncheckedUpdateManyWithoutUserNestedInput
     saved_properties?: UserPropertyUncheckedUpdateManyWithoutUserNestedInput
+    property_clients?: UserPropertyClientUncheckedUpdateManyWithoutUserNestedInput
     user_integrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
     user_integration_settings?: UserIntegrationSettingsUncheckedUpdateManyWithoutUserNestedInput
     integration_properties?: IntegrationPropertyUncheckedUpdateManyWithoutUserNestedInput
@@ -54948,6 +56600,7 @@ export namespace Prisma {
     user: UserCreateNestedOneWithoutTracked_agenciesInput
     source_agency: SourceAgencyCreateNestedOneWithoutUser_tracked_agenciesInput
     crawl_runs?: CrawlRunCreateNestedManyWithoutUser_tracked_agencyInput
+    property_clients?: UserPropertyClientCreateNestedManyWithoutUser_tracked_agencyInput
     integration_link?: UserTrackedAgencyIntegrationLinkCreateNestedOneWithoutUser_tracked_agencyInput
     content_publishing_config?: ContentPublishingConfigCreateNestedOneWithoutUser_tracked_agencyInput
     cost_logs?: CostLogCreateNestedManyWithoutUser_tracked_agencyInput
@@ -54974,6 +56627,7 @@ export namespace Prisma {
     created_at?: Date | string
     updated_at?: Date | string
     crawl_runs?: CrawlRunUncheckedCreateNestedManyWithoutUser_tracked_agencyInput
+    property_clients?: UserPropertyClientUncheckedCreateNestedManyWithoutUser_tracked_agencyInput
     integration_link?: UserTrackedAgencyIntegrationLinkUncheckedCreateNestedOneWithoutUser_tracked_agencyInput
     content_publishing_config?: ContentPublishingConfigUncheckedCreateNestedOneWithoutUser_tracked_agencyInput
     cost_logs?: CostLogUncheckedCreateNestedManyWithoutUser_tracked_agencyInput
@@ -55000,6 +56654,7 @@ export namespace Prisma {
     user?: UserUpdateOneRequiredWithoutTracked_agenciesNestedInput
     source_agency?: SourceAgencyUpdateOneRequiredWithoutUser_tracked_agenciesNestedInput
     crawl_runs?: CrawlRunUpdateManyWithoutUser_tracked_agencyNestedInput
+    property_clients?: UserPropertyClientUpdateManyWithoutUser_tracked_agencyNestedInput
     integration_link?: UserTrackedAgencyIntegrationLinkUpdateOneWithoutUser_tracked_agencyNestedInput
     content_publishing_config?: ContentPublishingConfigUpdateOneWithoutUser_tracked_agencyNestedInput
     cost_logs?: CostLogUpdateManyWithoutUser_tracked_agencyNestedInput
@@ -55026,6 +56681,7 @@ export namespace Prisma {
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     crawl_runs?: CrawlRunUncheckedUpdateManyWithoutUser_tracked_agencyNestedInput
+    property_clients?: UserPropertyClientUncheckedUpdateManyWithoutUser_tracked_agencyNestedInput
     integration_link?: UserTrackedAgencyIntegrationLinkUncheckedUpdateOneWithoutUser_tracked_agencyNestedInput
     content_publishing_config?: ContentPublishingConfigUncheckedUpdateOneWithoutUser_tracked_agencyNestedInput
     cost_logs?: CostLogUncheckedUpdateManyWithoutUser_tracked_agencyNestedInput
@@ -57142,6 +58798,7 @@ export namespace Prisma {
     integration_properties?: IntegrationPropertyCreateNestedManyWithoutUser_propertyInput
     localized_contents?: PropertyLocalizedContentCreateNestedManyWithoutUser_propertyInput
     cost_logs?: CostLogCreateNestedManyWithoutUser_propertyInput
+    clients?: UserPropertyClientCreateNestedManyWithoutUser_propertyInput
   }
 
   export type UserPropertyUncheckedCreateInput = {
@@ -57197,6 +58854,7 @@ export namespace Prisma {
     integration_properties?: IntegrationPropertyUncheckedCreateNestedManyWithoutUser_propertyInput
     localized_contents?: PropertyLocalizedContentUncheckedCreateNestedManyWithoutUser_propertyInput
     cost_logs?: CostLogUncheckedCreateNestedManyWithoutUser_propertyInput
+    clients?: UserPropertyClientUncheckedCreateNestedManyWithoutUser_propertyInput
   }
 
   export type UserPropertyUpdateInput = {
@@ -57252,6 +58910,7 @@ export namespace Prisma {
     integration_properties?: IntegrationPropertyUpdateManyWithoutUser_propertyNestedInput
     localized_contents?: PropertyLocalizedContentUpdateManyWithoutUser_propertyNestedInput
     cost_logs?: CostLogUpdateManyWithoutUser_propertyNestedInput
+    clients?: UserPropertyClientUpdateManyWithoutUser_propertyNestedInput
   }
 
   export type UserPropertyUncheckedUpdateInput = {
@@ -57307,6 +58966,7 @@ export namespace Prisma {
     integration_properties?: IntegrationPropertyUncheckedUpdateManyWithoutUser_propertyNestedInput
     localized_contents?: PropertyLocalizedContentUncheckedUpdateManyWithoutUser_propertyNestedInput
     cost_logs?: CostLogUncheckedUpdateManyWithoutUser_propertyNestedInput
+    clients?: UserPropertyClientUncheckedUpdateManyWithoutUser_propertyNestedInput
   }
 
   export type UserPropertyCreateManyInput = {
@@ -57459,6 +59119,150 @@ export namespace Prisma {
     is_modified?: BoolFieldUpdateOperationsInput | boolean
     pending_crm_update?: BoolFieldUpdateOperationsInput | boolean
     last_synced_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UserPropertyClientCreateInput = {
+    id?: string
+    source_agency_id?: string | null
+    property_id: string
+    internal_id?: string | null
+    property_title: string
+    source_url?: string | null
+    name: string
+    phone?: string | null
+    email?: string | null
+    notes?: string | null
+    shown_at?: Date | string
+    delisted_at?: Date | string | null
+    delisted_ack_at?: Date | string | null
+    created_at?: Date | string
+    updated_at?: Date | string
+    user: UserCreateNestedOneWithoutProperty_clientsInput
+    user_property?: UserPropertyCreateNestedOneWithoutClientsInput
+    user_tracked_agency?: UserTrackedAgencyCreateNestedOneWithoutProperty_clientsInput
+  }
+
+  export type UserPropertyClientUncheckedCreateInput = {
+    id?: string
+    user_id: string
+    user_property_id?: string | null
+    user_tracked_agency_id?: string | null
+    source_agency_id?: string | null
+    property_id: string
+    internal_id?: string | null
+    property_title: string
+    source_url?: string | null
+    name: string
+    phone?: string | null
+    email?: string | null
+    notes?: string | null
+    shown_at?: Date | string
+    delisted_at?: Date | string | null
+    delisted_ack_at?: Date | string | null
+    created_at?: Date | string
+    updated_at?: Date | string
+  }
+
+  export type UserPropertyClientUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    source_agency_id?: NullableStringFieldUpdateOperationsInput | string | null
+    property_id?: StringFieldUpdateOperationsInput | string
+    internal_id?: NullableStringFieldUpdateOperationsInput | string | null
+    property_title?: StringFieldUpdateOperationsInput | string
+    source_url?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    shown_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    delisted_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    delisted_ack_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutProperty_clientsNestedInput
+    user_property?: UserPropertyUpdateOneWithoutClientsNestedInput
+    user_tracked_agency?: UserTrackedAgencyUpdateOneWithoutProperty_clientsNestedInput
+  }
+
+  export type UserPropertyClientUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    user_id?: StringFieldUpdateOperationsInput | string
+    user_property_id?: NullableStringFieldUpdateOperationsInput | string | null
+    user_tracked_agency_id?: NullableStringFieldUpdateOperationsInput | string | null
+    source_agency_id?: NullableStringFieldUpdateOperationsInput | string | null
+    property_id?: StringFieldUpdateOperationsInput | string
+    internal_id?: NullableStringFieldUpdateOperationsInput | string | null
+    property_title?: StringFieldUpdateOperationsInput | string
+    source_url?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    shown_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    delisted_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    delisted_ack_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UserPropertyClientCreateManyInput = {
+    id?: string
+    user_id: string
+    user_property_id?: string | null
+    user_tracked_agency_id?: string | null
+    source_agency_id?: string | null
+    property_id: string
+    internal_id?: string | null
+    property_title: string
+    source_url?: string | null
+    name: string
+    phone?: string | null
+    email?: string | null
+    notes?: string | null
+    shown_at?: Date | string
+    delisted_at?: Date | string | null
+    delisted_ack_at?: Date | string | null
+    created_at?: Date | string
+    updated_at?: Date | string
+  }
+
+  export type UserPropertyClientUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    source_agency_id?: NullableStringFieldUpdateOperationsInput | string | null
+    property_id?: StringFieldUpdateOperationsInput | string
+    internal_id?: NullableStringFieldUpdateOperationsInput | string | null
+    property_title?: StringFieldUpdateOperationsInput | string
+    source_url?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    shown_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    delisted_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    delisted_ack_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UserPropertyClientUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    user_id?: StringFieldUpdateOperationsInput | string
+    user_property_id?: NullableStringFieldUpdateOperationsInput | string | null
+    user_tracked_agency_id?: NullableStringFieldUpdateOperationsInput | string | null
+    source_agency_id?: NullableStringFieldUpdateOperationsInput | string | null
+    property_id?: StringFieldUpdateOperationsInput | string
+    internal_id?: NullableStringFieldUpdateOperationsInput | string | null
+    property_title?: StringFieldUpdateOperationsInput | string
+    source_url?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    shown_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    delisted_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    delisted_ack_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -58759,6 +60563,12 @@ export namespace Prisma {
     none?: UserPropertyWhereInput
   }
 
+  export type UserPropertyClientListRelationFilter = {
+    every?: UserPropertyClientWhereInput
+    some?: UserPropertyClientWhereInput
+    none?: UserPropertyClientWhereInput
+  }
+
   export type UserIntegrationListRelationFilter = {
     every?: UserIntegrationWhereInput
     some?: UserIntegrationWhereInput
@@ -58793,6 +60603,10 @@ export namespace Prisma {
   }
 
   export type UserPropertyOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type UserPropertyClientOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -61207,6 +63021,74 @@ export namespace Prisma {
     price_web?: SortOrder
   }
 
+  export type UserPropertyNullableScalarRelationFilter = {
+    is?: UserPropertyWhereInput | null
+    isNot?: UserPropertyWhereInput | null
+  }
+
+  export type UserPropertyClientCountOrderByAggregateInput = {
+    id?: SortOrder
+    user_id?: SortOrder
+    user_property_id?: SortOrder
+    user_tracked_agency_id?: SortOrder
+    source_agency_id?: SortOrder
+    property_id?: SortOrder
+    internal_id?: SortOrder
+    property_title?: SortOrder
+    source_url?: SortOrder
+    name?: SortOrder
+    phone?: SortOrder
+    email?: SortOrder
+    notes?: SortOrder
+    shown_at?: SortOrder
+    delisted_at?: SortOrder
+    delisted_ack_at?: SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+  }
+
+  export type UserPropertyClientMaxOrderByAggregateInput = {
+    id?: SortOrder
+    user_id?: SortOrder
+    user_property_id?: SortOrder
+    user_tracked_agency_id?: SortOrder
+    source_agency_id?: SortOrder
+    property_id?: SortOrder
+    internal_id?: SortOrder
+    property_title?: SortOrder
+    source_url?: SortOrder
+    name?: SortOrder
+    phone?: SortOrder
+    email?: SortOrder
+    notes?: SortOrder
+    shown_at?: SortOrder
+    delisted_at?: SortOrder
+    delisted_ack_at?: SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+  }
+
+  export type UserPropertyClientMinOrderByAggregateInput = {
+    id?: SortOrder
+    user_id?: SortOrder
+    user_property_id?: SortOrder
+    user_tracked_agency_id?: SortOrder
+    source_agency_id?: SortOrder
+    property_id?: SortOrder
+    internal_id?: SortOrder
+    property_title?: SortOrder
+    source_url?: SortOrder
+    name?: SortOrder
+    phone?: SortOrder
+    email?: SortOrder
+    notes?: SortOrder
+    shown_at?: SortOrder
+    delisted_at?: SortOrder
+    delisted_ack_at?: SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+  }
+
   export type ContentOutputListRelationFilter = {
     every?: ContentOutputWhereInput
     some?: ContentOutputWhereInput
@@ -61580,11 +63462,6 @@ export namespace Prisma {
   export type UserNullableScalarRelationFilter = {
     is?: UserWhereInput | null
     isNot?: UserWhereInput | null
-  }
-
-  export type UserPropertyNullableScalarRelationFilter = {
-    is?: UserPropertyWhereInput | null
-    isNot?: UserPropertyWhereInput | null
   }
 
   export type AiBatchRunNullableScalarRelationFilter = {
@@ -62106,6 +63983,13 @@ export namespace Prisma {
     connect?: UserPropertyWhereUniqueInput | UserPropertyWhereUniqueInput[]
   }
 
+  export type UserPropertyClientCreateNestedManyWithoutUserInput = {
+    create?: XOR<UserPropertyClientCreateWithoutUserInput, UserPropertyClientUncheckedCreateWithoutUserInput> | UserPropertyClientCreateWithoutUserInput[] | UserPropertyClientUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: UserPropertyClientCreateOrConnectWithoutUserInput | UserPropertyClientCreateOrConnectWithoutUserInput[]
+    createMany?: UserPropertyClientCreateManyUserInputEnvelope
+    connect?: UserPropertyClientWhereUniqueInput | UserPropertyClientWhereUniqueInput[]
+  }
+
   export type UserIntegrationCreateNestedManyWithoutUserInput = {
     create?: XOR<UserIntegrationCreateWithoutUserInput, UserIntegrationUncheckedCreateWithoutUserInput> | UserIntegrationCreateWithoutUserInput[] | UserIntegrationUncheckedCreateWithoutUserInput[]
     connectOrCreate?: UserIntegrationCreateOrConnectWithoutUserInput | UserIntegrationCreateOrConnectWithoutUserInput[]
@@ -62146,6 +64030,13 @@ export namespace Prisma {
     connectOrCreate?: UserPropertyCreateOrConnectWithoutUserInput | UserPropertyCreateOrConnectWithoutUserInput[]
     createMany?: UserPropertyCreateManyUserInputEnvelope
     connect?: UserPropertyWhereUniqueInput | UserPropertyWhereUniqueInput[]
+  }
+
+  export type UserPropertyClientUncheckedCreateNestedManyWithoutUserInput = {
+    create?: XOR<UserPropertyClientCreateWithoutUserInput, UserPropertyClientUncheckedCreateWithoutUserInput> | UserPropertyClientCreateWithoutUserInput[] | UserPropertyClientUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: UserPropertyClientCreateOrConnectWithoutUserInput | UserPropertyClientCreateOrConnectWithoutUserInput[]
+    createMany?: UserPropertyClientCreateManyUserInputEnvelope
+    connect?: UserPropertyClientWhereUniqueInput | UserPropertyClientWhereUniqueInput[]
   }
 
   export type UserIntegrationUncheckedCreateNestedManyWithoutUserInput = {
@@ -62218,6 +64109,20 @@ export namespace Prisma {
     update?: UserPropertyUpdateWithWhereUniqueWithoutUserInput | UserPropertyUpdateWithWhereUniqueWithoutUserInput[]
     updateMany?: UserPropertyUpdateManyWithWhereWithoutUserInput | UserPropertyUpdateManyWithWhereWithoutUserInput[]
     deleteMany?: UserPropertyScalarWhereInput | UserPropertyScalarWhereInput[]
+  }
+
+  export type UserPropertyClientUpdateManyWithoutUserNestedInput = {
+    create?: XOR<UserPropertyClientCreateWithoutUserInput, UserPropertyClientUncheckedCreateWithoutUserInput> | UserPropertyClientCreateWithoutUserInput[] | UserPropertyClientUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: UserPropertyClientCreateOrConnectWithoutUserInput | UserPropertyClientCreateOrConnectWithoutUserInput[]
+    upsert?: UserPropertyClientUpsertWithWhereUniqueWithoutUserInput | UserPropertyClientUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: UserPropertyClientCreateManyUserInputEnvelope
+    set?: UserPropertyClientWhereUniqueInput | UserPropertyClientWhereUniqueInput[]
+    disconnect?: UserPropertyClientWhereUniqueInput | UserPropertyClientWhereUniqueInput[]
+    delete?: UserPropertyClientWhereUniqueInput | UserPropertyClientWhereUniqueInput[]
+    connect?: UserPropertyClientWhereUniqueInput | UserPropertyClientWhereUniqueInput[]
+    update?: UserPropertyClientUpdateWithWhereUniqueWithoutUserInput | UserPropertyClientUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: UserPropertyClientUpdateManyWithWhereWithoutUserInput | UserPropertyClientUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: UserPropertyClientScalarWhereInput | UserPropertyClientScalarWhereInput[]
   }
 
   export type UserIntegrationUpdateManyWithoutUserNestedInput = {
@@ -62302,6 +64207,20 @@ export namespace Prisma {
     update?: UserPropertyUpdateWithWhereUniqueWithoutUserInput | UserPropertyUpdateWithWhereUniqueWithoutUserInput[]
     updateMany?: UserPropertyUpdateManyWithWhereWithoutUserInput | UserPropertyUpdateManyWithWhereWithoutUserInput[]
     deleteMany?: UserPropertyScalarWhereInput | UserPropertyScalarWhereInput[]
+  }
+
+  export type UserPropertyClientUncheckedUpdateManyWithoutUserNestedInput = {
+    create?: XOR<UserPropertyClientCreateWithoutUserInput, UserPropertyClientUncheckedCreateWithoutUserInput> | UserPropertyClientCreateWithoutUserInput[] | UserPropertyClientUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: UserPropertyClientCreateOrConnectWithoutUserInput | UserPropertyClientCreateOrConnectWithoutUserInput[]
+    upsert?: UserPropertyClientUpsertWithWhereUniqueWithoutUserInput | UserPropertyClientUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: UserPropertyClientCreateManyUserInputEnvelope
+    set?: UserPropertyClientWhereUniqueInput | UserPropertyClientWhereUniqueInput[]
+    disconnect?: UserPropertyClientWhereUniqueInput | UserPropertyClientWhereUniqueInput[]
+    delete?: UserPropertyClientWhereUniqueInput | UserPropertyClientWhereUniqueInput[]
+    connect?: UserPropertyClientWhereUniqueInput | UserPropertyClientWhereUniqueInput[]
+    update?: UserPropertyClientUpdateWithWhereUniqueWithoutUserInput | UserPropertyClientUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: UserPropertyClientUpdateManyWithWhereWithoutUserInput | UserPropertyClientUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: UserPropertyClientScalarWhereInput | UserPropertyClientScalarWhereInput[]
   }
 
   export type UserIntegrationUncheckedUpdateManyWithoutUserNestedInput = {
@@ -63005,6 +64924,13 @@ export namespace Prisma {
     connect?: CrawlRunWhereUniqueInput | CrawlRunWhereUniqueInput[]
   }
 
+  export type UserPropertyClientCreateNestedManyWithoutUser_tracked_agencyInput = {
+    create?: XOR<UserPropertyClientCreateWithoutUser_tracked_agencyInput, UserPropertyClientUncheckedCreateWithoutUser_tracked_agencyInput> | UserPropertyClientCreateWithoutUser_tracked_agencyInput[] | UserPropertyClientUncheckedCreateWithoutUser_tracked_agencyInput[]
+    connectOrCreate?: UserPropertyClientCreateOrConnectWithoutUser_tracked_agencyInput | UserPropertyClientCreateOrConnectWithoutUser_tracked_agencyInput[]
+    createMany?: UserPropertyClientCreateManyUser_tracked_agencyInputEnvelope
+    connect?: UserPropertyClientWhereUniqueInput | UserPropertyClientWhereUniqueInput[]
+  }
+
   export type UserTrackedAgencyIntegrationLinkCreateNestedOneWithoutUser_tracked_agencyInput = {
     create?: XOR<UserTrackedAgencyIntegrationLinkCreateWithoutUser_tracked_agencyInput, UserTrackedAgencyIntegrationLinkUncheckedCreateWithoutUser_tracked_agencyInput>
     connectOrCreate?: UserTrackedAgencyIntegrationLinkCreateOrConnectWithoutUser_tracked_agencyInput
@@ -63029,6 +64955,13 @@ export namespace Prisma {
     connectOrCreate?: CrawlRunCreateOrConnectWithoutUser_tracked_agencyInput | CrawlRunCreateOrConnectWithoutUser_tracked_agencyInput[]
     createMany?: CrawlRunCreateManyUser_tracked_agencyInputEnvelope
     connect?: CrawlRunWhereUniqueInput | CrawlRunWhereUniqueInput[]
+  }
+
+  export type UserPropertyClientUncheckedCreateNestedManyWithoutUser_tracked_agencyInput = {
+    create?: XOR<UserPropertyClientCreateWithoutUser_tracked_agencyInput, UserPropertyClientUncheckedCreateWithoutUser_tracked_agencyInput> | UserPropertyClientCreateWithoutUser_tracked_agencyInput[] | UserPropertyClientUncheckedCreateWithoutUser_tracked_agencyInput[]
+    connectOrCreate?: UserPropertyClientCreateOrConnectWithoutUser_tracked_agencyInput | UserPropertyClientCreateOrConnectWithoutUser_tracked_agencyInput[]
+    createMany?: UserPropertyClientCreateManyUser_tracked_agencyInputEnvelope
+    connect?: UserPropertyClientWhereUniqueInput | UserPropertyClientWhereUniqueInput[]
   }
 
   export type UserTrackedAgencyIntegrationLinkUncheckedCreateNestedOneWithoutUser_tracked_agencyInput = {
@@ -63085,6 +65018,20 @@ export namespace Prisma {
     deleteMany?: CrawlRunScalarWhereInput | CrawlRunScalarWhereInput[]
   }
 
+  export type UserPropertyClientUpdateManyWithoutUser_tracked_agencyNestedInput = {
+    create?: XOR<UserPropertyClientCreateWithoutUser_tracked_agencyInput, UserPropertyClientUncheckedCreateWithoutUser_tracked_agencyInput> | UserPropertyClientCreateWithoutUser_tracked_agencyInput[] | UserPropertyClientUncheckedCreateWithoutUser_tracked_agencyInput[]
+    connectOrCreate?: UserPropertyClientCreateOrConnectWithoutUser_tracked_agencyInput | UserPropertyClientCreateOrConnectWithoutUser_tracked_agencyInput[]
+    upsert?: UserPropertyClientUpsertWithWhereUniqueWithoutUser_tracked_agencyInput | UserPropertyClientUpsertWithWhereUniqueWithoutUser_tracked_agencyInput[]
+    createMany?: UserPropertyClientCreateManyUser_tracked_agencyInputEnvelope
+    set?: UserPropertyClientWhereUniqueInput | UserPropertyClientWhereUniqueInput[]
+    disconnect?: UserPropertyClientWhereUniqueInput | UserPropertyClientWhereUniqueInput[]
+    delete?: UserPropertyClientWhereUniqueInput | UserPropertyClientWhereUniqueInput[]
+    connect?: UserPropertyClientWhereUniqueInput | UserPropertyClientWhereUniqueInput[]
+    update?: UserPropertyClientUpdateWithWhereUniqueWithoutUser_tracked_agencyInput | UserPropertyClientUpdateWithWhereUniqueWithoutUser_tracked_agencyInput[]
+    updateMany?: UserPropertyClientUpdateManyWithWhereWithoutUser_tracked_agencyInput | UserPropertyClientUpdateManyWithWhereWithoutUser_tracked_agencyInput[]
+    deleteMany?: UserPropertyClientScalarWhereInput | UserPropertyClientScalarWhereInput[]
+  }
+
   export type UserTrackedAgencyIntegrationLinkUpdateOneWithoutUser_tracked_agencyNestedInput = {
     create?: XOR<UserTrackedAgencyIntegrationLinkCreateWithoutUser_tracked_agencyInput, UserTrackedAgencyIntegrationLinkUncheckedCreateWithoutUser_tracked_agencyInput>
     connectOrCreate?: UserTrackedAgencyIntegrationLinkCreateOrConnectWithoutUser_tracked_agencyInput
@@ -63131,6 +65078,20 @@ export namespace Prisma {
     update?: CrawlRunUpdateWithWhereUniqueWithoutUser_tracked_agencyInput | CrawlRunUpdateWithWhereUniqueWithoutUser_tracked_agencyInput[]
     updateMany?: CrawlRunUpdateManyWithWhereWithoutUser_tracked_agencyInput | CrawlRunUpdateManyWithWhereWithoutUser_tracked_agencyInput[]
     deleteMany?: CrawlRunScalarWhereInput | CrawlRunScalarWhereInput[]
+  }
+
+  export type UserPropertyClientUncheckedUpdateManyWithoutUser_tracked_agencyNestedInput = {
+    create?: XOR<UserPropertyClientCreateWithoutUser_tracked_agencyInput, UserPropertyClientUncheckedCreateWithoutUser_tracked_agencyInput> | UserPropertyClientCreateWithoutUser_tracked_agencyInput[] | UserPropertyClientUncheckedCreateWithoutUser_tracked_agencyInput[]
+    connectOrCreate?: UserPropertyClientCreateOrConnectWithoutUser_tracked_agencyInput | UserPropertyClientCreateOrConnectWithoutUser_tracked_agencyInput[]
+    upsert?: UserPropertyClientUpsertWithWhereUniqueWithoutUser_tracked_agencyInput | UserPropertyClientUpsertWithWhereUniqueWithoutUser_tracked_agencyInput[]
+    createMany?: UserPropertyClientCreateManyUser_tracked_agencyInputEnvelope
+    set?: UserPropertyClientWhereUniqueInput | UserPropertyClientWhereUniqueInput[]
+    disconnect?: UserPropertyClientWhereUniqueInput | UserPropertyClientWhereUniqueInput[]
+    delete?: UserPropertyClientWhereUniqueInput | UserPropertyClientWhereUniqueInput[]
+    connect?: UserPropertyClientWhereUniqueInput | UserPropertyClientWhereUniqueInput[]
+    update?: UserPropertyClientUpdateWithWhereUniqueWithoutUser_tracked_agencyInput | UserPropertyClientUpdateWithWhereUniqueWithoutUser_tracked_agencyInput[]
+    updateMany?: UserPropertyClientUpdateManyWithWhereWithoutUser_tracked_agencyInput | UserPropertyClientUpdateManyWithWhereWithoutUser_tracked_agencyInput[]
+    deleteMany?: UserPropertyClientScalarWhereInput | UserPropertyClientScalarWhereInput[]
   }
 
   export type UserTrackedAgencyIntegrationLinkUncheckedUpdateOneWithoutUser_tracked_agencyNestedInput = {
@@ -64454,6 +66415,13 @@ export namespace Prisma {
     connect?: CostLogWhereUniqueInput | CostLogWhereUniqueInput[]
   }
 
+  export type UserPropertyClientCreateNestedManyWithoutUser_propertyInput = {
+    create?: XOR<UserPropertyClientCreateWithoutUser_propertyInput, UserPropertyClientUncheckedCreateWithoutUser_propertyInput> | UserPropertyClientCreateWithoutUser_propertyInput[] | UserPropertyClientUncheckedCreateWithoutUser_propertyInput[]
+    connectOrCreate?: UserPropertyClientCreateOrConnectWithoutUser_propertyInput | UserPropertyClientCreateOrConnectWithoutUser_propertyInput[]
+    createMany?: UserPropertyClientCreateManyUser_propertyInputEnvelope
+    connect?: UserPropertyClientWhereUniqueInput | UserPropertyClientWhereUniqueInput[]
+  }
+
   export type IntegrationPropertyUncheckedCreateNestedManyWithoutUser_propertyInput = {
     create?: XOR<IntegrationPropertyCreateWithoutUser_propertyInput, IntegrationPropertyUncheckedCreateWithoutUser_propertyInput> | IntegrationPropertyCreateWithoutUser_propertyInput[] | IntegrationPropertyUncheckedCreateWithoutUser_propertyInput[]
     connectOrCreate?: IntegrationPropertyCreateOrConnectWithoutUser_propertyInput | IntegrationPropertyCreateOrConnectWithoutUser_propertyInput[]
@@ -64473,6 +66441,13 @@ export namespace Prisma {
     connectOrCreate?: CostLogCreateOrConnectWithoutUser_propertyInput | CostLogCreateOrConnectWithoutUser_propertyInput[]
     createMany?: CostLogCreateManyUser_propertyInputEnvelope
     connect?: CostLogWhereUniqueInput | CostLogWhereUniqueInput[]
+  }
+
+  export type UserPropertyClientUncheckedCreateNestedManyWithoutUser_propertyInput = {
+    create?: XOR<UserPropertyClientCreateWithoutUser_propertyInput, UserPropertyClientUncheckedCreateWithoutUser_propertyInput> | UserPropertyClientCreateWithoutUser_propertyInput[] | UserPropertyClientUncheckedCreateWithoutUser_propertyInput[]
+    connectOrCreate?: UserPropertyClientCreateOrConnectWithoutUser_propertyInput | UserPropertyClientCreateOrConnectWithoutUser_propertyInput[]
+    createMany?: UserPropertyClientCreateManyUser_propertyInputEnvelope
+    connect?: UserPropertyClientWhereUniqueInput | UserPropertyClientWhereUniqueInput[]
   }
 
   export type UserUpdateOneRequiredWithoutSaved_propertiesNestedInput = {
@@ -64533,6 +66508,20 @@ export namespace Prisma {
     deleteMany?: CostLogScalarWhereInput | CostLogScalarWhereInput[]
   }
 
+  export type UserPropertyClientUpdateManyWithoutUser_propertyNestedInput = {
+    create?: XOR<UserPropertyClientCreateWithoutUser_propertyInput, UserPropertyClientUncheckedCreateWithoutUser_propertyInput> | UserPropertyClientCreateWithoutUser_propertyInput[] | UserPropertyClientUncheckedCreateWithoutUser_propertyInput[]
+    connectOrCreate?: UserPropertyClientCreateOrConnectWithoutUser_propertyInput | UserPropertyClientCreateOrConnectWithoutUser_propertyInput[]
+    upsert?: UserPropertyClientUpsertWithWhereUniqueWithoutUser_propertyInput | UserPropertyClientUpsertWithWhereUniqueWithoutUser_propertyInput[]
+    createMany?: UserPropertyClientCreateManyUser_propertyInputEnvelope
+    set?: UserPropertyClientWhereUniqueInput | UserPropertyClientWhereUniqueInput[]
+    disconnect?: UserPropertyClientWhereUniqueInput | UserPropertyClientWhereUniqueInput[]
+    delete?: UserPropertyClientWhereUniqueInput | UserPropertyClientWhereUniqueInput[]
+    connect?: UserPropertyClientWhereUniqueInput | UserPropertyClientWhereUniqueInput[]
+    update?: UserPropertyClientUpdateWithWhereUniqueWithoutUser_propertyInput | UserPropertyClientUpdateWithWhereUniqueWithoutUser_propertyInput[]
+    updateMany?: UserPropertyClientUpdateManyWithWhereWithoutUser_propertyInput | UserPropertyClientUpdateManyWithWhereWithoutUser_propertyInput[]
+    deleteMany?: UserPropertyClientScalarWhereInput | UserPropertyClientScalarWhereInput[]
+  }
+
   export type IntegrationPropertyUncheckedUpdateManyWithoutUser_propertyNestedInput = {
     create?: XOR<IntegrationPropertyCreateWithoutUser_propertyInput, IntegrationPropertyUncheckedCreateWithoutUser_propertyInput> | IntegrationPropertyCreateWithoutUser_propertyInput[] | IntegrationPropertyUncheckedCreateWithoutUser_propertyInput[]
     connectOrCreate?: IntegrationPropertyCreateOrConnectWithoutUser_propertyInput | IntegrationPropertyCreateOrConnectWithoutUser_propertyInput[]
@@ -64573,6 +66562,66 @@ export namespace Prisma {
     update?: CostLogUpdateWithWhereUniqueWithoutUser_propertyInput | CostLogUpdateWithWhereUniqueWithoutUser_propertyInput[]
     updateMany?: CostLogUpdateManyWithWhereWithoutUser_propertyInput | CostLogUpdateManyWithWhereWithoutUser_propertyInput[]
     deleteMany?: CostLogScalarWhereInput | CostLogScalarWhereInput[]
+  }
+
+  export type UserPropertyClientUncheckedUpdateManyWithoutUser_propertyNestedInput = {
+    create?: XOR<UserPropertyClientCreateWithoutUser_propertyInput, UserPropertyClientUncheckedCreateWithoutUser_propertyInput> | UserPropertyClientCreateWithoutUser_propertyInput[] | UserPropertyClientUncheckedCreateWithoutUser_propertyInput[]
+    connectOrCreate?: UserPropertyClientCreateOrConnectWithoutUser_propertyInput | UserPropertyClientCreateOrConnectWithoutUser_propertyInput[]
+    upsert?: UserPropertyClientUpsertWithWhereUniqueWithoutUser_propertyInput | UserPropertyClientUpsertWithWhereUniqueWithoutUser_propertyInput[]
+    createMany?: UserPropertyClientCreateManyUser_propertyInputEnvelope
+    set?: UserPropertyClientWhereUniqueInput | UserPropertyClientWhereUniqueInput[]
+    disconnect?: UserPropertyClientWhereUniqueInput | UserPropertyClientWhereUniqueInput[]
+    delete?: UserPropertyClientWhereUniqueInput | UserPropertyClientWhereUniqueInput[]
+    connect?: UserPropertyClientWhereUniqueInput | UserPropertyClientWhereUniqueInput[]
+    update?: UserPropertyClientUpdateWithWhereUniqueWithoutUser_propertyInput | UserPropertyClientUpdateWithWhereUniqueWithoutUser_propertyInput[]
+    updateMany?: UserPropertyClientUpdateManyWithWhereWithoutUser_propertyInput | UserPropertyClientUpdateManyWithWhereWithoutUser_propertyInput[]
+    deleteMany?: UserPropertyClientScalarWhereInput | UserPropertyClientScalarWhereInput[]
+  }
+
+  export type UserCreateNestedOneWithoutProperty_clientsInput = {
+    create?: XOR<UserCreateWithoutProperty_clientsInput, UserUncheckedCreateWithoutProperty_clientsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutProperty_clientsInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type UserPropertyCreateNestedOneWithoutClientsInput = {
+    create?: XOR<UserPropertyCreateWithoutClientsInput, UserPropertyUncheckedCreateWithoutClientsInput>
+    connectOrCreate?: UserPropertyCreateOrConnectWithoutClientsInput
+    connect?: UserPropertyWhereUniqueInput
+  }
+
+  export type UserTrackedAgencyCreateNestedOneWithoutProperty_clientsInput = {
+    create?: XOR<UserTrackedAgencyCreateWithoutProperty_clientsInput, UserTrackedAgencyUncheckedCreateWithoutProperty_clientsInput>
+    connectOrCreate?: UserTrackedAgencyCreateOrConnectWithoutProperty_clientsInput
+    connect?: UserTrackedAgencyWhereUniqueInput
+  }
+
+  export type UserUpdateOneRequiredWithoutProperty_clientsNestedInput = {
+    create?: XOR<UserCreateWithoutProperty_clientsInput, UserUncheckedCreateWithoutProperty_clientsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutProperty_clientsInput
+    upsert?: UserUpsertWithoutProperty_clientsInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutProperty_clientsInput, UserUpdateWithoutProperty_clientsInput>, UserUncheckedUpdateWithoutProperty_clientsInput>
+  }
+
+  export type UserPropertyUpdateOneWithoutClientsNestedInput = {
+    create?: XOR<UserPropertyCreateWithoutClientsInput, UserPropertyUncheckedCreateWithoutClientsInput>
+    connectOrCreate?: UserPropertyCreateOrConnectWithoutClientsInput
+    upsert?: UserPropertyUpsertWithoutClientsInput
+    disconnect?: UserPropertyWhereInput | boolean
+    delete?: UserPropertyWhereInput | boolean
+    connect?: UserPropertyWhereUniqueInput
+    update?: XOR<XOR<UserPropertyUpdateToOneWithWhereWithoutClientsInput, UserPropertyUpdateWithoutClientsInput>, UserPropertyUncheckedUpdateWithoutClientsInput>
+  }
+
+  export type UserTrackedAgencyUpdateOneWithoutProperty_clientsNestedInput = {
+    create?: XOR<UserTrackedAgencyCreateWithoutProperty_clientsInput, UserTrackedAgencyUncheckedCreateWithoutProperty_clientsInput>
+    connectOrCreate?: UserTrackedAgencyCreateOrConnectWithoutProperty_clientsInput
+    upsert?: UserTrackedAgencyUpsertWithoutProperty_clientsInput
+    disconnect?: UserTrackedAgencyWhereInput | boolean
+    delete?: UserTrackedAgencyWhereInput | boolean
+    connect?: UserTrackedAgencyWhereUniqueInput
+    update?: XOR<XOR<UserTrackedAgencyUpdateToOneWithWhereWithoutProperty_clientsInput, UserTrackedAgencyUpdateWithoutProperty_clientsInput>, UserTrackedAgencyUncheckedUpdateWithoutProperty_clientsInput>
   }
 
   export type UserTrackedAgencyCreateNestedOneWithoutContent_publishing_configInput = {
@@ -66042,6 +68091,7 @@ export namespace Prisma {
     updated_at?: Date | string
     source_agency: SourceAgencyCreateNestedOneWithoutUser_tracked_agenciesInput
     crawl_runs?: CrawlRunCreateNestedManyWithoutUser_tracked_agencyInput
+    property_clients?: UserPropertyClientCreateNestedManyWithoutUser_tracked_agencyInput
     integration_link?: UserTrackedAgencyIntegrationLinkCreateNestedOneWithoutUser_tracked_agencyInput
     content_publishing_config?: ContentPublishingConfigCreateNestedOneWithoutUser_tracked_agencyInput
     cost_logs?: CostLogCreateNestedManyWithoutUser_tracked_agencyInput
@@ -66067,6 +68117,7 @@ export namespace Prisma {
     created_at?: Date | string
     updated_at?: Date | string
     crawl_runs?: CrawlRunUncheckedCreateNestedManyWithoutUser_tracked_agencyInput
+    property_clients?: UserPropertyClientUncheckedCreateNestedManyWithoutUser_tracked_agencyInput
     integration_link?: UserTrackedAgencyIntegrationLinkUncheckedCreateNestedOneWithoutUser_tracked_agencyInput
     content_publishing_config?: ContentPublishingConfigUncheckedCreateNestedOneWithoutUser_tracked_agencyInput
     cost_logs?: CostLogUncheckedCreateNestedManyWithoutUser_tracked_agencyInput
@@ -66134,6 +68185,7 @@ export namespace Prisma {
     integration_properties?: IntegrationPropertyCreateNestedManyWithoutUser_propertyInput
     localized_contents?: PropertyLocalizedContentCreateNestedManyWithoutUser_propertyInput
     cost_logs?: CostLogCreateNestedManyWithoutUser_propertyInput
+    clients?: UserPropertyClientCreateNestedManyWithoutUser_propertyInput
   }
 
   export type UserPropertyUncheckedCreateWithoutUserInput = {
@@ -66188,6 +68240,7 @@ export namespace Prisma {
     integration_properties?: IntegrationPropertyUncheckedCreateNestedManyWithoutUser_propertyInput
     localized_contents?: PropertyLocalizedContentUncheckedCreateNestedManyWithoutUser_propertyInput
     cost_logs?: CostLogUncheckedCreateNestedManyWithoutUser_propertyInput
+    clients?: UserPropertyClientUncheckedCreateNestedManyWithoutUser_propertyInput
   }
 
   export type UserPropertyCreateOrConnectWithoutUserInput = {
@@ -66197,6 +68250,56 @@ export namespace Prisma {
 
   export type UserPropertyCreateManyUserInputEnvelope = {
     data: UserPropertyCreateManyUserInput | UserPropertyCreateManyUserInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type UserPropertyClientCreateWithoutUserInput = {
+    id?: string
+    source_agency_id?: string | null
+    property_id: string
+    internal_id?: string | null
+    property_title: string
+    source_url?: string | null
+    name: string
+    phone?: string | null
+    email?: string | null
+    notes?: string | null
+    shown_at?: Date | string
+    delisted_at?: Date | string | null
+    delisted_ack_at?: Date | string | null
+    created_at?: Date | string
+    updated_at?: Date | string
+    user_property?: UserPropertyCreateNestedOneWithoutClientsInput
+    user_tracked_agency?: UserTrackedAgencyCreateNestedOneWithoutProperty_clientsInput
+  }
+
+  export type UserPropertyClientUncheckedCreateWithoutUserInput = {
+    id?: string
+    user_property_id?: string | null
+    user_tracked_agency_id?: string | null
+    source_agency_id?: string | null
+    property_id: string
+    internal_id?: string | null
+    property_title: string
+    source_url?: string | null
+    name: string
+    phone?: string | null
+    email?: string | null
+    notes?: string | null
+    shown_at?: Date | string
+    delisted_at?: Date | string | null
+    delisted_ack_at?: Date | string | null
+    created_at?: Date | string
+    updated_at?: Date | string
+  }
+
+  export type UserPropertyClientCreateOrConnectWithoutUserInput = {
+    where: UserPropertyClientWhereUniqueInput
+    create: XOR<UserPropertyClientCreateWithoutUserInput, UserPropertyClientUncheckedCreateWithoutUserInput>
+  }
+
+  export type UserPropertyClientCreateManyUserInputEnvelope = {
+    data: UserPropertyClientCreateManyUserInput | UserPropertyClientCreateManyUserInput[]
     skipDuplicates?: boolean
   }
 
@@ -66476,6 +68579,46 @@ export namespace Prisma {
     updated_at?: DateTimeFilter<"UserProperty"> | Date | string
   }
 
+  export type UserPropertyClientUpsertWithWhereUniqueWithoutUserInput = {
+    where: UserPropertyClientWhereUniqueInput
+    update: XOR<UserPropertyClientUpdateWithoutUserInput, UserPropertyClientUncheckedUpdateWithoutUserInput>
+    create: XOR<UserPropertyClientCreateWithoutUserInput, UserPropertyClientUncheckedCreateWithoutUserInput>
+  }
+
+  export type UserPropertyClientUpdateWithWhereUniqueWithoutUserInput = {
+    where: UserPropertyClientWhereUniqueInput
+    data: XOR<UserPropertyClientUpdateWithoutUserInput, UserPropertyClientUncheckedUpdateWithoutUserInput>
+  }
+
+  export type UserPropertyClientUpdateManyWithWhereWithoutUserInput = {
+    where: UserPropertyClientScalarWhereInput
+    data: XOR<UserPropertyClientUpdateManyMutationInput, UserPropertyClientUncheckedUpdateManyWithoutUserInput>
+  }
+
+  export type UserPropertyClientScalarWhereInput = {
+    AND?: UserPropertyClientScalarWhereInput | UserPropertyClientScalarWhereInput[]
+    OR?: UserPropertyClientScalarWhereInput[]
+    NOT?: UserPropertyClientScalarWhereInput | UserPropertyClientScalarWhereInput[]
+    id?: StringFilter<"UserPropertyClient"> | string
+    user_id?: StringFilter<"UserPropertyClient"> | string
+    user_property_id?: StringNullableFilter<"UserPropertyClient"> | string | null
+    user_tracked_agency_id?: StringNullableFilter<"UserPropertyClient"> | string | null
+    source_agency_id?: StringNullableFilter<"UserPropertyClient"> | string | null
+    property_id?: StringFilter<"UserPropertyClient"> | string
+    internal_id?: StringNullableFilter<"UserPropertyClient"> | string | null
+    property_title?: StringFilter<"UserPropertyClient"> | string
+    source_url?: StringNullableFilter<"UserPropertyClient"> | string | null
+    name?: StringFilter<"UserPropertyClient"> | string
+    phone?: StringNullableFilter<"UserPropertyClient"> | string | null
+    email?: StringNullableFilter<"UserPropertyClient"> | string | null
+    notes?: StringNullableFilter<"UserPropertyClient"> | string | null
+    shown_at?: DateTimeFilter<"UserPropertyClient"> | Date | string
+    delisted_at?: DateTimeNullableFilter<"UserPropertyClient"> | Date | string | null
+    delisted_ack_at?: DateTimeNullableFilter<"UserPropertyClient"> | Date | string | null
+    created_at?: DateTimeFilter<"UserPropertyClient"> | Date | string
+    updated_at?: DateTimeFilter<"UserPropertyClient"> | Date | string
+  }
+
   export type UserIntegrationUpsertWithWhereUniqueWithoutUserInput = {
     where: UserIntegrationWhereUniqueInput
     update: XOR<UserIntegrationUpdateWithoutUserInput, UserIntegrationUncheckedUpdateWithoutUserInput>
@@ -66732,6 +68875,7 @@ export namespace Prisma {
     updated_at?: Date | string
     tracked_agencies?: UserTrackedAgencyCreateNestedManyWithoutUserInput
     saved_properties?: UserPropertyCreateNestedManyWithoutUserInput
+    property_clients?: UserPropertyClientCreateNestedManyWithoutUserInput
     user_integrations?: UserIntegrationCreateNestedManyWithoutUserInput
     integration_properties?: IntegrationPropertyCreateNestedManyWithoutUserInput
     cost_logs?: CostLogCreateNestedManyWithoutUserInput
@@ -66747,6 +68891,7 @@ export namespace Prisma {
     updated_at?: Date | string
     tracked_agencies?: UserTrackedAgencyUncheckedCreateNestedManyWithoutUserInput
     saved_properties?: UserPropertyUncheckedCreateNestedManyWithoutUserInput
+    property_clients?: UserPropertyClientUncheckedCreateNestedManyWithoutUserInput
     user_integrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
     integration_properties?: IntegrationPropertyUncheckedCreateNestedManyWithoutUserInput
     cost_logs?: CostLogUncheckedCreateNestedManyWithoutUserInput
@@ -66893,6 +69038,7 @@ export namespace Prisma {
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     tracked_agencies?: UserTrackedAgencyUpdateManyWithoutUserNestedInput
     saved_properties?: UserPropertyUpdateManyWithoutUserNestedInput
+    property_clients?: UserPropertyClientUpdateManyWithoutUserNestedInput
     user_integrations?: UserIntegrationUpdateManyWithoutUserNestedInput
     integration_properties?: IntegrationPropertyUpdateManyWithoutUserNestedInput
     cost_logs?: CostLogUpdateManyWithoutUserNestedInput
@@ -66908,6 +69054,7 @@ export namespace Prisma {
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     tracked_agencies?: UserTrackedAgencyUncheckedUpdateManyWithoutUserNestedInput
     saved_properties?: UserPropertyUncheckedUpdateManyWithoutUserNestedInput
+    property_clients?: UserPropertyClientUncheckedUpdateManyWithoutUserNestedInput
     user_integrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
     integration_properties?: IntegrationPropertyUncheckedUpdateManyWithoutUserNestedInput
     cost_logs?: CostLogUncheckedUpdateManyWithoutUserNestedInput
@@ -67063,6 +69210,7 @@ export namespace Prisma {
     updated_at?: Date | string
     tracked_agencies?: UserTrackedAgencyCreateNestedManyWithoutUserInput
     saved_properties?: UserPropertyCreateNestedManyWithoutUserInput
+    property_clients?: UserPropertyClientCreateNestedManyWithoutUserInput
     user_integration_settings?: UserIntegrationSettingsCreateNestedManyWithoutUserInput
     integration_properties?: IntegrationPropertyCreateNestedManyWithoutUserInput
     cost_logs?: CostLogCreateNestedManyWithoutUserInput
@@ -67078,6 +69226,7 @@ export namespace Prisma {
     updated_at?: Date | string
     tracked_agencies?: UserTrackedAgencyUncheckedCreateNestedManyWithoutUserInput
     saved_properties?: UserPropertyUncheckedCreateNestedManyWithoutUserInput
+    property_clients?: UserPropertyClientUncheckedCreateNestedManyWithoutUserInput
     user_integration_settings?: UserIntegrationSettingsUncheckedCreateNestedManyWithoutUserInput
     integration_properties?: IntegrationPropertyUncheckedCreateNestedManyWithoutUserInput
     cost_logs?: CostLogUncheckedCreateNestedManyWithoutUserInput
@@ -67232,6 +69381,7 @@ export namespace Prisma {
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     tracked_agencies?: UserTrackedAgencyUpdateManyWithoutUserNestedInput
     saved_properties?: UserPropertyUpdateManyWithoutUserNestedInput
+    property_clients?: UserPropertyClientUpdateManyWithoutUserNestedInput
     user_integration_settings?: UserIntegrationSettingsUpdateManyWithoutUserNestedInput
     integration_properties?: IntegrationPropertyUpdateManyWithoutUserNestedInput
     cost_logs?: CostLogUpdateManyWithoutUserNestedInput
@@ -67247,6 +69397,7 @@ export namespace Prisma {
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     tracked_agencies?: UserTrackedAgencyUncheckedUpdateManyWithoutUserNestedInput
     saved_properties?: UserPropertyUncheckedUpdateManyWithoutUserNestedInput
+    property_clients?: UserPropertyClientUncheckedUpdateManyWithoutUserNestedInput
     user_integration_settings?: UserIntegrationSettingsUncheckedUpdateManyWithoutUserNestedInput
     integration_properties?: IntegrationPropertyUncheckedUpdateManyWithoutUserNestedInput
     cost_logs?: CostLogUncheckedUpdateManyWithoutUserNestedInput
@@ -67404,6 +69555,7 @@ export namespace Prisma {
     updated_at?: Date | string
     user: UserCreateNestedOneWithoutTracked_agenciesInput
     crawl_runs?: CrawlRunCreateNestedManyWithoutUser_tracked_agencyInput
+    property_clients?: UserPropertyClientCreateNestedManyWithoutUser_tracked_agencyInput
     integration_link?: UserTrackedAgencyIntegrationLinkCreateNestedOneWithoutUser_tracked_agencyInput
     content_publishing_config?: ContentPublishingConfigCreateNestedOneWithoutUser_tracked_agencyInput
     cost_logs?: CostLogCreateNestedManyWithoutUser_tracked_agencyInput
@@ -67429,6 +69581,7 @@ export namespace Prisma {
     created_at?: Date | string
     updated_at?: Date | string
     crawl_runs?: CrawlRunUncheckedCreateNestedManyWithoutUser_tracked_agencyInput
+    property_clients?: UserPropertyClientUncheckedCreateNestedManyWithoutUser_tracked_agencyInput
     integration_link?: UserTrackedAgencyIntegrationLinkUncheckedCreateNestedOneWithoutUser_tracked_agencyInput
     content_publishing_config?: ContentPublishingConfigUncheckedCreateNestedOneWithoutUser_tracked_agencyInput
     cost_logs?: CostLogUncheckedCreateNestedManyWithoutUser_tracked_agencyInput
@@ -68010,6 +70163,7 @@ export namespace Prisma {
     created_at?: Date | string
     updated_at?: Date | string
     saved_properties?: UserPropertyCreateNestedManyWithoutUserInput
+    property_clients?: UserPropertyClientCreateNestedManyWithoutUserInput
     user_integrations?: UserIntegrationCreateNestedManyWithoutUserInput
     user_integration_settings?: UserIntegrationSettingsCreateNestedManyWithoutUserInput
     integration_properties?: IntegrationPropertyCreateNestedManyWithoutUserInput
@@ -68025,6 +70179,7 @@ export namespace Prisma {
     created_at?: Date | string
     updated_at?: Date | string
     saved_properties?: UserPropertyUncheckedCreateNestedManyWithoutUserInput
+    property_clients?: UserPropertyClientUncheckedCreateNestedManyWithoutUserInput
     user_integrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
     user_integration_settings?: UserIntegrationSettingsUncheckedCreateNestedManyWithoutUserInput
     integration_properties?: IntegrationPropertyUncheckedCreateNestedManyWithoutUserInput
@@ -68179,6 +70334,56 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type UserPropertyClientCreateWithoutUser_tracked_agencyInput = {
+    id?: string
+    source_agency_id?: string | null
+    property_id: string
+    internal_id?: string | null
+    property_title: string
+    source_url?: string | null
+    name: string
+    phone?: string | null
+    email?: string | null
+    notes?: string | null
+    shown_at?: Date | string
+    delisted_at?: Date | string | null
+    delisted_ack_at?: Date | string | null
+    created_at?: Date | string
+    updated_at?: Date | string
+    user: UserCreateNestedOneWithoutProperty_clientsInput
+    user_property?: UserPropertyCreateNestedOneWithoutClientsInput
+  }
+
+  export type UserPropertyClientUncheckedCreateWithoutUser_tracked_agencyInput = {
+    id?: string
+    user_id: string
+    user_property_id?: string | null
+    source_agency_id?: string | null
+    property_id: string
+    internal_id?: string | null
+    property_title: string
+    source_url?: string | null
+    name: string
+    phone?: string | null
+    email?: string | null
+    notes?: string | null
+    shown_at?: Date | string
+    delisted_at?: Date | string | null
+    delisted_ack_at?: Date | string | null
+    created_at?: Date | string
+    updated_at?: Date | string
+  }
+
+  export type UserPropertyClientCreateOrConnectWithoutUser_tracked_agencyInput = {
+    where: UserPropertyClientWhereUniqueInput
+    create: XOR<UserPropertyClientCreateWithoutUser_tracked_agencyInput, UserPropertyClientUncheckedCreateWithoutUser_tracked_agencyInput>
+  }
+
+  export type UserPropertyClientCreateManyUser_tracked_agencyInputEnvelope = {
+    data: UserPropertyClientCreateManyUser_tracked_agencyInput | UserPropertyClientCreateManyUser_tracked_agencyInput[]
+    skipDuplicates?: boolean
+  }
+
   export type UserTrackedAgencyIntegrationLinkCreateWithoutUser_tracked_agencyInput = {
     id?: string
     integration_client_id?: number | null
@@ -68301,6 +70506,7 @@ export namespace Prisma {
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     saved_properties?: UserPropertyUpdateManyWithoutUserNestedInput
+    property_clients?: UserPropertyClientUpdateManyWithoutUserNestedInput
     user_integrations?: UserIntegrationUpdateManyWithoutUserNestedInput
     user_integration_settings?: UserIntegrationSettingsUpdateManyWithoutUserNestedInput
     integration_properties?: IntegrationPropertyUpdateManyWithoutUserNestedInput
@@ -68316,6 +70522,7 @@ export namespace Prisma {
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     saved_properties?: UserPropertyUncheckedUpdateManyWithoutUserNestedInput
+    property_clients?: UserPropertyClientUncheckedUpdateManyWithoutUserNestedInput
     user_integrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
     user_integration_settings?: UserIntegrationSettingsUncheckedUpdateManyWithoutUserNestedInput
     integration_properties?: IntegrationPropertyUncheckedUpdateManyWithoutUserNestedInput
@@ -68401,6 +70608,22 @@ export namespace Prisma {
   export type CrawlRunUpdateManyWithWhereWithoutUser_tracked_agencyInput = {
     where: CrawlRunScalarWhereInput
     data: XOR<CrawlRunUpdateManyMutationInput, CrawlRunUncheckedUpdateManyWithoutUser_tracked_agencyInput>
+  }
+
+  export type UserPropertyClientUpsertWithWhereUniqueWithoutUser_tracked_agencyInput = {
+    where: UserPropertyClientWhereUniqueInput
+    update: XOR<UserPropertyClientUpdateWithoutUser_tracked_agencyInput, UserPropertyClientUncheckedUpdateWithoutUser_tracked_agencyInput>
+    create: XOR<UserPropertyClientCreateWithoutUser_tracked_agencyInput, UserPropertyClientUncheckedCreateWithoutUser_tracked_agencyInput>
+  }
+
+  export type UserPropertyClientUpdateWithWhereUniqueWithoutUser_tracked_agencyInput = {
+    where: UserPropertyClientWhereUniqueInput
+    data: XOR<UserPropertyClientUpdateWithoutUser_tracked_agencyInput, UserPropertyClientUncheckedUpdateWithoutUser_tracked_agencyInput>
+  }
+
+  export type UserPropertyClientUpdateManyWithWhereWithoutUser_tracked_agencyInput = {
+    where: UserPropertyClientScalarWhereInput
+    data: XOR<UserPropertyClientUpdateManyMutationInput, UserPropertyClientUncheckedUpdateManyWithoutUser_tracked_agencyInput>
   }
 
   export type UserTrackedAgencyIntegrationLinkUpsertWithoutUser_tracked_agencyInput = {
@@ -68504,6 +70727,7 @@ export namespace Prisma {
     user: UserCreateNestedOneWithoutTracked_agenciesInput
     source_agency: SourceAgencyCreateNestedOneWithoutUser_tracked_agenciesInput
     crawl_runs?: CrawlRunCreateNestedManyWithoutUser_tracked_agencyInput
+    property_clients?: UserPropertyClientCreateNestedManyWithoutUser_tracked_agencyInput
     content_publishing_config?: ContentPublishingConfigCreateNestedOneWithoutUser_tracked_agencyInput
     cost_logs?: CostLogCreateNestedManyWithoutUser_tracked_agencyInput
   }
@@ -68529,6 +70753,7 @@ export namespace Prisma {
     created_at?: Date | string
     updated_at?: Date | string
     crawl_runs?: CrawlRunUncheckedCreateNestedManyWithoutUser_tracked_agencyInput
+    property_clients?: UserPropertyClientUncheckedCreateNestedManyWithoutUser_tracked_agencyInput
     content_publishing_config?: ContentPublishingConfigUncheckedCreateNestedOneWithoutUser_tracked_agencyInput
     cost_logs?: CostLogUncheckedCreateNestedManyWithoutUser_tracked_agencyInput
   }
@@ -68611,6 +70836,7 @@ export namespace Prisma {
     user?: UserUpdateOneRequiredWithoutTracked_agenciesNestedInput
     source_agency?: SourceAgencyUpdateOneRequiredWithoutUser_tracked_agenciesNestedInput
     crawl_runs?: CrawlRunUpdateManyWithoutUser_tracked_agencyNestedInput
+    property_clients?: UserPropertyClientUpdateManyWithoutUser_tracked_agencyNestedInput
     content_publishing_config?: ContentPublishingConfigUpdateOneWithoutUser_tracked_agencyNestedInput
     cost_logs?: CostLogUpdateManyWithoutUser_tracked_agencyNestedInput
   }
@@ -68636,6 +70862,7 @@ export namespace Prisma {
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     crawl_runs?: CrawlRunUncheckedUpdateManyWithoutUser_tracked_agencyNestedInput
+    property_clients?: UserPropertyClientUncheckedUpdateManyWithoutUser_tracked_agencyNestedInput
     content_publishing_config?: ContentPublishingConfigUncheckedUpdateOneWithoutUser_tracked_agencyNestedInput
     cost_logs?: CostLogUncheckedUpdateManyWithoutUser_tracked_agencyNestedInput
   }
@@ -69844,6 +72071,7 @@ export namespace Prisma {
     updated_at?: Date | string
     user: UserCreateNestedOneWithoutTracked_agenciesInput
     source_agency: SourceAgencyCreateNestedOneWithoutUser_tracked_agenciesInput
+    property_clients?: UserPropertyClientCreateNestedManyWithoutUser_tracked_agencyInput
     integration_link?: UserTrackedAgencyIntegrationLinkCreateNestedOneWithoutUser_tracked_agencyInput
     content_publishing_config?: ContentPublishingConfigCreateNestedOneWithoutUser_tracked_agencyInput
     cost_logs?: CostLogCreateNestedManyWithoutUser_tracked_agencyInput
@@ -69869,6 +72097,7 @@ export namespace Prisma {
     max_image_count?: number | null
     created_at?: Date | string
     updated_at?: Date | string
+    property_clients?: UserPropertyClientUncheckedCreateNestedManyWithoutUser_tracked_agencyInput
     integration_link?: UserTrackedAgencyIntegrationLinkUncheckedCreateNestedOneWithoutUser_tracked_agencyInput
     content_publishing_config?: ContentPublishingConfigUncheckedCreateNestedOneWithoutUser_tracked_agencyInput
     cost_logs?: CostLogUncheckedCreateNestedManyWithoutUser_tracked_agencyInput
@@ -70361,6 +72590,7 @@ export namespace Prisma {
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutTracked_agenciesNestedInput
     source_agency?: SourceAgencyUpdateOneRequiredWithoutUser_tracked_agenciesNestedInput
+    property_clients?: UserPropertyClientUpdateManyWithoutUser_tracked_agencyNestedInput
     integration_link?: UserTrackedAgencyIntegrationLinkUpdateOneWithoutUser_tracked_agencyNestedInput
     content_publishing_config?: ContentPublishingConfigUpdateOneWithoutUser_tracked_agencyNestedInput
     cost_logs?: CostLogUpdateManyWithoutUser_tracked_agencyNestedInput
@@ -70386,6 +72616,7 @@ export namespace Prisma {
     max_image_count?: NullableIntFieldUpdateOperationsInput | number | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    property_clients?: UserPropertyClientUncheckedUpdateManyWithoutUser_tracked_agencyNestedInput
     integration_link?: UserTrackedAgencyIntegrationLinkUncheckedUpdateOneWithoutUser_tracked_agencyNestedInput
     content_publishing_config?: ContentPublishingConfigUncheckedUpdateOneWithoutUser_tracked_agencyNestedInput
     cost_logs?: CostLogUncheckedUpdateManyWithoutUser_tracked_agencyNestedInput
@@ -72356,6 +74587,7 @@ export namespace Prisma {
     integration_properties?: IntegrationPropertyCreateNestedManyWithoutUser_propertyInput
     localized_contents?: PropertyLocalizedContentCreateNestedManyWithoutUser_propertyInput
     cost_logs?: CostLogCreateNestedManyWithoutUser_propertyInput
+    clients?: UserPropertyClientCreateNestedManyWithoutUser_propertyInput
   }
 
   export type UserPropertyUncheckedCreateWithoutCanonical_propertyInput = {
@@ -72410,6 +74642,7 @@ export namespace Prisma {
     integration_properties?: IntegrationPropertyUncheckedCreateNestedManyWithoutUser_propertyInput
     localized_contents?: PropertyLocalizedContentUncheckedCreateNestedManyWithoutUser_propertyInput
     cost_logs?: CostLogUncheckedCreateNestedManyWithoutUser_propertyInput
+    clients?: UserPropertyClientUncheckedCreateNestedManyWithoutUser_propertyInput
   }
 
   export type UserPropertyCreateOrConnectWithoutCanonical_propertyInput = {
@@ -73185,6 +75418,7 @@ export namespace Prisma {
     created_at?: Date | string
     updated_at?: Date | string
     tracked_agencies?: UserTrackedAgencyCreateNestedManyWithoutUserInput
+    property_clients?: UserPropertyClientCreateNestedManyWithoutUserInput
     user_integrations?: UserIntegrationCreateNestedManyWithoutUserInput
     user_integration_settings?: UserIntegrationSettingsCreateNestedManyWithoutUserInput
     integration_properties?: IntegrationPropertyCreateNestedManyWithoutUserInput
@@ -73200,6 +75434,7 @@ export namespace Prisma {
     created_at?: Date | string
     updated_at?: Date | string
     tracked_agencies?: UserTrackedAgencyUncheckedCreateNestedManyWithoutUserInput
+    property_clients?: UserPropertyClientUncheckedCreateNestedManyWithoutUserInput
     user_integrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
     user_integration_settings?: UserIntegrationSettingsUncheckedCreateNestedManyWithoutUserInput
     integration_properties?: IntegrationPropertyUncheckedCreateNestedManyWithoutUserInput
@@ -73426,6 +75661,56 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type UserPropertyClientCreateWithoutUser_propertyInput = {
+    id?: string
+    source_agency_id?: string | null
+    property_id: string
+    internal_id?: string | null
+    property_title: string
+    source_url?: string | null
+    name: string
+    phone?: string | null
+    email?: string | null
+    notes?: string | null
+    shown_at?: Date | string
+    delisted_at?: Date | string | null
+    delisted_ack_at?: Date | string | null
+    created_at?: Date | string
+    updated_at?: Date | string
+    user: UserCreateNestedOneWithoutProperty_clientsInput
+    user_tracked_agency?: UserTrackedAgencyCreateNestedOneWithoutProperty_clientsInput
+  }
+
+  export type UserPropertyClientUncheckedCreateWithoutUser_propertyInput = {
+    id?: string
+    user_id: string
+    user_tracked_agency_id?: string | null
+    source_agency_id?: string | null
+    property_id: string
+    internal_id?: string | null
+    property_title: string
+    source_url?: string | null
+    name: string
+    phone?: string | null
+    email?: string | null
+    notes?: string | null
+    shown_at?: Date | string
+    delisted_at?: Date | string | null
+    delisted_ack_at?: Date | string | null
+    created_at?: Date | string
+    updated_at?: Date | string
+  }
+
+  export type UserPropertyClientCreateOrConnectWithoutUser_propertyInput = {
+    where: UserPropertyClientWhereUniqueInput
+    create: XOR<UserPropertyClientCreateWithoutUser_propertyInput, UserPropertyClientUncheckedCreateWithoutUser_propertyInput>
+  }
+
+  export type UserPropertyClientCreateManyUser_propertyInputEnvelope = {
+    data: UserPropertyClientCreateManyUser_propertyInput | UserPropertyClientCreateManyUser_propertyInput[]
+    skipDuplicates?: boolean
+  }
+
   export type UserUpsertWithoutSaved_propertiesInput = {
     update: XOR<UserUpdateWithoutSaved_propertiesInput, UserUncheckedUpdateWithoutSaved_propertiesInput>
     create: XOR<UserCreateWithoutSaved_propertiesInput, UserUncheckedCreateWithoutSaved_propertiesInput>
@@ -73446,6 +75731,7 @@ export namespace Prisma {
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     tracked_agencies?: UserTrackedAgencyUpdateManyWithoutUserNestedInput
+    property_clients?: UserPropertyClientUpdateManyWithoutUserNestedInput
     user_integrations?: UserIntegrationUpdateManyWithoutUserNestedInput
     user_integration_settings?: UserIntegrationSettingsUpdateManyWithoutUserNestedInput
     integration_properties?: IntegrationPropertyUpdateManyWithoutUserNestedInput
@@ -73461,6 +75747,7 @@ export namespace Prisma {
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     tracked_agencies?: UserTrackedAgencyUncheckedUpdateManyWithoutUserNestedInput
+    property_clients?: UserPropertyClientUncheckedUpdateManyWithoutUserNestedInput
     user_integrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
     user_integration_settings?: UserIntegrationSettingsUncheckedUpdateManyWithoutUserNestedInput
     integration_properties?: IntegrationPropertyUncheckedUpdateManyWithoutUserNestedInput
@@ -73631,6 +75918,458 @@ export namespace Prisma {
     data: XOR<CostLogUpdateManyMutationInput, CostLogUncheckedUpdateManyWithoutUser_propertyInput>
   }
 
+  export type UserPropertyClientUpsertWithWhereUniqueWithoutUser_propertyInput = {
+    where: UserPropertyClientWhereUniqueInput
+    update: XOR<UserPropertyClientUpdateWithoutUser_propertyInput, UserPropertyClientUncheckedUpdateWithoutUser_propertyInput>
+    create: XOR<UserPropertyClientCreateWithoutUser_propertyInput, UserPropertyClientUncheckedCreateWithoutUser_propertyInput>
+  }
+
+  export type UserPropertyClientUpdateWithWhereUniqueWithoutUser_propertyInput = {
+    where: UserPropertyClientWhereUniqueInput
+    data: XOR<UserPropertyClientUpdateWithoutUser_propertyInput, UserPropertyClientUncheckedUpdateWithoutUser_propertyInput>
+  }
+
+  export type UserPropertyClientUpdateManyWithWhereWithoutUser_propertyInput = {
+    where: UserPropertyClientScalarWhereInput
+    data: XOR<UserPropertyClientUpdateManyMutationInput, UserPropertyClientUncheckedUpdateManyWithoutUser_propertyInput>
+  }
+
+  export type UserCreateWithoutProperty_clientsInput = {
+    id?: string
+    email: string
+    phone?: string | null
+    password: string
+    role: $Enums.AuthRole
+    created_at?: Date | string
+    updated_at?: Date | string
+    tracked_agencies?: UserTrackedAgencyCreateNestedManyWithoutUserInput
+    saved_properties?: UserPropertyCreateNestedManyWithoutUserInput
+    user_integrations?: UserIntegrationCreateNestedManyWithoutUserInput
+    user_integration_settings?: UserIntegrationSettingsCreateNestedManyWithoutUserInput
+    integration_properties?: IntegrationPropertyCreateNestedManyWithoutUserInput
+    cost_logs?: CostLogCreateNestedManyWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutProperty_clientsInput = {
+    id?: string
+    email: string
+    phone?: string | null
+    password: string
+    role: $Enums.AuthRole
+    created_at?: Date | string
+    updated_at?: Date | string
+    tracked_agencies?: UserTrackedAgencyUncheckedCreateNestedManyWithoutUserInput
+    saved_properties?: UserPropertyUncheckedCreateNestedManyWithoutUserInput
+    user_integrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
+    user_integration_settings?: UserIntegrationSettingsUncheckedCreateNestedManyWithoutUserInput
+    integration_properties?: IntegrationPropertyUncheckedCreateNestedManyWithoutUserInput
+    cost_logs?: CostLogUncheckedCreateNestedManyWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutProperty_clientsInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutProperty_clientsInput, UserUncheckedCreateWithoutProperty_clientsInput>
+  }
+
+  export type UserPropertyCreateWithoutClientsInput = {
+    id?: string
+    property_id: string
+    internal_id?: string | null
+    integration_property_id?: string | null
+    title: string
+    description?: string | null
+    listing_type?: $Enums.ListingType
+    property_type?: $Enums.PropertyType
+    status?: $Enums.PropertyStatus
+    price?: Decimal | DecimalJsLike | number | string | null
+    currency?: string | null
+    city?: string | null
+    district?: string | null
+    address?: string | null
+    postal_code?: string | null
+    country?: string | null
+    latitude?: Decimal | DecimalJsLike | number | string | null
+    longitude?: Decimal | DecimalJsLike | number | string | null
+    square_meters?: Decimal | DecimalJsLike | number | string | null
+    bedrooms?: number | null
+    bathrooms?: number | null
+    floor?: string | null
+    construction_year?: number | null
+    renovation_year?: number | null
+    features?: NullableJsonNullValueInput | InputJsonValue
+    images?: NullableJsonNullValueInput | InputJsonValue
+    images_curated_at?: Date | string | null
+    images_curated_cap?: number | null
+    images_curated_source_seen?: NullableJsonNullValueInput | InputJsonValue
+    normalized_data?: NullableJsonNullValueInput | InputJsonValue
+    estateweb_type_id?: number | null
+    estateweb_location_id?: number | null
+    estateweb_scope_id?: number | null
+    cms_fields?: NullableJsonNullValueInput | InputJsonValue
+    cms_metadata?: NullableJsonNullValueInput | InputJsonValue
+    video_url?: string | null
+    distance_airport?: string | null
+    distance_port?: string | null
+    distance_beach?: string | null
+    price_start?: Decimal | DecimalJsLike | number | string | null
+    price_web?: Decimal | DecimalJsLike | number | string | null
+    duplicate_group_id?: string | null
+    is_modified?: boolean
+    pending_crm_update?: boolean
+    last_synced_at?: Date | string | null
+    created_at?: Date | string
+    updated_at?: Date | string
+    user: UserCreateNestedOneWithoutSaved_propertiesInput
+    canonical_property: PropertyCreateNestedOneWithoutUser_property_copiesInput
+    integration_properties?: IntegrationPropertyCreateNestedManyWithoutUser_propertyInput
+    localized_contents?: PropertyLocalizedContentCreateNestedManyWithoutUser_propertyInput
+    cost_logs?: CostLogCreateNestedManyWithoutUser_propertyInput
+  }
+
+  export type UserPropertyUncheckedCreateWithoutClientsInput = {
+    id?: string
+    user_id: string
+    canonical_property_id: string
+    property_id: string
+    internal_id?: string | null
+    integration_property_id?: string | null
+    title: string
+    description?: string | null
+    listing_type?: $Enums.ListingType
+    property_type?: $Enums.PropertyType
+    status?: $Enums.PropertyStatus
+    price?: Decimal | DecimalJsLike | number | string | null
+    currency?: string | null
+    city?: string | null
+    district?: string | null
+    address?: string | null
+    postal_code?: string | null
+    country?: string | null
+    latitude?: Decimal | DecimalJsLike | number | string | null
+    longitude?: Decimal | DecimalJsLike | number | string | null
+    square_meters?: Decimal | DecimalJsLike | number | string | null
+    bedrooms?: number | null
+    bathrooms?: number | null
+    floor?: string | null
+    construction_year?: number | null
+    renovation_year?: number | null
+    features?: NullableJsonNullValueInput | InputJsonValue
+    images?: NullableJsonNullValueInput | InputJsonValue
+    images_curated_at?: Date | string | null
+    images_curated_cap?: number | null
+    images_curated_source_seen?: NullableJsonNullValueInput | InputJsonValue
+    normalized_data?: NullableJsonNullValueInput | InputJsonValue
+    estateweb_type_id?: number | null
+    estateweb_location_id?: number | null
+    estateweb_scope_id?: number | null
+    cms_fields?: NullableJsonNullValueInput | InputJsonValue
+    cms_metadata?: NullableJsonNullValueInput | InputJsonValue
+    video_url?: string | null
+    distance_airport?: string | null
+    distance_port?: string | null
+    distance_beach?: string | null
+    price_start?: Decimal | DecimalJsLike | number | string | null
+    price_web?: Decimal | DecimalJsLike | number | string | null
+    duplicate_group_id?: string | null
+    is_modified?: boolean
+    pending_crm_update?: boolean
+    last_synced_at?: Date | string | null
+    created_at?: Date | string
+    updated_at?: Date | string
+    integration_properties?: IntegrationPropertyUncheckedCreateNestedManyWithoutUser_propertyInput
+    localized_contents?: PropertyLocalizedContentUncheckedCreateNestedManyWithoutUser_propertyInput
+    cost_logs?: CostLogUncheckedCreateNestedManyWithoutUser_propertyInput
+  }
+
+  export type UserPropertyCreateOrConnectWithoutClientsInput = {
+    where: UserPropertyWhereUniqueInput
+    create: XOR<UserPropertyCreateWithoutClientsInput, UserPropertyUncheckedCreateWithoutClientsInput>
+  }
+
+  export type UserTrackedAgencyCreateWithoutProperty_clientsInput = {
+    id?: string
+    enabled?: boolean
+    concurrent_insertions?: number
+    insertion_interval_seconds?: number
+    max_properties?: number | null
+    text_truncate_pieces?: UserTrackedAgencyCreatetext_truncate_piecesInput | string[]
+    track_new_listings?: boolean
+    track_removed_listings?: boolean
+    track_updated_listings?: boolean
+    auto_update_to_crm?: boolean
+    cms_update_on_hash_only?: boolean
+    remove_watermark?: boolean
+    watermark_image_count?: number
+    watermark_manual_selection?: boolean
+    max_image_count?: number | null
+    created_at?: Date | string
+    updated_at?: Date | string
+    user: UserCreateNestedOneWithoutTracked_agenciesInput
+    source_agency: SourceAgencyCreateNestedOneWithoutUser_tracked_agenciesInput
+    crawl_runs?: CrawlRunCreateNestedManyWithoutUser_tracked_agencyInput
+    integration_link?: UserTrackedAgencyIntegrationLinkCreateNestedOneWithoutUser_tracked_agencyInput
+    content_publishing_config?: ContentPublishingConfigCreateNestedOneWithoutUser_tracked_agencyInput
+    cost_logs?: CostLogCreateNestedManyWithoutUser_tracked_agencyInput
+  }
+
+  export type UserTrackedAgencyUncheckedCreateWithoutProperty_clientsInput = {
+    id?: string
+    user_id: string
+    source_agency_id: string
+    enabled?: boolean
+    concurrent_insertions?: number
+    insertion_interval_seconds?: number
+    max_properties?: number | null
+    text_truncate_pieces?: UserTrackedAgencyCreatetext_truncate_piecesInput | string[]
+    track_new_listings?: boolean
+    track_removed_listings?: boolean
+    track_updated_listings?: boolean
+    auto_update_to_crm?: boolean
+    cms_update_on_hash_only?: boolean
+    remove_watermark?: boolean
+    watermark_image_count?: number
+    watermark_manual_selection?: boolean
+    max_image_count?: number | null
+    created_at?: Date | string
+    updated_at?: Date | string
+    crawl_runs?: CrawlRunUncheckedCreateNestedManyWithoutUser_tracked_agencyInput
+    integration_link?: UserTrackedAgencyIntegrationLinkUncheckedCreateNestedOneWithoutUser_tracked_agencyInput
+    content_publishing_config?: ContentPublishingConfigUncheckedCreateNestedOneWithoutUser_tracked_agencyInput
+    cost_logs?: CostLogUncheckedCreateNestedManyWithoutUser_tracked_agencyInput
+  }
+
+  export type UserTrackedAgencyCreateOrConnectWithoutProperty_clientsInput = {
+    where: UserTrackedAgencyWhereUniqueInput
+    create: XOR<UserTrackedAgencyCreateWithoutProperty_clientsInput, UserTrackedAgencyUncheckedCreateWithoutProperty_clientsInput>
+  }
+
+  export type UserUpsertWithoutProperty_clientsInput = {
+    update: XOR<UserUpdateWithoutProperty_clientsInput, UserUncheckedUpdateWithoutProperty_clientsInput>
+    create: XOR<UserCreateWithoutProperty_clientsInput, UserUncheckedCreateWithoutProperty_clientsInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutProperty_clientsInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutProperty_clientsInput, UserUncheckedUpdateWithoutProperty_clientsInput>
+  }
+
+  export type UserUpdateWithoutProperty_clientsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    password?: StringFieldUpdateOperationsInput | string
+    role?: EnumAuthRoleFieldUpdateOperationsInput | $Enums.AuthRole
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    tracked_agencies?: UserTrackedAgencyUpdateManyWithoutUserNestedInput
+    saved_properties?: UserPropertyUpdateManyWithoutUserNestedInput
+    user_integrations?: UserIntegrationUpdateManyWithoutUserNestedInput
+    user_integration_settings?: UserIntegrationSettingsUpdateManyWithoutUserNestedInput
+    integration_properties?: IntegrationPropertyUpdateManyWithoutUserNestedInput
+    cost_logs?: CostLogUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutProperty_clientsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    password?: StringFieldUpdateOperationsInput | string
+    role?: EnumAuthRoleFieldUpdateOperationsInput | $Enums.AuthRole
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    tracked_agencies?: UserTrackedAgencyUncheckedUpdateManyWithoutUserNestedInput
+    saved_properties?: UserPropertyUncheckedUpdateManyWithoutUserNestedInput
+    user_integrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
+    user_integration_settings?: UserIntegrationSettingsUncheckedUpdateManyWithoutUserNestedInput
+    integration_properties?: IntegrationPropertyUncheckedUpdateManyWithoutUserNestedInput
+    cost_logs?: CostLogUncheckedUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserPropertyUpsertWithoutClientsInput = {
+    update: XOR<UserPropertyUpdateWithoutClientsInput, UserPropertyUncheckedUpdateWithoutClientsInput>
+    create: XOR<UserPropertyCreateWithoutClientsInput, UserPropertyUncheckedCreateWithoutClientsInput>
+    where?: UserPropertyWhereInput
+  }
+
+  export type UserPropertyUpdateToOneWithWhereWithoutClientsInput = {
+    where?: UserPropertyWhereInput
+    data: XOR<UserPropertyUpdateWithoutClientsInput, UserPropertyUncheckedUpdateWithoutClientsInput>
+  }
+
+  export type UserPropertyUpdateWithoutClientsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    property_id?: StringFieldUpdateOperationsInput | string
+    internal_id?: NullableStringFieldUpdateOperationsInput | string | null
+    integration_property_id?: NullableStringFieldUpdateOperationsInput | string | null
+    title?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    listing_type?: EnumListingTypeFieldUpdateOperationsInput | $Enums.ListingType
+    property_type?: EnumPropertyTypeFieldUpdateOperationsInput | $Enums.PropertyType
+    status?: EnumPropertyStatusFieldUpdateOperationsInput | $Enums.PropertyStatus
+    price?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    currency?: NullableStringFieldUpdateOperationsInput | string | null
+    city?: NullableStringFieldUpdateOperationsInput | string | null
+    district?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: NullableStringFieldUpdateOperationsInput | string | null
+    postal_code?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    latitude?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    longitude?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    square_meters?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    bedrooms?: NullableIntFieldUpdateOperationsInput | number | null
+    bathrooms?: NullableIntFieldUpdateOperationsInput | number | null
+    floor?: NullableStringFieldUpdateOperationsInput | string | null
+    construction_year?: NullableIntFieldUpdateOperationsInput | number | null
+    renovation_year?: NullableIntFieldUpdateOperationsInput | number | null
+    features?: NullableJsonNullValueInput | InputJsonValue
+    images?: NullableJsonNullValueInput | InputJsonValue
+    images_curated_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    images_curated_cap?: NullableIntFieldUpdateOperationsInput | number | null
+    images_curated_source_seen?: NullableJsonNullValueInput | InputJsonValue
+    normalized_data?: NullableJsonNullValueInput | InputJsonValue
+    estateweb_type_id?: NullableIntFieldUpdateOperationsInput | number | null
+    estateweb_location_id?: NullableIntFieldUpdateOperationsInput | number | null
+    estateweb_scope_id?: NullableIntFieldUpdateOperationsInput | number | null
+    cms_fields?: NullableJsonNullValueInput | InputJsonValue
+    cms_metadata?: NullableJsonNullValueInput | InputJsonValue
+    video_url?: NullableStringFieldUpdateOperationsInput | string | null
+    distance_airport?: NullableStringFieldUpdateOperationsInput | string | null
+    distance_port?: NullableStringFieldUpdateOperationsInput | string | null
+    distance_beach?: NullableStringFieldUpdateOperationsInput | string | null
+    price_start?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    price_web?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    duplicate_group_id?: NullableStringFieldUpdateOperationsInput | string | null
+    is_modified?: BoolFieldUpdateOperationsInput | boolean
+    pending_crm_update?: BoolFieldUpdateOperationsInput | boolean
+    last_synced_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutSaved_propertiesNestedInput
+    canonical_property?: PropertyUpdateOneRequiredWithoutUser_property_copiesNestedInput
+    integration_properties?: IntegrationPropertyUpdateManyWithoutUser_propertyNestedInput
+    localized_contents?: PropertyLocalizedContentUpdateManyWithoutUser_propertyNestedInput
+    cost_logs?: CostLogUpdateManyWithoutUser_propertyNestedInput
+  }
+
+  export type UserPropertyUncheckedUpdateWithoutClientsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    user_id?: StringFieldUpdateOperationsInput | string
+    canonical_property_id?: StringFieldUpdateOperationsInput | string
+    property_id?: StringFieldUpdateOperationsInput | string
+    internal_id?: NullableStringFieldUpdateOperationsInput | string | null
+    integration_property_id?: NullableStringFieldUpdateOperationsInput | string | null
+    title?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    listing_type?: EnumListingTypeFieldUpdateOperationsInput | $Enums.ListingType
+    property_type?: EnumPropertyTypeFieldUpdateOperationsInput | $Enums.PropertyType
+    status?: EnumPropertyStatusFieldUpdateOperationsInput | $Enums.PropertyStatus
+    price?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    currency?: NullableStringFieldUpdateOperationsInput | string | null
+    city?: NullableStringFieldUpdateOperationsInput | string | null
+    district?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: NullableStringFieldUpdateOperationsInput | string | null
+    postal_code?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    latitude?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    longitude?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    square_meters?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    bedrooms?: NullableIntFieldUpdateOperationsInput | number | null
+    bathrooms?: NullableIntFieldUpdateOperationsInput | number | null
+    floor?: NullableStringFieldUpdateOperationsInput | string | null
+    construction_year?: NullableIntFieldUpdateOperationsInput | number | null
+    renovation_year?: NullableIntFieldUpdateOperationsInput | number | null
+    features?: NullableJsonNullValueInput | InputJsonValue
+    images?: NullableJsonNullValueInput | InputJsonValue
+    images_curated_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    images_curated_cap?: NullableIntFieldUpdateOperationsInput | number | null
+    images_curated_source_seen?: NullableJsonNullValueInput | InputJsonValue
+    normalized_data?: NullableJsonNullValueInput | InputJsonValue
+    estateweb_type_id?: NullableIntFieldUpdateOperationsInput | number | null
+    estateweb_location_id?: NullableIntFieldUpdateOperationsInput | number | null
+    estateweb_scope_id?: NullableIntFieldUpdateOperationsInput | number | null
+    cms_fields?: NullableJsonNullValueInput | InputJsonValue
+    cms_metadata?: NullableJsonNullValueInput | InputJsonValue
+    video_url?: NullableStringFieldUpdateOperationsInput | string | null
+    distance_airport?: NullableStringFieldUpdateOperationsInput | string | null
+    distance_port?: NullableStringFieldUpdateOperationsInput | string | null
+    distance_beach?: NullableStringFieldUpdateOperationsInput | string | null
+    price_start?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    price_web?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    duplicate_group_id?: NullableStringFieldUpdateOperationsInput | string | null
+    is_modified?: BoolFieldUpdateOperationsInput | boolean
+    pending_crm_update?: BoolFieldUpdateOperationsInput | boolean
+    last_synced_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    integration_properties?: IntegrationPropertyUncheckedUpdateManyWithoutUser_propertyNestedInput
+    localized_contents?: PropertyLocalizedContentUncheckedUpdateManyWithoutUser_propertyNestedInput
+    cost_logs?: CostLogUncheckedUpdateManyWithoutUser_propertyNestedInput
+  }
+
+  export type UserTrackedAgencyUpsertWithoutProperty_clientsInput = {
+    update: XOR<UserTrackedAgencyUpdateWithoutProperty_clientsInput, UserTrackedAgencyUncheckedUpdateWithoutProperty_clientsInput>
+    create: XOR<UserTrackedAgencyCreateWithoutProperty_clientsInput, UserTrackedAgencyUncheckedCreateWithoutProperty_clientsInput>
+    where?: UserTrackedAgencyWhereInput
+  }
+
+  export type UserTrackedAgencyUpdateToOneWithWhereWithoutProperty_clientsInput = {
+    where?: UserTrackedAgencyWhereInput
+    data: XOR<UserTrackedAgencyUpdateWithoutProperty_clientsInput, UserTrackedAgencyUncheckedUpdateWithoutProperty_clientsInput>
+  }
+
+  export type UserTrackedAgencyUpdateWithoutProperty_clientsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    enabled?: BoolFieldUpdateOperationsInput | boolean
+    concurrent_insertions?: IntFieldUpdateOperationsInput | number
+    insertion_interval_seconds?: IntFieldUpdateOperationsInput | number
+    max_properties?: NullableIntFieldUpdateOperationsInput | number | null
+    text_truncate_pieces?: UserTrackedAgencyUpdatetext_truncate_piecesInput | string[]
+    track_new_listings?: BoolFieldUpdateOperationsInput | boolean
+    track_removed_listings?: BoolFieldUpdateOperationsInput | boolean
+    track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
+    auto_update_to_crm?: BoolFieldUpdateOperationsInput | boolean
+    cms_update_on_hash_only?: BoolFieldUpdateOperationsInput | boolean
+    remove_watermark?: BoolFieldUpdateOperationsInput | boolean
+    watermark_image_count?: IntFieldUpdateOperationsInput | number
+    watermark_manual_selection?: BoolFieldUpdateOperationsInput | boolean
+    max_image_count?: NullableIntFieldUpdateOperationsInput | number | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutTracked_agenciesNestedInput
+    source_agency?: SourceAgencyUpdateOneRequiredWithoutUser_tracked_agenciesNestedInput
+    crawl_runs?: CrawlRunUpdateManyWithoutUser_tracked_agencyNestedInput
+    integration_link?: UserTrackedAgencyIntegrationLinkUpdateOneWithoutUser_tracked_agencyNestedInput
+    content_publishing_config?: ContentPublishingConfigUpdateOneWithoutUser_tracked_agencyNestedInput
+    cost_logs?: CostLogUpdateManyWithoutUser_tracked_agencyNestedInput
+  }
+
+  export type UserTrackedAgencyUncheckedUpdateWithoutProperty_clientsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    user_id?: StringFieldUpdateOperationsInput | string
+    source_agency_id?: StringFieldUpdateOperationsInput | string
+    enabled?: BoolFieldUpdateOperationsInput | boolean
+    concurrent_insertions?: IntFieldUpdateOperationsInput | number
+    insertion_interval_seconds?: IntFieldUpdateOperationsInput | number
+    max_properties?: NullableIntFieldUpdateOperationsInput | number | null
+    text_truncate_pieces?: UserTrackedAgencyUpdatetext_truncate_piecesInput | string[]
+    track_new_listings?: BoolFieldUpdateOperationsInput | boolean
+    track_removed_listings?: BoolFieldUpdateOperationsInput | boolean
+    track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
+    auto_update_to_crm?: BoolFieldUpdateOperationsInput | boolean
+    cms_update_on_hash_only?: BoolFieldUpdateOperationsInput | boolean
+    remove_watermark?: BoolFieldUpdateOperationsInput | boolean
+    watermark_image_count?: IntFieldUpdateOperationsInput | number
+    watermark_manual_selection?: BoolFieldUpdateOperationsInput | boolean
+    max_image_count?: NullableIntFieldUpdateOperationsInput | number | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    crawl_runs?: CrawlRunUncheckedUpdateManyWithoutUser_tracked_agencyNestedInput
+    integration_link?: UserTrackedAgencyIntegrationLinkUncheckedUpdateOneWithoutUser_tracked_agencyNestedInput
+    content_publishing_config?: ContentPublishingConfigUncheckedUpdateOneWithoutUser_tracked_agencyNestedInput
+    cost_logs?: CostLogUncheckedUpdateManyWithoutUser_tracked_agencyNestedInput
+  }
+
   export type UserTrackedAgencyCreateWithoutContent_publishing_configInput = {
     id?: string
     enabled?: boolean
@@ -73652,6 +76391,7 @@ export namespace Prisma {
     user: UserCreateNestedOneWithoutTracked_agenciesInput
     source_agency: SourceAgencyCreateNestedOneWithoutUser_tracked_agenciesInput
     crawl_runs?: CrawlRunCreateNestedManyWithoutUser_tracked_agencyInput
+    property_clients?: UserPropertyClientCreateNestedManyWithoutUser_tracked_agencyInput
     integration_link?: UserTrackedAgencyIntegrationLinkCreateNestedOneWithoutUser_tracked_agencyInput
     cost_logs?: CostLogCreateNestedManyWithoutUser_tracked_agencyInput
   }
@@ -73677,6 +76417,7 @@ export namespace Prisma {
     created_at?: Date | string
     updated_at?: Date | string
     crawl_runs?: CrawlRunUncheckedCreateNestedManyWithoutUser_tracked_agencyInput
+    property_clients?: UserPropertyClientUncheckedCreateNestedManyWithoutUser_tracked_agencyInput
     integration_link?: UserTrackedAgencyIntegrationLinkUncheckedCreateNestedOneWithoutUser_tracked_agencyInput
     cost_logs?: CostLogUncheckedCreateNestedManyWithoutUser_tracked_agencyInput
   }
@@ -73830,6 +76571,7 @@ export namespace Prisma {
     user?: UserUpdateOneRequiredWithoutTracked_agenciesNestedInput
     source_agency?: SourceAgencyUpdateOneRequiredWithoutUser_tracked_agenciesNestedInput
     crawl_runs?: CrawlRunUpdateManyWithoutUser_tracked_agencyNestedInput
+    property_clients?: UserPropertyClientUpdateManyWithoutUser_tracked_agencyNestedInput
     integration_link?: UserTrackedAgencyIntegrationLinkUpdateOneWithoutUser_tracked_agencyNestedInput
     cost_logs?: CostLogUpdateManyWithoutUser_tracked_agencyNestedInput
   }
@@ -73855,6 +76597,7 @@ export namespace Prisma {
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     crawl_runs?: CrawlRunUncheckedUpdateManyWithoutUser_tracked_agencyNestedInput
+    property_clients?: UserPropertyClientUncheckedUpdateManyWithoutUser_tracked_agencyNestedInput
     integration_link?: UserTrackedAgencyIntegrationLinkUncheckedUpdateOneWithoutUser_tracked_agencyNestedInput
     cost_logs?: CostLogUncheckedUpdateManyWithoutUser_tracked_agencyNestedInput
   }
@@ -74307,6 +77050,7 @@ export namespace Prisma {
     canonical_property: PropertyCreateNestedOneWithoutUser_property_copiesInput
     integration_properties?: IntegrationPropertyCreateNestedManyWithoutUser_propertyInput
     cost_logs?: CostLogCreateNestedManyWithoutUser_propertyInput
+    clients?: UserPropertyClientCreateNestedManyWithoutUser_propertyInput
   }
 
   export type UserPropertyUncheckedCreateWithoutLocalized_contentsInput = {
@@ -74361,6 +77105,7 @@ export namespace Prisma {
     updated_at?: Date | string
     integration_properties?: IntegrationPropertyUncheckedCreateNestedManyWithoutUser_propertyInput
     cost_logs?: CostLogUncheckedCreateNestedManyWithoutUser_propertyInput
+    clients?: UserPropertyClientUncheckedCreateNestedManyWithoutUser_propertyInput
   }
 
   export type UserPropertyCreateOrConnectWithoutLocalized_contentsInput = {
@@ -74431,6 +77176,7 @@ export namespace Prisma {
     canonical_property?: PropertyUpdateOneRequiredWithoutUser_property_copiesNestedInput
     integration_properties?: IntegrationPropertyUpdateManyWithoutUser_propertyNestedInput
     cost_logs?: CostLogUpdateManyWithoutUser_propertyNestedInput
+    clients?: UserPropertyClientUpdateManyWithoutUser_propertyNestedInput
   }
 
   export type UserPropertyUncheckedUpdateWithoutLocalized_contentsInput = {
@@ -74485,6 +77231,7 @@ export namespace Prisma {
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     integration_properties?: IntegrationPropertyUncheckedUpdateManyWithoutUser_propertyNestedInput
     cost_logs?: CostLogUncheckedUpdateManyWithoutUser_propertyNestedInput
+    clients?: UserPropertyClientUncheckedUpdateManyWithoutUser_propertyNestedInput
   }
 
   export type ContentPublishingConfigCreateWithoutAi_batch_runsInput = {
@@ -74871,6 +77618,7 @@ export namespace Prisma {
     updated_at?: Date | string
     tracked_agencies?: UserTrackedAgencyCreateNestedManyWithoutUserInput
     saved_properties?: UserPropertyCreateNestedManyWithoutUserInput
+    property_clients?: UserPropertyClientCreateNestedManyWithoutUserInput
     user_integrations?: UserIntegrationCreateNestedManyWithoutUserInput
     user_integration_settings?: UserIntegrationSettingsCreateNestedManyWithoutUserInput
     integration_properties?: IntegrationPropertyCreateNestedManyWithoutUserInput
@@ -74886,6 +77634,7 @@ export namespace Prisma {
     updated_at?: Date | string
     tracked_agencies?: UserTrackedAgencyUncheckedCreateNestedManyWithoutUserInput
     saved_properties?: UserPropertyUncheckedCreateNestedManyWithoutUserInput
+    property_clients?: UserPropertyClientUncheckedCreateNestedManyWithoutUserInput
     user_integrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
     user_integration_settings?: UserIntegrationSettingsUncheckedCreateNestedManyWithoutUserInput
     integration_properties?: IntegrationPropertyUncheckedCreateNestedManyWithoutUserInput
@@ -75027,6 +77776,7 @@ export namespace Prisma {
     canonical_property: PropertyCreateNestedOneWithoutUser_property_copiesInput
     integration_properties?: IntegrationPropertyCreateNestedManyWithoutUser_propertyInput
     localized_contents?: PropertyLocalizedContentCreateNestedManyWithoutUser_propertyInput
+    clients?: UserPropertyClientCreateNestedManyWithoutUser_propertyInput
   }
 
   export type UserPropertyUncheckedCreateWithoutCost_logsInput = {
@@ -75081,6 +77831,7 @@ export namespace Prisma {
     updated_at?: Date | string
     integration_properties?: IntegrationPropertyUncheckedCreateNestedManyWithoutUser_propertyInput
     localized_contents?: PropertyLocalizedContentUncheckedCreateNestedManyWithoutUser_propertyInput
+    clients?: UserPropertyClientUncheckedCreateNestedManyWithoutUser_propertyInput
   }
 
   export type UserPropertyCreateOrConnectWithoutCost_logsInput = {
@@ -75109,6 +77860,7 @@ export namespace Prisma {
     user: UserCreateNestedOneWithoutTracked_agenciesInput
     source_agency: SourceAgencyCreateNestedOneWithoutUser_tracked_agenciesInput
     crawl_runs?: CrawlRunCreateNestedManyWithoutUser_tracked_agencyInput
+    property_clients?: UserPropertyClientCreateNestedManyWithoutUser_tracked_agencyInput
     integration_link?: UserTrackedAgencyIntegrationLinkCreateNestedOneWithoutUser_tracked_agencyInput
     content_publishing_config?: ContentPublishingConfigCreateNestedOneWithoutUser_tracked_agencyInput
   }
@@ -75134,6 +77886,7 @@ export namespace Prisma {
     created_at?: Date | string
     updated_at?: Date | string
     crawl_runs?: CrawlRunUncheckedCreateNestedManyWithoutUser_tracked_agencyInput
+    property_clients?: UserPropertyClientUncheckedCreateNestedManyWithoutUser_tracked_agencyInput
     integration_link?: UserTrackedAgencyIntegrationLinkUncheckedCreateNestedOneWithoutUser_tracked_agencyInput
     content_publishing_config?: ContentPublishingConfigUncheckedCreateNestedOneWithoutUser_tracked_agencyInput
   }
@@ -75199,6 +77952,7 @@ export namespace Prisma {
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     tracked_agencies?: UserTrackedAgencyUpdateManyWithoutUserNestedInput
     saved_properties?: UserPropertyUpdateManyWithoutUserNestedInput
+    property_clients?: UserPropertyClientUpdateManyWithoutUserNestedInput
     user_integrations?: UserIntegrationUpdateManyWithoutUserNestedInput
     user_integration_settings?: UserIntegrationSettingsUpdateManyWithoutUserNestedInput
     integration_properties?: IntegrationPropertyUpdateManyWithoutUserNestedInput
@@ -75214,6 +77968,7 @@ export namespace Prisma {
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     tracked_agencies?: UserTrackedAgencyUncheckedUpdateManyWithoutUserNestedInput
     saved_properties?: UserPropertyUncheckedUpdateManyWithoutUserNestedInput
+    property_clients?: UserPropertyClientUncheckedUpdateManyWithoutUserNestedInput
     user_integrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
     user_integration_settings?: UserIntegrationSettingsUncheckedUpdateManyWithoutUserNestedInput
     integration_properties?: IntegrationPropertyUncheckedUpdateManyWithoutUserNestedInput
@@ -75367,6 +78122,7 @@ export namespace Prisma {
     canonical_property?: PropertyUpdateOneRequiredWithoutUser_property_copiesNestedInput
     integration_properties?: IntegrationPropertyUpdateManyWithoutUser_propertyNestedInput
     localized_contents?: PropertyLocalizedContentUpdateManyWithoutUser_propertyNestedInput
+    clients?: UserPropertyClientUpdateManyWithoutUser_propertyNestedInput
   }
 
   export type UserPropertyUncheckedUpdateWithoutCost_logsInput = {
@@ -75421,6 +78177,7 @@ export namespace Prisma {
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     integration_properties?: IntegrationPropertyUncheckedUpdateManyWithoutUser_propertyNestedInput
     localized_contents?: PropertyLocalizedContentUncheckedUpdateManyWithoutUser_propertyNestedInput
+    clients?: UserPropertyClientUncheckedUpdateManyWithoutUser_propertyNestedInput
   }
 
   export type UserTrackedAgencyUpsertWithoutCost_logsInput = {
@@ -75455,6 +78212,7 @@ export namespace Prisma {
     user?: UserUpdateOneRequiredWithoutTracked_agenciesNestedInput
     source_agency?: SourceAgencyUpdateOneRequiredWithoutUser_tracked_agenciesNestedInput
     crawl_runs?: CrawlRunUpdateManyWithoutUser_tracked_agencyNestedInput
+    property_clients?: UserPropertyClientUpdateManyWithoutUser_tracked_agencyNestedInput
     integration_link?: UserTrackedAgencyIntegrationLinkUpdateOneWithoutUser_tracked_agencyNestedInput
     content_publishing_config?: ContentPublishingConfigUpdateOneWithoutUser_tracked_agencyNestedInput
   }
@@ -75480,6 +78238,7 @@ export namespace Prisma {
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     crawl_runs?: CrawlRunUncheckedUpdateManyWithoutUser_tracked_agencyNestedInput
+    property_clients?: UserPropertyClientUncheckedUpdateManyWithoutUser_tracked_agencyNestedInput
     integration_link?: UserTrackedAgencyIntegrationLinkUncheckedUpdateOneWithoutUser_tracked_agencyNestedInput
     content_publishing_config?: ContentPublishingConfigUncheckedUpdateOneWithoutUser_tracked_agencyNestedInput
   }
@@ -75535,6 +78294,7 @@ export namespace Prisma {
     updated_at?: Date | string
     tracked_agencies?: UserTrackedAgencyCreateNestedManyWithoutUserInput
     saved_properties?: UserPropertyCreateNestedManyWithoutUserInput
+    property_clients?: UserPropertyClientCreateNestedManyWithoutUserInput
     user_integrations?: UserIntegrationCreateNestedManyWithoutUserInput
     user_integration_settings?: UserIntegrationSettingsCreateNestedManyWithoutUserInput
     cost_logs?: CostLogCreateNestedManyWithoutUserInput
@@ -75550,6 +78310,7 @@ export namespace Prisma {
     updated_at?: Date | string
     tracked_agencies?: UserTrackedAgencyUncheckedCreateNestedManyWithoutUserInput
     saved_properties?: UserPropertyUncheckedCreateNestedManyWithoutUserInput
+    property_clients?: UserPropertyClientUncheckedCreateNestedManyWithoutUserInput
     user_integrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
     user_integration_settings?: UserIntegrationSettingsUncheckedCreateNestedManyWithoutUserInput
     cost_logs?: CostLogUncheckedCreateNestedManyWithoutUserInput
@@ -75637,6 +78398,7 @@ export namespace Prisma {
     canonical_property: PropertyCreateNestedOneWithoutUser_property_copiesInput
     localized_contents?: PropertyLocalizedContentCreateNestedManyWithoutUser_propertyInput
     cost_logs?: CostLogCreateNestedManyWithoutUser_propertyInput
+    clients?: UserPropertyClientCreateNestedManyWithoutUser_propertyInput
   }
 
   export type UserPropertyUncheckedCreateWithoutIntegration_propertiesInput = {
@@ -75691,6 +78453,7 @@ export namespace Prisma {
     updated_at?: Date | string
     localized_contents?: PropertyLocalizedContentUncheckedCreateNestedManyWithoutUser_propertyInput
     cost_logs?: CostLogUncheckedCreateNestedManyWithoutUser_propertyInput
+    clients?: UserPropertyClientUncheckedCreateNestedManyWithoutUser_propertyInput
   }
 
   export type UserPropertyCreateOrConnectWithoutIntegration_propertiesInput = {
@@ -75719,6 +78482,7 @@ export namespace Prisma {
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     tracked_agencies?: UserTrackedAgencyUpdateManyWithoutUserNestedInput
     saved_properties?: UserPropertyUpdateManyWithoutUserNestedInput
+    property_clients?: UserPropertyClientUpdateManyWithoutUserNestedInput
     user_integrations?: UserIntegrationUpdateManyWithoutUserNestedInput
     user_integration_settings?: UserIntegrationSettingsUpdateManyWithoutUserNestedInput
     cost_logs?: CostLogUpdateManyWithoutUserNestedInput
@@ -75734,6 +78498,7 @@ export namespace Prisma {
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     tracked_agencies?: UserTrackedAgencyUncheckedUpdateManyWithoutUserNestedInput
     saved_properties?: UserPropertyUncheckedUpdateManyWithoutUserNestedInput
+    property_clients?: UserPropertyClientUncheckedUpdateManyWithoutUserNestedInput
     user_integrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
     user_integration_settings?: UserIntegrationSettingsUncheckedUpdateManyWithoutUserNestedInput
     cost_logs?: CostLogUncheckedUpdateManyWithoutUserNestedInput
@@ -75833,6 +78598,7 @@ export namespace Prisma {
     canonical_property?: PropertyUpdateOneRequiredWithoutUser_property_copiesNestedInput
     localized_contents?: PropertyLocalizedContentUpdateManyWithoutUser_propertyNestedInput
     cost_logs?: CostLogUpdateManyWithoutUser_propertyNestedInput
+    clients?: UserPropertyClientUpdateManyWithoutUser_propertyNestedInput
   }
 
   export type UserPropertyUncheckedUpdateWithoutIntegration_propertiesInput = {
@@ -75887,6 +78653,7 @@ export namespace Prisma {
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     localized_contents?: PropertyLocalizedContentUncheckedUpdateManyWithoutUser_propertyNestedInput
     cost_logs?: CostLogUncheckedUpdateManyWithoutUser_propertyNestedInput
+    clients?: UserPropertyClientUncheckedUpdateManyWithoutUser_propertyNestedInput
   }
 
   export type ActivityLogChangeCreateWithoutActivity_logInput = {
@@ -76156,6 +78923,26 @@ export namespace Prisma {
     updated_at?: Date | string
   }
 
+  export type UserPropertyClientCreateManyUserInput = {
+    id?: string
+    user_property_id?: string | null
+    user_tracked_agency_id?: string | null
+    source_agency_id?: string | null
+    property_id: string
+    internal_id?: string | null
+    property_title: string
+    source_url?: string | null
+    name: string
+    phone?: string | null
+    email?: string | null
+    notes?: string | null
+    shown_at?: Date | string
+    delisted_at?: Date | string | null
+    delisted_ack_at?: Date | string | null
+    created_at?: Date | string
+    updated_at?: Date | string
+  }
+
   export type UserIntegrationCreateManyUserInput = {
     id?: string
     integration_target_id: string
@@ -76234,6 +79021,7 @@ export namespace Prisma {
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     source_agency?: SourceAgencyUpdateOneRequiredWithoutUser_tracked_agenciesNestedInput
     crawl_runs?: CrawlRunUpdateManyWithoutUser_tracked_agencyNestedInput
+    property_clients?: UserPropertyClientUpdateManyWithoutUser_tracked_agencyNestedInput
     integration_link?: UserTrackedAgencyIntegrationLinkUpdateOneWithoutUser_tracked_agencyNestedInput
     content_publishing_config?: ContentPublishingConfigUpdateOneWithoutUser_tracked_agencyNestedInput
     cost_logs?: CostLogUpdateManyWithoutUser_tracked_agencyNestedInput
@@ -76259,6 +79047,7 @@ export namespace Prisma {
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     crawl_runs?: CrawlRunUncheckedUpdateManyWithoutUser_tracked_agencyNestedInput
+    property_clients?: UserPropertyClientUncheckedUpdateManyWithoutUser_tracked_agencyNestedInput
     integration_link?: UserTrackedAgencyIntegrationLinkUncheckedUpdateOneWithoutUser_tracked_agencyNestedInput
     content_publishing_config?: ContentPublishingConfigUncheckedUpdateOneWithoutUser_tracked_agencyNestedInput
     cost_logs?: CostLogUncheckedUpdateManyWithoutUser_tracked_agencyNestedInput
@@ -76337,6 +79126,7 @@ export namespace Prisma {
     integration_properties?: IntegrationPropertyUpdateManyWithoutUser_propertyNestedInput
     localized_contents?: PropertyLocalizedContentUpdateManyWithoutUser_propertyNestedInput
     cost_logs?: CostLogUpdateManyWithoutUser_propertyNestedInput
+    clients?: UserPropertyClientUpdateManyWithoutUser_propertyNestedInput
   }
 
   export type UserPropertyUncheckedUpdateWithoutUserInput = {
@@ -76391,6 +79181,7 @@ export namespace Prisma {
     integration_properties?: IntegrationPropertyUncheckedUpdateManyWithoutUser_propertyNestedInput
     localized_contents?: PropertyLocalizedContentUncheckedUpdateManyWithoutUser_propertyNestedInput
     cost_logs?: CostLogUncheckedUpdateManyWithoutUser_propertyNestedInput
+    clients?: UserPropertyClientUncheckedUpdateManyWithoutUser_propertyNestedInput
   }
 
   export type UserPropertyUncheckedUpdateManyWithoutUserInput = {
@@ -76440,6 +79231,66 @@ export namespace Prisma {
     is_modified?: BoolFieldUpdateOperationsInput | boolean
     pending_crm_update?: BoolFieldUpdateOperationsInput | boolean
     last_synced_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UserPropertyClientUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    source_agency_id?: NullableStringFieldUpdateOperationsInput | string | null
+    property_id?: StringFieldUpdateOperationsInput | string
+    internal_id?: NullableStringFieldUpdateOperationsInput | string | null
+    property_title?: StringFieldUpdateOperationsInput | string
+    source_url?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    shown_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    delisted_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    delisted_ack_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    user_property?: UserPropertyUpdateOneWithoutClientsNestedInput
+    user_tracked_agency?: UserTrackedAgencyUpdateOneWithoutProperty_clientsNestedInput
+  }
+
+  export type UserPropertyClientUncheckedUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    user_property_id?: NullableStringFieldUpdateOperationsInput | string | null
+    user_tracked_agency_id?: NullableStringFieldUpdateOperationsInput | string | null
+    source_agency_id?: NullableStringFieldUpdateOperationsInput | string | null
+    property_id?: StringFieldUpdateOperationsInput | string
+    internal_id?: NullableStringFieldUpdateOperationsInput | string | null
+    property_title?: StringFieldUpdateOperationsInput | string
+    source_url?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    shown_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    delisted_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    delisted_ack_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UserPropertyClientUncheckedUpdateManyWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    user_property_id?: NullableStringFieldUpdateOperationsInput | string | null
+    user_tracked_agency_id?: NullableStringFieldUpdateOperationsInput | string | null
+    source_agency_id?: NullableStringFieldUpdateOperationsInput | string | null
+    property_id?: StringFieldUpdateOperationsInput | string
+    internal_id?: NullableStringFieldUpdateOperationsInput | string | null
+    property_title?: StringFieldUpdateOperationsInput | string
+    source_url?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    shown_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    delisted_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    delisted_ack_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -77152,6 +80003,7 @@ export namespace Prisma {
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutTracked_agenciesNestedInput
     crawl_runs?: CrawlRunUpdateManyWithoutUser_tracked_agencyNestedInput
+    property_clients?: UserPropertyClientUpdateManyWithoutUser_tracked_agencyNestedInput
     integration_link?: UserTrackedAgencyIntegrationLinkUpdateOneWithoutUser_tracked_agencyNestedInput
     content_publishing_config?: ContentPublishingConfigUpdateOneWithoutUser_tracked_agencyNestedInput
     cost_logs?: CostLogUpdateManyWithoutUser_tracked_agencyNestedInput
@@ -77177,6 +80029,7 @@ export namespace Prisma {
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     crawl_runs?: CrawlRunUncheckedUpdateManyWithoutUser_tracked_agencyNestedInput
+    property_clients?: UserPropertyClientUncheckedUpdateManyWithoutUser_tracked_agencyNestedInput
     integration_link?: UserTrackedAgencyIntegrationLinkUncheckedUpdateOneWithoutUser_tracked_agencyNestedInput
     content_publishing_config?: ContentPublishingConfigUncheckedUpdateOneWithoutUser_tracked_agencyNestedInput
     cost_logs?: CostLogUncheckedUpdateManyWithoutUser_tracked_agencyNestedInput
@@ -77487,6 +80340,26 @@ export namespace Prisma {
     updated_at?: Date | string
   }
 
+  export type UserPropertyClientCreateManyUser_tracked_agencyInput = {
+    id?: string
+    user_id: string
+    user_property_id?: string | null
+    source_agency_id?: string | null
+    property_id: string
+    internal_id?: string | null
+    property_title: string
+    source_url?: string | null
+    name: string
+    phone?: string | null
+    email?: string | null
+    notes?: string | null
+    shown_at?: Date | string
+    delisted_at?: Date | string | null
+    delisted_ack_at?: Date | string | null
+    created_at?: Date | string
+    updated_at?: Date | string
+  }
+
   export type CostLogCreateManyUser_tracked_agencyInput = {
     id?: string
     user_id?: string | null
@@ -77606,6 +80479,66 @@ export namespace Prisma {
     ai_output_cost?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     ai_total_cost?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     ai_average_cost_per_property?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UserPropertyClientUpdateWithoutUser_tracked_agencyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    source_agency_id?: NullableStringFieldUpdateOperationsInput | string | null
+    property_id?: StringFieldUpdateOperationsInput | string
+    internal_id?: NullableStringFieldUpdateOperationsInput | string | null
+    property_title?: StringFieldUpdateOperationsInput | string
+    source_url?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    shown_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    delisted_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    delisted_ack_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutProperty_clientsNestedInput
+    user_property?: UserPropertyUpdateOneWithoutClientsNestedInput
+  }
+
+  export type UserPropertyClientUncheckedUpdateWithoutUser_tracked_agencyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    user_id?: StringFieldUpdateOperationsInput | string
+    user_property_id?: NullableStringFieldUpdateOperationsInput | string | null
+    source_agency_id?: NullableStringFieldUpdateOperationsInput | string | null
+    property_id?: StringFieldUpdateOperationsInput | string
+    internal_id?: NullableStringFieldUpdateOperationsInput | string | null
+    property_title?: StringFieldUpdateOperationsInput | string
+    source_url?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    shown_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    delisted_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    delisted_ack_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UserPropertyClientUncheckedUpdateManyWithoutUser_tracked_agencyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    user_id?: StringFieldUpdateOperationsInput | string
+    user_property_id?: NullableStringFieldUpdateOperationsInput | string | null
+    source_agency_id?: NullableStringFieldUpdateOperationsInput | string | null
+    property_id?: StringFieldUpdateOperationsInput | string
+    internal_id?: NullableStringFieldUpdateOperationsInput | string | null
+    property_title?: StringFieldUpdateOperationsInput | string
+    source_url?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    shown_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    delisted_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    delisted_ack_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -78695,6 +81628,7 @@ export namespace Prisma {
     integration_properties?: IntegrationPropertyUpdateManyWithoutUser_propertyNestedInput
     localized_contents?: PropertyLocalizedContentUpdateManyWithoutUser_propertyNestedInput
     cost_logs?: CostLogUpdateManyWithoutUser_propertyNestedInput
+    clients?: UserPropertyClientUpdateManyWithoutUser_propertyNestedInput
   }
 
   export type UserPropertyUncheckedUpdateWithoutCanonical_propertyInput = {
@@ -78749,6 +81683,7 @@ export namespace Prisma {
     integration_properties?: IntegrationPropertyUncheckedUpdateManyWithoutUser_propertyNestedInput
     localized_contents?: PropertyLocalizedContentUncheckedUpdateManyWithoutUser_propertyNestedInput
     cost_logs?: CostLogUncheckedUpdateManyWithoutUser_propertyNestedInput
+    clients?: UserPropertyClientUncheckedUpdateManyWithoutUser_propertyNestedInput
   }
 
   export type UserPropertyUncheckedUpdateManyWithoutCanonical_propertyInput = {
@@ -78875,6 +81810,26 @@ export namespace Prisma {
     ai_batch_run_id?: string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
     created_at?: Date | string
+  }
+
+  export type UserPropertyClientCreateManyUser_propertyInput = {
+    id?: string
+    user_id: string
+    user_tracked_agency_id?: string | null
+    source_agency_id?: string | null
+    property_id: string
+    internal_id?: string | null
+    property_title: string
+    source_url?: string | null
+    name: string
+    phone?: string | null
+    email?: string | null
+    notes?: string | null
+    shown_at?: Date | string
+    delisted_at?: Date | string | null
+    delisted_ack_at?: Date | string | null
+    created_at?: Date | string
+    updated_at?: Date | string
   }
 
   export type IntegrationPropertyUpdateWithoutUser_propertyInput = {
@@ -79010,6 +81965,66 @@ export namespace Prisma {
     ai_batch_run_id?: NullableStringFieldUpdateOperationsInput | string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UserPropertyClientUpdateWithoutUser_propertyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    source_agency_id?: NullableStringFieldUpdateOperationsInput | string | null
+    property_id?: StringFieldUpdateOperationsInput | string
+    internal_id?: NullableStringFieldUpdateOperationsInput | string | null
+    property_title?: StringFieldUpdateOperationsInput | string
+    source_url?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    shown_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    delisted_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    delisted_ack_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutProperty_clientsNestedInput
+    user_tracked_agency?: UserTrackedAgencyUpdateOneWithoutProperty_clientsNestedInput
+  }
+
+  export type UserPropertyClientUncheckedUpdateWithoutUser_propertyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    user_id?: StringFieldUpdateOperationsInput | string
+    user_tracked_agency_id?: NullableStringFieldUpdateOperationsInput | string | null
+    source_agency_id?: NullableStringFieldUpdateOperationsInput | string | null
+    property_id?: StringFieldUpdateOperationsInput | string
+    internal_id?: NullableStringFieldUpdateOperationsInput | string | null
+    property_title?: StringFieldUpdateOperationsInput | string
+    source_url?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    shown_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    delisted_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    delisted_ack_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UserPropertyClientUncheckedUpdateManyWithoutUser_propertyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    user_id?: StringFieldUpdateOperationsInput | string
+    user_tracked_agency_id?: NullableStringFieldUpdateOperationsInput | string | null
+    source_agency_id?: NullableStringFieldUpdateOperationsInput | string | null
+    property_id?: StringFieldUpdateOperationsInput | string
+    internal_id?: NullableStringFieldUpdateOperationsInput | string | null
+    property_title?: StringFieldUpdateOperationsInput | string
+    source_url?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    shown_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    delisted_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    delisted_ack_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type ContentOutputCreateManyConfigInput = {

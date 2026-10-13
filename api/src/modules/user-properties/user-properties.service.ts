@@ -438,6 +438,7 @@ export class UserPropertiesService {
               ]
             : { [query.order_by]: query.order_direction },
         include: {
+          _count: { select: { clients: true } },
           canonical_property: {
             select: {
               duplicate_group_id: true,
@@ -468,9 +469,14 @@ export class UserPropertiesService {
     const totalPages = unlimited ? 1 : Math.ceil(total / query.limit);
 
     return {
-      data: items.map(({ canonical_property, ...item }) =>
+      data: items.map(({ canonical_property, _count, ...item }) =>
         serializePropertyForApi({
           ...item,
+          clients_count: _count.clients,
+          clients_delisted:
+            _count.clients > 0 &&
+            (item.status === PropertyStatus.REMOVED ||
+              item.status === PropertyStatus.SOLD),
           duplicate_group_id: canonical_property.duplicate_group_id,
           source_agency:
             filteredSourceAgency ??
@@ -4517,6 +4523,13 @@ export class UserPropertiesService {
           created.id,
           tracker.user_id,
         );
+        await this.reattachClients(
+          tracker.user_id,
+          created.id,
+          sourceAgencyId,
+          created.property_id,
+          tracker.id,
+        );
         results.push({
           user_property_id: created.id,
           change_type: 'created',
@@ -4536,6 +4549,11 @@ export class UserPropertiesService {
                 : PropertyStatus.REMOVED,
             last_synced_at: new Date(),
           },
+        });
+        // Clients the user showed this property to must be told it is gone (popup on login).
+        await this.prisma.userPropertyClient.updateMany({
+          where: { user_property_id: existing.id },
+          data: { delisted_at: new Date(), delisted_ack_at: null },
         });
         results.push({
           user_property_id: existing.id,
@@ -4566,6 +4584,13 @@ export class UserPropertiesService {
           'user_property',
           created.id,
           tracker.user_id,
+        );
+        await this.reattachClients(
+          tracker.user_id,
+          created.id,
+          sourceAgencyId,
+          created.property_id,
+          tracker.id,
         );
         results.push({
           user_property_id: created.id,
@@ -5019,6 +5044,34 @@ export class UserPropertiesService {
     });
 
     return link?.source_property.source_agency_id ?? null;
+  }
+
+  /**
+   * Re-links "clients shown" history to a freshly (re)created UserProperty. Rows survive a purged
+   * property/office (user_property_id and tracker FK are SetNull) and are matched by the stable
+   * identity snapshot: user + source agency + agency property id.
+   */
+  private async reattachClients(
+    userId: string,
+    userPropertyId: string,
+    sourceAgencyId: string,
+    propertyId: string,
+    userTrackedAgencyId: string,
+  ) {
+    await this.prisma.userPropertyClient.updateMany({
+      where: {
+        user_id: userId,
+        user_property_id: null,
+        source_agency_id: sourceAgencyId,
+        property_id: propertyId,
+      },
+      data: {
+        user_property_id: userPropertyId,
+        user_tracked_agency_id: userTrackedAgencyId,
+        delisted_at: null,
+        delisted_ack_at: null,
+      },
+    });
   }
 
   private async assertOwned(userId: string, id: string) {

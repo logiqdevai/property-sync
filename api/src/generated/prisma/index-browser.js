@@ -555,6 +555,27 @@ exports.Prisma.UserPropertyScalarFieldEnum = {
   updated_at: 'updated_at'
 };
 
+exports.Prisma.UserPropertyClientScalarFieldEnum = {
+  id: 'id',
+  user_id: 'user_id',
+  user_property_id: 'user_property_id',
+  user_tracked_agency_id: 'user_tracked_agency_id',
+  source_agency_id: 'source_agency_id',
+  property_id: 'property_id',
+  internal_id: 'internal_id',
+  property_title: 'property_title',
+  source_url: 'source_url',
+  name: 'name',
+  phone: 'phone',
+  email: 'email',
+  notes: 'notes',
+  shown_at: 'shown_at',
+  delisted_at: 'delisted_at',
+  delisted_ack_at: 'delisted_ack_at',
+  created_at: 'created_at',
+  updated_at: 'updated_at'
+};
+
 exports.Prisma.ContentPublishingConfigScalarFieldEnum = {
   id: 'id',
   user_tracked_agency_id: 'user_tracked_agency_id',
@@ -1046,6 +1067,7 @@ exports.Prisma.ModelName = {
   PropertySourceLink: 'PropertySourceLink',
   PropertyHistory: 'PropertyHistory',
   UserProperty: 'UserProperty',
+  UserPropertyClient: 'UserPropertyClient',
   ContentPublishingConfig: 'ContentPublishingConfig',
   ContentOutput: 'ContentOutput',
   AiTitleFamily: 'AiTitleFamily',

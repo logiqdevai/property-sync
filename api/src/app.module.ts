@@ -22,6 +22,7 @@ import { IntegrationTargetsModule } from './modules/integration-targets/integrat
 import { PlatformConfigModule } from './modules/platform-config/platform-config.module';
 import { NotificationSettingsModule } from './modules/notification-settings/notification-settings.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
+import { UserPropertyClientsModule } from './modules/user-property-clients/user-property-clients.module';
 import { UserDashboardModule } from './modules/user-dashboard/user-dashboard.module';
 import { EstateWebAdminModule } from './modules/estateweb/estateweb-admin.module';
 import { HealthModule } from './modules/health/health.module';
@@ -62,6 +63,7 @@ import { ActivityLogsModule } from './modules/activity-logs/activity-logs.module
     PlatformConfigModule,
     DashboardModule,
     UserDashboardModule,
+    UserPropertyClientsModule,
     EstateWebAdminModule,
     CmsSyncModule,
     ContentPublishingModule,

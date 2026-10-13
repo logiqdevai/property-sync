@@ -312,6 +312,7 @@ model User {
 
   tracked_agencies          UserTrackedAgency[]
   saved_properties          UserProperty[]
+  property_clients          UserPropertyClient[]
   user_integrations         UserIntegration[]
   user_integration_settings UserIntegrationSettings[]
   integration_properties    IntegrationProperty[]
@@ -479,6 +480,7 @@ model UserTrackedAgency {
   user                      User                              @relation(fields: [user_id], references: [id], onDelete: Cascade)
   source_agency             SourceAgency                      @relation(fields: [source_agency_id], references: [id], onDelete: Cascade)
   crawl_runs                CrawlRun[]
+  property_clients          UserPropertyClient[]
   integration_link          UserTrackedAgencyIntegrationLink?
   content_publishing_config ContentPublishingConfig?
   cost_logs                 CostLog[]
@@ -1060,12 +1062,48 @@ model UserProperty {
   integration_properties IntegrationProperty[]
   localized_contents     PropertyLocalizedContent[]
   cost_logs              CostLog[]
+  clients                UserPropertyClient[]
 
   @@unique([user_id, canonical_property_id])
   @@index([user_id])
   @@index([canonical_property_id])
   @@index([property_id])
   @@map("user_properties")
+}
+
+/// A client the user showed a property to. Deliberately NOT cascaded from UserProperty: when an
+/// office/property is purged and re-crawled the UserProperty row (and its id) is recreated, so the
+/// history is also keyed by the stable identity snapshot (user + source agency + property_id) and
+/// re-attached to the new row on creation. user_tracked_agency_id is kept for the same reason.
+model UserPropertyClient {
+  id                     String    @id @default(uuid())
+  user_id                String
+  user_property_id       String?
+  user_tracked_agency_id String?
+  source_agency_id       String?
+  property_id            String
+  internal_id            String?
+  property_title         String
+  source_url             String?
+  name                   String
+  phone                  String?
+  email                  String?
+  notes                  String?
+  shown_at               DateTime  @default(now())
+  /// Set when the property was delisted from the agency site; popup shows until acknowledged.
+  delisted_at            DateTime?
+  delisted_ack_at        DateTime?
+  created_at             DateTime  @default(now())
+  updated_at             DateTime  @updatedAt
+
+  user                User               @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  user_property       UserProperty?      @relation(fields: [user_property_id], references: [id], onDelete: SetNull)
+  user_tracked_agency UserTrackedAgency? @relation(fields: [user_tracked_agency_id], references: [id], onDelete: SetNull)
+
+  @@index([user_id])
+  @@index([user_property_id])
+  @@index([user_id, source_agency_id, property_id])
+  @@map("user_property_clients")
 }
 
 model ContentPublishingConfig {

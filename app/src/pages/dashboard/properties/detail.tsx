@@ -11,6 +11,7 @@ import { BulkActionsMenu } from "@/components/ui/bulk-actions-menu";
 import type { TableRowAction, TableRowActionEntry } from "@/components/ui/table-row-actions-menu";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { TruncateDescriptionDialog } from "@/components/ui/truncate-description-dialog";
+import { PropertyClientsModal } from "./components/property-clients-modal";
 import { PropertyDetailView } from "@/components/ui/property-detail-view";
 import { getCrmPropertyAppUrl } from "@/config/constants/crm-app-urls";
 import { RoleTypes } from "@/features/user/interfaces/user.interface";
@@ -113,6 +114,7 @@ export default function DashboardPropertyDetailPage() {
   const location = useLocation();
   const backHref = resolvePropertiesListReturnTo(location.state);
   const [isEditing, setIsEditing] = useState(false);
+  const clientsModal = useOverlayState();
   const truncateConfirm = useOverlayState();
   const unlinkConfirm = useOverlayState();
   const resetImagesConfirm = useOverlayState();
@@ -1009,6 +1011,17 @@ export default function DashboardPropertyDetailPage() {
         }
         footer={
           <>
+            <div className="flex items-center justify-between gap-3 rounded-xl border border-border bg-surface p-4">
+              <p className="text-sm text-muted">Clients this property was shown to, with notes.</p>
+              <Button variant="secondary" onPress={clientsModal.open}>
+                <NotebookPen className="size-4" />
+                Clients &amp; notes
+              </Button>
+            </div>
+            <PropertyClientsModal
+              state={clientsModal}
+              property={{ id: property.id, title: property.title }}
+            />
             <TruncateDescriptionDialog
               state={truncateConfirm}
               propertyCount={1}

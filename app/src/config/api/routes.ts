@@ -224,6 +224,15 @@ export const ApiRoutes = {
         prefix: "/cost-logs",
         list: "/cost-logs",
     },
+    propertyClients: {
+        prefix: "/property-clients",
+        forProperty: (userPropertyId: string) =>
+            `/property-clients/property/${userPropertyId}`,
+        detail: (id: string) => `/property-clients/${id}`,
+        known: "/property-clients/known",
+        delistedAlerts: "/property-clients/delisted-alerts",
+        acknowledgeDelisted: "/property-clients/delisted-alerts/acknowledge",
+    },
     userProperties: {
         prefix: "/properties",
         list: "/properties",

@@ -13,6 +13,7 @@ export interface EntityDefinition {
 export const ENTITY_REGISTRY = {
   User: { delegate: 'user', omit: { password: true } },
   UserProperty: { delegate: 'userProperty' },
+  UserPropertyClient: { delegate: 'userPropertyClient' },
   Property: { delegate: 'property' },
   SourceProperty: { delegate: 'sourceProperty', omit: { raw_data: true } },
   SourceAgency: { delegate: 'sourceAgency' },
