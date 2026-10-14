@@ -128,7 +128,13 @@ export class UserPropertyClientsService {
         status: PropertyStatus;
         internal_id: string | null;
         delisted_at: Date | null;
-        clients: { id: string; name: string; shown_at: Date }[];
+        clients: {
+          id: string;
+          name: string;
+          phone: string | null;
+          notes: string | null;
+          shown_at: Date;
+        }[];
       }
     >();
     for (const client of clients) {
@@ -145,6 +151,8 @@ export class UserPropertyClientsService {
       entry.clients.push({
         id: client.id,
         name: client.name,
+        phone: client.phone,
+        notes: client.notes,
         shown_at: client.shown_at,
       });
       byProperty.set(property.id, entry);

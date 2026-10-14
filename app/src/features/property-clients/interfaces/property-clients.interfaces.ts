@@ -30,5 +30,11 @@ export interface DelistedPropertyAlert {
   status: string;
   internal_id: string | null;
   delisted_at: string | null;
-  clients: { id: string; name: string; shown_at: string }[];
+  clients: {
+    id: string;
+    name: string;
+    phone: string | null;
+    notes: string | null;
+    shown_at: string;
+  }[];
 }
