@@ -107,7 +107,6 @@ export class UserPropertyClientsService {
     const clients = await this.prisma.userPropertyClient.findMany({
       where: {
         user_id: userId,
-        delisted_at: { not: null },
         delisted_ack_at: null,
         user_property: {
           status: { in: [PropertyStatus.REMOVED, PropertyStatus.SOLD] },

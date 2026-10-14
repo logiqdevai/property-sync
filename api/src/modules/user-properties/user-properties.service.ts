@@ -894,6 +894,10 @@ export class UserPropertiesService {
       }
     }
 
+    if (dto.status !== undefined && dto.status !== existing.status) {
+      await this.rearmClientAlerts([id], dto.status);
+    }
+
     const contentChanged =
       (dto.title !== undefined && dto.title !== existing.title) ||
       (dto.description !== undefined &&
@@ -924,6 +928,20 @@ export class UserPropertiesService {
     }
 
     return updated;
+  }
+
+  /**
+   * A property moving to REMOVED/SOLD (by hand or by a crawl) must alert again, even if an earlier
+   * removal of the same property was already dismissed.
+   */
+  private async rearmClientAlerts(ids: string[], status: PropertyStatus) {
+    if (status !== PropertyStatus.REMOVED && status !== PropertyStatus.SOLD) {
+      return;
+    }
+    await this.prisma.userPropertyClient.updateMany({
+      where: { user_property_id: { in: ids } },
+      data: { delisted_at: new Date(), delisted_ack_at: null },
+    });
   }
 
   async updateStatusMany(
@@ -985,6 +1003,8 @@ export class UserPropertiesService {
     const trackerByAgency = new Map(
       trackers.map((tracker) => [tracker.source_agency_id, tracker]),
     );
+
+    await this.rearmClientAlerts(uniqueIds, status);
 
     const withPendingCrmUpdate: string[] = [];
     const withoutPendingCrmUpdate: string[] = [];
