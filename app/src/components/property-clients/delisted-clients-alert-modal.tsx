@@ -85,12 +85,12 @@ export const DelistedClientsAlertModal: FC = () => {
                     </Link>
                     <button
                       type="button"
-                      className="mt-1 flex items-center gap-1 text-xs text-muted hover:text-foreground"
+                      className="mt-1 flex items-center gap-1 text-sm text-muted hover:text-foreground"
                       aria-expanded={!collapsed.has(alert.user_property_id)}
                       onClick={() => toggleClients(alert.user_property_id)}
                     >
                       <ChevronDown
-                        className={`size-3.5 transition-transform ${
+                        className={`size-4 transition-transform ${
                           collapsed.has(alert.user_property_id) ? "-rotate-90" : ""
                         }`}
                       />
@@ -100,7 +100,7 @@ export const DelistedClientsAlertModal: FC = () => {
                     {!collapsed.has(alert.user_property_id) && (
                       <ul className="mt-2 flex flex-col gap-1.5">
                         {alert.clients.map((c) => (
-                          <li key={c.id} className="rounded-md bg-surface-secondary px-2.5 py-1.5 text-xs">
+                          <li key={c.id} className="rounded-md bg-surface-secondary px-3 py-2 text-sm">
                             <p className="font-medium text-foreground">
                               {c.name}
                               <span className="font-normal text-muted">

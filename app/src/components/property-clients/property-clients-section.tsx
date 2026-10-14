@@ -181,7 +181,7 @@ export const PropertyClientsSection: FC<{ userPropertyId: string; bare?: boolean
       <div className="flex items-center justify-between gap-2">
         <div>
           <h2 className="text-sm font-semibold text-foreground">Clients shown this property</h2>
-          <p className="text-xs text-muted">
+          <p className="text-sm text-muted">
             Kept even if the listing is removed or reloaded. You get an alert if it comes off the
             agency website.
           </p>
@@ -259,7 +259,7 @@ export const PropertyClientsSection: FC<{ userPropertyId: string; bare?: boolean
               >
                 <div className="min-w-0 text-sm">
                   <p className="font-medium text-foreground">{client.name}</p>
-                  <p className="text-xs text-muted">
+                  <p className="text-sm text-muted">
                     Shown {formatDate(client.shown_at)}
                     {client.phone ? ` · ${client.phone}` : ""}
                     {client.email ? ` · ${client.email}` : ""}
