@@ -1,7 +1,7 @@
 import { useEffect, type FC } from "react";
 import { Link } from "react-router-dom";
+import { X } from "lucide-react";
 import { Button, Modal, useOverlayState } from "@heroui/react";
-import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
 import { formatDate } from "@/lib/date";
 import {
   useAcknowledgeDelistedAlerts,
@@ -10,7 +10,8 @@ import {
 
 /**
  * Shown on dashboard load while any property that has clients was delisted from the agency site and
- * the user has not dismissed the alert. Dismissal is stored server-side, so it survives reloads.
+ * the user has not dismissed the alert. Only the X closes it (and marks it as seen, server-side), so it
+ * keeps coming back at every login until someone presses it.
  */
 export const DelistedClientsAlertModal: FC = () => {
   const state = useOverlayState();
@@ -38,12 +39,24 @@ export const DelistedClientsAlertModal: FC = () => {
       <Modal.Backdrop isDismissable={false}>
         <Modal.Container>
           <Modal.Dialog className="max-h-[85vh] w-full max-w-lg">
-            <Modal.Header>
+            <Modal.Header className="flex items-start justify-between gap-3">
               <Modal.Heading>
                 {alerts.length === 1
                   ? "A property you showed to clients was removed"
                   : `${alerts.length} properties you showed to clients were removed`}
               </Modal.Heading>
+              <Button
+                isIconOnly
+                size="sm"
+                variant="ghost"
+                aria-label="Close and mark as seen"
+                className="shrink-0"
+                isPending={acknowledge.isPending}
+                isDisabled={acknowledge.isPending}
+                onPress={() => void dismiss()}
+              >
+                <X className="size-4" />
+              </Button>
             </Modal.Header>
             <Modal.Body className="flex flex-col gap-3 overflow-y-auto">
               <p className="text-sm text-muted">
@@ -70,18 +83,6 @@ export const DelistedClientsAlertModal: FC = () => {
                 ))}
               </ul>
             </Modal.Body>
-            <Modal.Footer>
-              <Button variant="secondary" onPress={state.close}>
-                Remind me later
-              </Button>
-              <ActionButtonWithPending
-                onPress={() => void dismiss()}
-                isPending={acknowledge.isPending}
-                isDisabled={acknowledge.isPending}
-              >
-                Got it
-              </ActionButtonWithPending>
-            </Modal.Footer>
           </Modal.Dialog>
         </Modal.Container>
       </Modal.Backdrop>
