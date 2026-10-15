@@ -1667,7 +1667,7 @@ export default function DashboardPropertiesListPage() {
                           ? getDuplicateGroupRowClasses(property.duplicate_group_id)
                           : undefined,
                         isRemoved && !property.clients_delisted && "opacity-60",
-                        property.clients_delisted && "bg-warning/15",
+                        property.clients_delisted && "bg-danger/15",
                       );
                       const rowActions = buildPropertyRowActions({
                         canManageBulk,
@@ -1733,11 +1733,11 @@ export default function DashboardPropertiesListPage() {
                                   }}
                                 >
                                   {property.clients_delisted ? (
-                                    <Chip size="sm" variant="soft" color="warning">
+                                    <Chip size="sm" variant="soft" color="danger">
                                       Shown to {property.clients_count} · delisted
                                     </Chip>
                                   ) : (
-                                    <Chip size="sm" variant="soft">
+                                    <Chip size="sm" variant="soft" color="warning">
                                       Shown to {property.clients_count}
                                     </Chip>
                                   )}
