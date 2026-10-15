@@ -12,6 +12,7 @@ export interface UserDashboardStats {
 export interface UserDashboardActivityItem {
   id: string;
   property_id: string;
+  user_property_id: string;
   property_title: string;
   event_type: PropertyHistoryEventType;
   field: string | null;

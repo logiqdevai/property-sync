@@ -42,11 +42,14 @@ export class UserDashboardService {
       }),
       this.prisma.userProperty.findMany({
         where: { user_id: userId },
-        select: { canonical_property_id: true },
+        select: { id: true, canonical_property_id: true },
       }),
     ]);
 
     const propertyIds = trackedProperties.map((p) => p.canonical_property_id);
+    const userPropertyIdByCanonicalId = new Map(
+      trackedProperties.map((p) => [p.canonical_property_id, p.id]),
+    );
 
     if (propertyIds.length === 0) {
       return {
@@ -110,6 +113,7 @@ export class UserDashboardService {
       activity: recentHistory.map((entry) => ({
         id: entry.id,
         property_id: entry.property_id,
+        user_property_id: userPropertyIdByCanonicalId.get(entry.property_id) ?? '',
         property_title: entry.property.title,
         event_type: entry.event_type,
         field: entry.field,

@@ -28,6 +28,9 @@ export class UserDashboardActivityItem {
   @ApiProperty()
   property_id: string;
 
+  @ApiProperty({ description: 'The current user saved-property id (detail page route)' })
+  user_property_id: string;
+
   @ApiProperty()
   property_title: string;
 

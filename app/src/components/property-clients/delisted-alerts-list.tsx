@@ -1,16 +1,18 @@
 import { useState, type FC } from "react";
 import { Link } from "react-router-dom";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Pencil } from "lucide-react";
 import { formatDate } from "@/lib/date";
 import type { DelistedPropertyAlert } from "@/features/property-clients/interfaces/property-clients.interfaces";
 
 type DelistedAlertsListProps = {
   alerts: DelistedPropertyAlert[];
   onNavigate?: () => void;
+  /** When set, clicking a client opens its notes (view/edit) for that property. */
+  onOpenClients?: (property: { id: string; title: string }) => void;
 };
 
 /** Properties shown to clients that were delisted, each with a togglable list of its clients. */
-export const DelistedAlertsList: FC<DelistedAlertsListProps> = ({ alerts, onNavigate }) => {
+export const DelistedAlertsList: FC<DelistedAlertsListProps> = ({ alerts, onNavigate, onOpenClients }) => {
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
 
   const toggleClients = (id: string) =>
@@ -53,8 +55,9 @@ export const DelistedAlertsList: FC<DelistedAlertsListProps> = ({ alerts, onNavi
             </button>
             {!isCollapsed && (
               <ul className="mt-2 flex flex-col gap-1.5">
-                {alert.clients.map((c) => (
-                  <li key={c.id} className="rounded-md bg-surface-secondary px-3 py-2 text-sm">
+                {alert.clients.map((c) => {
+                  const content = (
+                    <>
                     <p className="font-medium text-foreground">
                       {c.name}
                       <span className="font-normal text-muted">
@@ -68,8 +71,30 @@ export const DelistedAlertsList: FC<DelistedAlertsListProps> = ({ alerts, onNavi
                         {c.notes}
                       </p>
                     )}
-                  </li>
-                ))}
+                    </>
+                  );
+                  return (
+                    <li key={c.id}>
+                      {onOpenClients ? (
+                        <button
+                          type="button"
+                          aria-label={`View or edit notes for ${c.name}`}
+                          onClick={() =>
+                            onOpenClients({ id: alert.user_property_id, title: alert.title })
+                          }
+                          className="flex w-full min-w-0 cursor-pointer items-start justify-between gap-2 rounded-md bg-surface-secondary px-3 py-2 text-left text-sm transition-colors hover:ring-1 hover:ring-border"
+                        >
+                          <span className="min-w-0 flex-1 break-words">{content}</span>
+                          <Pencil className="mt-0.5 size-4 shrink-0 text-muted" />
+                        </button>
+                      ) : (
+                        <div className="min-w-0 break-words rounded-md bg-surface-secondary px-3 py-2 text-sm">
+                          {content}
+                        </div>
+                      )}
+                    </li>
+                  );
+                })}
               </ul>
             )}
           </li>

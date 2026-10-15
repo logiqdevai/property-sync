@@ -1,5 +1,7 @@
 import { useState } from "react";
-import { Button, ListBox, Select, Tabs } from "@heroui/react";
+import { Link } from "react-router-dom";
+import { Button, ListBox, Select, Tabs, useOverlayState } from "@heroui/react";
+import { PropertyClientsModal } from "./properties/components/property-clients-modal";
 import { DelistedAlertsList } from "@/components/property-clients/delisted-alerts-list";
 import {
   useAcknowledgeDelistedAlerts,
@@ -21,6 +23,14 @@ export default function DashboardHome() {
   const { full_name, email } = useAuthStore();
   const displayName = full_name || email || "there";
   const [period, setPeriod] = useState<ActivityPeriod>("week");
+  const clientsModal = useOverlayState();
+  const [clientsProperty, setClientsProperty] = useState<{ id: string; title: string } | null>(
+    null,
+  );
+  const openClients = (property: { id: string; title: string }) => {
+    setClientsProperty(property);
+    clientsModal.open();
+  };
   const [activityType, setActivityType] = useState<"all" | "delisted">("all");
   const { data: dashboard, isPending } = useUserDashboard(period);
   const { data: delistedAlerts = [] } = useDelistedAlerts();
@@ -106,7 +116,7 @@ export default function DashboardHome() {
               Mark as seen
             </Button>
           </div>
-          <DelistedAlertsList alerts={delistedAlerts} />
+          <DelistedAlertsList alerts={delistedAlerts} onOpenClients={openClients} />
         </div>
       )}
 
@@ -170,7 +180,7 @@ export default function DashboardHome() {
             </p>
           ) : (
             <div className="max-h-[32rem] overflow-y-auto">
-              <DelistedAlertsList alerts={allDelisted} />
+              <DelistedAlertsList alerts={allDelisted} onOpenClients={openClients} />
             </div>
           )
         ) : isPending ? (
@@ -189,9 +199,18 @@ export default function DashboardHome() {
                 className="flex flex-col gap-1.5 sm:flex-row sm:items-start sm:justify-between sm:gap-3 text-sm border border-border rounded-lg p-3 min-w-0"
               >
                 <div className="flex min-w-0 flex-col gap-1">
-                  <span className="font-medium text-foreground break-words">
-                    {entry.property_title}
-                  </span>
+                  {entry.user_property_id ? (
+                    <Link
+                      to={`/properties/${entry.user_property_id}`}
+                      className="font-medium text-accent break-words hover:underline"
+                    >
+                      {entry.property_title}
+                    </Link>
+                  ) : (
+                    <span className="font-medium text-foreground break-words">
+                      {entry.property_title}
+                    </span>
+                  )}
                   <ActivityChangeLabel entry={entry} />
                 </div>
                 <span className="text-xs text-muted whitespace-nowrap shrink-0">
@@ -202,6 +221,7 @@ export default function DashboardHome() {
           </ul>
         )}
       </div>
+      <PropertyClientsModal state={clientsModal} property={clientsProperty} />
     </div>
   );
 }
