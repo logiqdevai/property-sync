@@ -4,13 +4,23 @@ import { PropertyHistoryEventType, PropertyStatus } from 'generated/prisma';
 import { UPDATE_EVENT_TYPES } from '@/modules/properties/utils/property-change-filter.util';
 import { UserDashboardResponse } from './entities/user-dashboard.entity';
 
-const RECENT_ACTIVITY_LIMIT = 10;
+const RECENT_ACTIVITY_LIMIT = 100;
+
+const ACTIVITY_PERIOD_DAYS = { day: 1, week: 7, month: 30 } as const;
+export type ActivityPeriod = keyof typeof ACTIVITY_PERIOD_DAYS;
 
 @Injectable()
 export class UserDashboardService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async getDashboard(userId: string): Promise<UserDashboardResponse> {
+  async getDashboard(
+    userId: string,
+    period?: string,
+  ): Promise<UserDashboardResponse> {
+    const activityDays =
+      ACTIVITY_PERIOD_DAYS[(period as ActivityPeriod) ?? 'week'] ??
+      ACTIVITY_PERIOD_DAYS.week;
+    const activitySince = new Date(Date.now() - activityDays * 24 * 60 * 60 * 1000);
     const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
 
     const [
@@ -78,7 +88,10 @@ export class UserDashboardService {
           })
           .then((rows) => rows.length),
         this.prisma.propertyHistory.findMany({
-          where: { property_id: { in: propertyIds } },
+          where: {
+            property_id: { in: propertyIds },
+            created_at: { gte: activitySince },
+          },
           orderBy: { created_at: 'desc' },
           take: RECENT_ACTIVITY_LIMIT,
           include: { property: { select: { title: true } } },

@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   Param,
+  Query,
   Patch,
   Post,
   UseGuards,
@@ -36,8 +37,11 @@ export class UserPropertyClientsController {
   @ApiOperation({
     summary: 'Delisted properties that have clients and are not yet acknowledged',
   })
-  listDelistedAlerts(@CurrentUser('id') userId: string) {
-    return this.service.listDelistedAlerts(userId);
+  listDelistedAlerts(
+    @CurrentUser('id') userId: string,
+    @Query('all') all?: string,
+  ) {
+    return this.service.listDelistedAlerts(userId, all === 'true');
   }
 
   @Audited({

@@ -1,7 +1,8 @@
-import { Controller, Get, UseGuards } from '@nestjs/common';
+import { Controller, Get, Query, UseGuards } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOperation,
+  ApiQuery,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
@@ -19,8 +20,12 @@ export class UserDashboardController {
 
   @Get()
   @ApiOperation({ summary: 'Current user dashboard stats and recent activity' })
+  @ApiQuery({ name: 'period', required: false, enum: ['day', 'week', 'month'] })
   @ApiResponse({ status: 200, type: UserDashboardResponse })
-  getDashboard(@CurrentUser('id') userId: string) {
-    return this.userDashboardService.getDashboard(userId);
+  getDashboard(
+    @CurrentUser('id') userId: string,
+    @Query('period') period?: string,
+  ) {
+    return this.userDashboardService.getDashboard(userId, period);
   }
 }

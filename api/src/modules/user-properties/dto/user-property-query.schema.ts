@@ -38,6 +38,7 @@ export const UserPropertyQuerySchema = z.object({
   has_duplicate_group: booleanQueryParam,
   has_price: booleanQueryParam,
   pushed_to_crm: booleanQueryParam,
+  clients: z.enum(['shown', 'delisted']).optional(),
   pending_crm_update: booleanQueryParam,
   agency_id: z.string().uuid().optional(),
   user_tracked_agency_id: z.string().uuid().optional(),

@@ -370,6 +370,12 @@ export class UserPropertiesService {
       ...(query.pending_crm_update !== undefined && {
         pending_crm_update: query.pending_crm_update,
       }),
+      ...(query.clients && { clients: { some: {} } }),
+      ...(query.clients === 'delisted' && {
+        AND: [
+          { status: { in: [PropertyStatus.REMOVED, PropertyStatus.SOLD] } },
+        ],
+      }),
     };
   }
 

@@ -1,12 +1,11 @@
-import { useEffect, useState, type FC } from "react";
-import { Link } from "react-router-dom";
-import { ChevronDown, X } from "lucide-react";
+import { useEffect, type FC } from "react";
+import { X } from "lucide-react";
 import { Button, Modal, useOverlayState } from "@heroui/react";
-import { formatDate } from "@/lib/date";
 import {
   useAcknowledgeDelistedAlerts,
   useDelistedAlerts,
 } from "@/features/property-clients/hooks/use-property-clients";
+import { DelistedAlertsList } from "./delisted-alerts-list";
 
 /**
  * Shown on dashboard load while any property that has clients was delisted from the agency site and
@@ -17,15 +16,6 @@ export const DelistedClientsAlertModal: FC = () => {
   const state = useOverlayState();
   const { data: alerts = [] } = useDelistedAlerts();
   const acknowledge = useAcknowledgeDelistedAlerts();
-  const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
-
-  const toggleClients = (id: string) =>
-    setCollapsed((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
 
   useEffect(() => {
     if (alerts.length > 0 && !state.isOpen) state.open();
@@ -72,55 +62,7 @@ export const DelistedClientsAlertModal: FC = () => {
                 These listings are no longer on the agency website. Open one to see who you showed
                 it to.
               </p>
-              <ul className="flex flex-col gap-2">
-                {alerts.map((alert) => (
-                  <li key={alert.user_property_id} className="rounded-lg border border-border p-3">
-                    <Link
-                      to={`/properties/${alert.user_property_id}`}
-                      onClick={state.close}
-                      className="text-sm font-medium text-accent hover:underline"
-                    >
-                      {alert.internal_id ? `${alert.internal_id} · ` : ""}
-                      {alert.title}
-                    </Link>
-                    <button
-                      type="button"
-                      className="mt-1 flex items-center gap-1 text-sm text-muted hover:text-foreground"
-                      aria-expanded={!collapsed.has(alert.user_property_id)}
-                      onClick={() => toggleClients(alert.user_property_id)}
-                    >
-                      <ChevronDown
-                        className={`size-4 transition-transform ${
-                          collapsed.has(alert.user_property_id) ? "-rotate-90" : ""
-                        }`}
-                      />
-                      {collapsed.has(alert.user_property_id) ? "Show" : "Hide"} clients (
-                      {alert.clients.length})
-                    </button>
-                    {!collapsed.has(alert.user_property_id) && (
-                      <ul className="mt-2 flex flex-col gap-1.5">
-                        {alert.clients.map((c) => (
-                          <li key={c.id} className="rounded-md bg-surface-secondary px-3 py-2 text-sm">
-                            <p className="font-medium text-foreground">
-                              {c.name}
-                              <span className="font-normal text-muted">
-                                {" "}
-                                · shown {formatDate(c.shown_at)}
-                                {c.phone ? ` · ${c.phone}` : ""}
-                              </span>
-                            </p>
-                            {c.notes && (
-                              <p className="mt-0.5 whitespace-pre-wrap break-words text-muted">
-                                {c.notes}
-                              </p>
-                            )}
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </li>
-                ))}
-              </ul>
+              <DelistedAlertsList alerts={alerts} onNavigate={state.close} />
             </Modal.Body>
           </Modal.Dialog>
         </Modal.Container>

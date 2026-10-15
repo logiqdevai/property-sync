@@ -24,3 +24,5 @@ export interface UserDashboardResponse {
   stats: UserDashboardStats;
   activity: UserDashboardActivityItem[];
 }
+
+export type ActivityPeriod = "day" | "week" | "month";

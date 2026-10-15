@@ -27,6 +27,9 @@ type PropertyListCardProps = {
   pendingCrmUpdate: boolean;
   integrationPropertyId: string | null;
   duplicateGroupId: string | null;
+  clientsCount?: number;
+  clientsDelisted?: boolean;
+  onOpenClients?: () => void;
   isSelected: boolean;
   onSelectionChange: (selected: boolean) => void;
   rowActions: TableRowActionEntry[];
@@ -47,6 +50,9 @@ export function PropertyListCard({
   pendingCrmUpdate,
   integrationPropertyId,
   duplicateGroupId,
+  clientsCount = 0,
+  clientsDelisted = false,
+  onOpenClients,
   isSelected,
   onSelectionChange,
   rowActions,
@@ -65,7 +71,8 @@ export function PropertyListCard({
       className={cn(
         "flex min-w-0 flex-col gap-3 overflow-hidden rounded-xl border border-border bg-surface p-4",
         groupClass,
-        isRemoved && "opacity-60",
+        isRemoved && !clientsDelisted && "opacity-60",
+        clientsDelisted && "bg-danger/15",
       )}
     >
       <div className="flex items-start gap-3">
@@ -121,10 +128,23 @@ export function PropertyListCard({
           {formatPrice(price, currency)}
         </span>
         <PropertyStatusChip status={status} />
+        {clientsCount > 0 ? (
+          <button
+            type="button"
+            className="cursor-pointer"
+            aria-label="Open clients and notes"
+            onClick={onOpenClients}
+          >
+            <Chip size="sm" variant="soft" color={clientsDelisted ? "danger" : "warning"}>
+              Shown to {clientsCount}
+              {clientsDelisted ? " · delisted" : ""}
+            </Chip>
+          </button>
+        ) : null}
       </div>
 
       <div className="flex min-w-0 flex-col gap-2 border-t border-border pt-3 pl-8">
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between">
           <span className="text-xs text-muted">CRM</span>
           {pendingCrmUpdate ? (
             <div className="flex flex-wrap items-center gap-2">

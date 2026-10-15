@@ -103,11 +103,11 @@ export class UserPropertyClientsService {
    * Properties delisted from the agency site that have >=1 client and whose alert the user has not
    * dismissed yet. Persistent: it keeps coming back at every login until acknowledged.
    */
-  async listDelistedAlerts(userId: string) {
+  async listDelistedAlerts(userId: string, includeAcknowledged = false) {
     const clients = await this.prisma.userPropertyClient.findMany({
       where: {
         user_id: userId,
-        delisted_ack_at: null,
+        ...(!includeAcknowledged && { delisted_ack_at: null }),
         user_property: {
           status: { in: [PropertyStatus.REMOVED, PropertyStatus.SOLD] },
         },
@@ -128,6 +128,7 @@ export class UserPropertyClientsService {
         status: PropertyStatus;
         internal_id: string | null;
         delisted_at: Date | null;
+        acknowledged: boolean;
         clients: {
           id: string;
           name: string;
@@ -146,8 +147,10 @@ export class UserPropertyClientsService {
         status: property.status,
         internal_id: property.internal_id,
         delisted_at: client.delisted_at,
+        acknowledged: true,
         clients: [],
       };
+      if (!client.delisted_ack_at) entry.acknowledged = false;
       entry.clients.push({
         id: client.id,
         name: client.name,

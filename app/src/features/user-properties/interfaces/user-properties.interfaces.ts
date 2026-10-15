@@ -132,6 +132,7 @@ export interface UserPropertyListQuery {
   has_duplicate_group?: boolean;
   has_price?: boolean;
   pushed_to_crm?: boolean;
+  clients?: "shown" | "delisted";
   pending_crm_update?: boolean;
   agency_id?: string;
   user_tracked_agency_id?: string;

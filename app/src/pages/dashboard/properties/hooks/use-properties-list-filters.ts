@@ -28,6 +28,7 @@ const BOOL_FILTER_VALUES = new Set(["true", "false"]);
 const LIMIT_VALUES = new Set(TablePageSizeOptions.map((option) => option.value));
 
 export type PropertiesListBoolFilter = "all" | "true" | "false";
+export type PropertiesListClientsFilter = "all" | "shown" | "delisted";
 
 export type PropertiesListLocationState = {
   returnTo?: string;
@@ -57,6 +58,7 @@ export type PropertiesListFilters = {
   duplicateGroup: PropertiesListBoolFilter;
   hasPrice: PropertiesListBoolFilter;
   pushedToCrm: PropertiesListBoolFilter;
+  clients: PropertiesListClientsFilter;
   pendingCrmUpdate: PropertiesListBoolFilter;
   dateFrom: string;
   dateTo: string;
@@ -83,6 +85,10 @@ function parseBoolFilter(value: string | null): PropertiesListBoolFilter {
     return value as PropertiesListBoolFilter;
   }
   return "all";
+}
+
+function parseClientsFilter(value: string | null): PropertiesListClientsFilter {
+  return value === "shown" || value === "delisted" ? value : "all";
 }
 
 function parseOrderBy(value: string | null): OrderByType {
@@ -120,6 +126,7 @@ function parseFilters(searchParams: URLSearchParams): PropertiesListFilters {
     duplicateGroup: parseBoolFilter(searchParams.get("duplicate_group")),
     hasPrice: parseBoolFilter(searchParams.get("has_price")),
     pushedToCrm: parseBoolFilter(searchParams.get("pushed_to_crm")),
+    clients: parseClientsFilter(searchParams.get("clients")),
     pendingCrmUpdate: parseBoolFilter(searchParams.get("pending_crm_update")),
     dateFrom: searchParams.get("date_from") ?? "",
     dateTo: searchParams.get("date_to") ?? "",
@@ -148,6 +155,7 @@ function buildSearchParams(filters: PropertiesListFilters): URLSearchParams {
   if (filters.pushedToCrm !== "all") {
     params.set("pushed_to_crm", filters.pushedToCrm);
   }
+  if (filters.clients !== "all") params.set("clients", filters.clients);
   if (filters.pendingCrmUpdate !== "all") {
     params.set("pending_crm_update", filters.pendingCrmUpdate);
   }
@@ -173,6 +181,7 @@ function countActiveFilters(filters: PropertiesListFilters): number {
     filters.duplicateGroup !== "all",
     filters.hasPrice !== "all",
     filters.pushedToCrm !== "all",
+    filters.clients !== "all",
     filters.pendingCrmUpdate !== "all",
     Boolean(filters.dateFrom),
     Boolean(filters.dateTo),

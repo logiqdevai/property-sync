@@ -27,10 +27,10 @@ export const useKnownClients = (enabled: boolean) =>
     enabled,
   });
 
-export const useDelistedAlerts = () =>
+export const useDelistedAlerts = (includeAcknowledged = false) =>
   useQuery({
-    queryKey: [KEY, "delisted-alerts"],
-    queryFn: getDelistedAlerts,
+    queryKey: [KEY, "delisted-alerts", includeAcknowledged],
+    queryFn: () => getDelistedAlerts(includeAcknowledged),
     staleTime: 60_000,
   });
 

@@ -71,10 +71,13 @@ export const getKnownClients = async (): Promise<KnownClient[]> => {
   }
 };
 
-export const getDelistedAlerts = async (): Promise<DelistedPropertyAlert[]> => {
+export const getDelistedAlerts = async (
+  includeAcknowledged = false,
+): Promise<DelistedPropertyAlert[]> => {
   try {
     const response = await axiosInstance.get(
       ApiRoutes.propertyClients.delistedAlerts,
+      { params: includeAcknowledged ? { all: true } : undefined },
     );
     return response.data;
   } catch (error: any) {
