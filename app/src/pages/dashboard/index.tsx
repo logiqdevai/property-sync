@@ -11,6 +11,7 @@ import { useAuthStore } from "@/stores/auth";
 import { useUserDashboard } from "@/features/user-dashboard/hooks/use-user-dashboard";
 import type { ActivityPeriod } from "@/features/user-dashboard/interfaces/user-dashboard.interfaces";
 import { formatDateTime } from "@/lib/date";
+import { Routes } from "@/routes/routes";
 import { ActivityChangeLabel } from "./components/activity-change-label";
 
 const PERIOD_OPTIONS: { id: ActivityPeriod; label: string }[] = [
@@ -201,7 +202,7 @@ export default function DashboardHome() {
                 <div className="flex min-w-0 flex-col gap-1">
                   {entry.user_property_id ? (
                     <Link
-                      to={`/properties/${entry.user_property_id}`}
+                      to={Routes.dashboard.properties.detail(entry.user_property_id)}
                       className="font-medium text-accent break-words hover:underline"
                     >
                       {entry.property_title}

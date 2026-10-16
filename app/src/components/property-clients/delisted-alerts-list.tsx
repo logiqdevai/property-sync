@@ -2,6 +2,7 @@ import { useState, type FC } from "react";
 import { Link } from "react-router-dom";
 import { ChevronDown, Pencil } from "lucide-react";
 import { formatDate } from "@/lib/date";
+import { Routes } from "@/routes/routes";
 import type { DelistedPropertyAlert } from "@/features/property-clients/interfaces/property-clients.interfaces";
 
 type DelistedAlertsListProps = {
@@ -31,7 +32,7 @@ export const DelistedAlertsList: FC<DelistedAlertsListProps> = ({ alerts, onNavi
           <li key={alert.user_property_id} className="rounded-lg border border-border p-3">
             <div className="flex items-start justify-between gap-2">
               <Link
-                to={`/properties/${alert.user_property_id}`}
+                to={Routes.dashboard.properties.detail(alert.user_property_id)}
                 onClick={onNavigate}
                 className="min-w-0 break-words text-sm font-medium text-accent hover:underline"
               >
