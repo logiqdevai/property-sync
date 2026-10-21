@@ -353,6 +353,9 @@ export class ScrapersService {
           ...(dto.use_proxy_browser !== undefined && {
             use_proxy_browser: dto.use_proxy_browser,
           }),
+          ...(dto.use_captcha_solver !== undefined && {
+            use_captcha_solver: dto.use_captcha_solver,
+          }),
           ...(dto.diagnostics_mode !== undefined && {
             diagnostics_mode: dto.diagnostics_mode,
           }),
@@ -409,6 +412,9 @@ export class ScrapersService {
           }),
           ...(dto.use_proxy_browser !== undefined && {
             use_proxy_browser: dto.use_proxy_browser,
+          }),
+          ...(dto.use_captcha_solver !== undefined && {
+            use_captcha_solver: dto.use_captcha_solver,
           }),
           ...(dto.diagnostics_mode !== undefined && {
             diagnostics_mode: dto.diagnostics_mode,

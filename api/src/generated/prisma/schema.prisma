@@ -183,6 +183,7 @@ enum IntegrationType {
   GOOGLE_TRANSLATE
   AZURE
   WEBSHARE
+  TWOCAPTCHA
 }
 
 enum TranslationProvider {
@@ -197,6 +198,7 @@ enum CostOperationType {
   TRANSLATION
   DEWATERMARK
   PROXY
+  CAPTCHA
   OTHER
 }
 
@@ -533,6 +535,11 @@ model Scraper {
   // NOT proxied -- they are downloaded later with plain fetch(). Ignored when use_managed_browser
   // is also true (the managed browser wins).
   use_proxy_browser    Boolean         @default(false)
+  // When true, a crawl that lands on a captcha wall (Imperva "Pardon Our Interruption" hCaptcha,
+  // Cloudflare Turnstile, reCAPTCHA v2) solves it through 2captcha (CaptchaModule) and carries on,
+  // instead of failing the page as blocked. Costs ~$0.003 per solve; capped per crawl. It cannot
+  // help when the site rejects our IP before showing any captcha -- combine with use_proxy_browser.
+  use_captcha_solver   Boolean         @default(false)
   diagnostics_mode     DiagnosticsMode @default(PRODUCTION) // debugging depth for this scraper's crawl runs
   health               ScraperHealth   @default(GOOD) // cached rollup, recomputed by a background job (spec section 18)
   success_rate         Decimal?        @db.Decimal(5, 2) // cached % over trailing window

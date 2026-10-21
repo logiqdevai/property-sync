@@ -548,6 +548,18 @@ describe('resolveEstateWebLocation', () => {
       ).toBe(50301);
     });
 
+    it('puts bare-prefecture Corfu listings in Δήμος Κερκυραίων, but not Paxos', () => {
+      expect(resolveEstateWebLocationFromSources({ city: 'Ν. Κέρκυρας', district: 'Κέρκυρα' })?.id).toBe(70100);
+      expect(
+        resolveEstateWebLocationFromSources({
+          city: 'Κέρκυρα',
+          googleAddressSegments: ['Κέρκυρα', 'Δημοτική Κοινότητα Κερκυραίων'],
+          googleCoordinatePrefectures: ['Κέρκυρα'],
+        })?.id,
+      ).toBe(70100);
+      expect(resolveEstateWebLocationFromSources({ city: 'Κέρκυρα', district: 'Παξοί' })?.id).not.toBe(70100);
+    });
+
     it('maps Halkidiki "Παλλήνη" to Δήμος Κασσάνδρας without coordinates, leaving Athens alone', () => {
       expect(resolveEstateWebLocationFromSources({ city: 'Χαλκιδική', district: 'Παλλήνη' })?.id).toBe(50301);
       expect(

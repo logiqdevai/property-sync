@@ -10,4 +10,5 @@ export const CostProviderFilterOptions: { id: CostProvider | "all"; label: strin
   { id: CostProviders.AZURE, label: "Azure Translator" },
   { id: CostProviders.DEWATERMARK, label: "Dewatermark" },
   { id: CostProviders.WEBSHARE, label: "Webshare" },
+  { id: CostProviders.TWOCAPTCHA, label: "2captcha" },
 ];

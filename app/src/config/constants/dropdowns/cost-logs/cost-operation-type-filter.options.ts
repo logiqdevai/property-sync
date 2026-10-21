@@ -10,5 +10,6 @@ export const CostOperationTypeFilterOptions: { id: CostOperationType | "all"; la
   { id: CostOperationTypes.TRANSLATION, label: "Translation" },
   { id: CostOperationTypes.DEWATERMARK, label: "Dewatermark" },
   { id: CostOperationTypes.PROXY, label: "Proxy" },
+  { id: CostOperationTypes.CAPTCHA, label: "Captcha" },
   { id: CostOperationTypes.OTHER, label: "Other" },
 ];

@@ -244,6 +244,7 @@ exports.Prisma.ScraperScalarFieldEnum = {
   status: 'status',
   use_managed_browser: 'use_managed_browser',
   use_proxy_browser: 'use_proxy_browser',
+  use_captcha_solver: 'use_captcha_solver',
   diagnostics_mode: 'diagnostics_mode',
   health: 'health',
   success_rate: 'success_rate',
@@ -796,7 +797,8 @@ exports.IntegrationType = exports.$Enums.IntegrationType = {
   DEWATERMARK: 'DEWATERMARK',
   GOOGLE_TRANSLATE: 'GOOGLE_TRANSLATE',
   AZURE: 'AZURE',
-  WEBSHARE: 'WEBSHARE'
+  WEBSHARE: 'WEBSHARE',
+  TWOCAPTCHA: 'TWOCAPTCHA'
 };
 
 exports.AuthType = exports.$Enums.AuthType = {
@@ -1011,6 +1013,7 @@ exports.CostOperationType = exports.$Enums.CostOperationType = {
   TRANSLATION: 'TRANSLATION',
   DEWATERMARK: 'DEWATERMARK',
   PROXY: 'PROXY',
+  CAPTCHA: 'CAPTCHA',
   OTHER: 'OTHER'
 };
 

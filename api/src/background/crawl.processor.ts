@@ -27,6 +27,7 @@ import {
   ProxyBrowserSession,
 } from '@/integrations/crawler/interfaces/proxy-browser-session.interface';
 import { WebshareProxyService } from '@/integrations/webshare/services/webshare-proxy.service';
+import { PageCaptchaSolverService } from '@/integrations/captcha/services/page-captcha-solver.service';
 import { WebshareUsageService } from '@/modules/cost-logs/services/webshare-usage.service';
 import { DiagnosticsRunContext } from '@/integrations/diagnostics/interfaces/diagnostics.interfaces';
 import {
@@ -96,6 +97,7 @@ export class CrawlProcessor extends WorkerHost implements OnModuleInit {
     private readonly platformConfigService: PlatformConfigService,
     private readonly webshareProxyService: WebshareProxyService,
     private readonly webshareUsageService: WebshareUsageService,
+    private readonly pageCaptchaSolverService: PageCaptchaSolverService,
   ) {
     super();
   }
@@ -290,7 +292,26 @@ export class CrawlProcessor extends WorkerHost implements OnModuleInit {
         });
       };
 
-      const blockHandlingConfig = buildBlockHandlingConfig(run.source_agency);
+      const baseBlockHandlingConfig = buildBlockHandlingConfig(
+        run.source_agency,
+      );
+      // One shared hook per crawl (its solve budget spans the listing walk and every detail lane).
+      let blockHandlingConfig = baseBlockHandlingConfig;
+      if (scraper.use_captcha_solver) {
+        if (this.pageCaptchaSolverService.isConfigured()) {
+          blockHandlingConfig = {
+            ...(baseBlockHandlingConfig ?? { version: 1 as const }),
+            captcha_solver: this.pageCaptchaSolverService.createHook({
+              scraperId: scraper.id,
+              crawlRunId,
+            }),
+          };
+        } else {
+          this.logger.warn(
+            `crawl job ${crawlRunId}: scraper ${scraper.id} has use_captcha_solver=true but CAPTCHA_API_KEY is not set -- crawling without it`,
+          );
+        }
+      }
 
       let crawlResult: CrawlResult;
       let detailSummary: DetailEnrichmentSummary & { reused: number } = {

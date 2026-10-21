@@ -65,6 +65,7 @@ export interface Scraper {
   status: ScraperStatus;
   use_managed_browser: boolean;
   use_proxy_browser: boolean;
+  use_captcha_solver: boolean;
   diagnostics_mode: DiagnosticsMode;
   normalize_limit: number | null;
   crawl_job_timeout_ms: number | null;
@@ -98,6 +99,7 @@ export interface UpdateScraperPayload {
   status?: ScraperStatus;
   use_managed_browser?: boolean;
   use_proxy_browser?: boolean;
+  use_captcha_solver?: boolean;
   diagnostics_mode?: DiagnosticsMode;
   normalize_limit?: number | null;
   crawl_job_timeout_ms?: number | null;

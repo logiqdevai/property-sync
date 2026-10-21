@@ -318,6 +318,8 @@ Client (tracker `d00081a5-7d28-4be8-8427-11b3b564a5a5`, agency staspro, `SourceA
 
 Same day, the tracker's not-pushed rows: Halkidiki was already covered by the run above (30 of the 112); 4 Attica rows were set by hand (guarded, `property_history` on the canonical row): 2 × `Αθήνα / Ακαδημία Πλάτωνος` → `90004` Δήμος Αθηναίων (Google only says "Αθήνα", a prefecture segment), `Αθήνα / Αγία Παρασκευή` → `90001` (junk Άλιμος point), `Πειραιάς / Πειραιάς` → `90707` Δήμος Πειραιά. 0 of the 358 not-pushed rows remain prefecture-only.
 
+**Corfu follow-up (2026-10-21, pamfili):** the catalog has only `Δήμος Κερκυραίων` (70100) plus Paxos (70101) under `Κέρκυρα` (701), and Google only says `"Δημοτική Κοινότητα Κερκυραίων"`, so the prefecture never stepped down. `PREFECTURE_DEFAULT_MUNICIPALITY` (`κερκυρα → 70100`) is the last step of `refineBarePrefecture`, skipped when the text/Google names a Paxos place or another municipality. Backfill: 159 `Property` + 137 `UserProperty` rows 701 → 70100 (all pamfili), `property_history` entries, `is_modified` + `pending_crm_update = true` on the user rows; needs "Push to CRM".
+
 **Still prefecture-only in that client's pushed list:** `Πειραιάς / Πειραιάς` (Google's `"ΔΗΜΟΣ ΠΕΙΡΑΙΩΣ"` ≠ catalog name) and `Ν. Κέρκυρας / Κέρκυρα` (Google only gives `"Δημοτική Κοινότητα Κερκυραίων"`).
 
 ---

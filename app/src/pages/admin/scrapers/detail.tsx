@@ -383,6 +383,33 @@ export default function ScraperDetailPage() {
               while the managed browser is on.
             </span>
           </div>
+
+          <div className="flex flex-col gap-1.5 justify-center">
+            <span className="text-xs font-medium uppercase tracking-wide text-muted">
+              Captcha solver (2captcha)
+            </span>
+            <Switch
+              isSelected={scraper.use_captcha_solver}
+              isDisabled={updateScraper.isPending}
+              onChange={(isSelected) =>
+                updateScraper.mutate({
+                  id: scraper.id,
+                  payload: { use_captcha_solver: isSelected },
+                })
+              }
+            >
+              <Switch.Control>
+                <Switch.Thumb />
+              </Switch.Control>
+              <Switch.Content>Enabled</Switch.Content>
+            </Switch>
+            <span className="text-xs text-muted">
+              When a crawl lands on a captcha page (Imperva, Cloudflare, reCAPTCHA) it is solved
+              automatically and the crawl carries on. Costs about $0.003 per solve (see Cost logs).
+              It cannot help if the site blocks our server before showing a captcha — turn on the
+              residential proxy as well.
+            </span>
+          </div>
         </div>
       </div>
 

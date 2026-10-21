@@ -57,6 +57,9 @@ function formatQuantity(row: {
   if (row.operation_type === "PROXY") {
     return row.input_quantity !== null ? formatBytes(row.input_quantity) : "—";
   }
+  if (row.operation_type === "CAPTCHA") {
+    return row.unit_count !== null ? `${row.unit_count} solve(s)` : "—";
+  }
   if (row.operation_type === "TRANSLATION") {
     return row.input_quantity !== null ? `${row.input_quantity} chars` : "—";
   }
@@ -74,6 +77,9 @@ function formatOperationQuantityLine(
   }
   if (operation === "PROXY") {
     return quantity.input_quantity ? formatBytes(quantity.input_quantity) : null;
+  }
+  if (operation === "CAPTCHA") {
+    return quantity.unit_count ? `${formatNumber(quantity.unit_count)} solve(s)` : null;
   }
   if (operation === "TRANSLATION") {
     return quantity.input_quantity ? `${formatNumber(quantity.input_quantity)} chars` : null;

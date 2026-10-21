@@ -4,6 +4,7 @@ import { PrismaModule } from '@/core/databases/prisma/prisma.module';
 import { CRAWL_QUEUE } from '@/core/queues/queues.constants';
 import { CrawlerModule } from '@/integrations/crawler/crawler.module';
 import { WebshareModule } from '@/integrations/webshare/webshare.module';
+import { CaptchaModule } from '@/integrations/captcha/captcha.module';
 import { CostLogsModule } from '@/modules/cost-logs/cost-logs.module';
 import { PlatformConfigModule } from '@/modules/platform-config/platform-config.module';
 import { CrawlProcessor } from '@/background/crawl.processor';
@@ -23,6 +24,7 @@ import { CrawlRunsService } from './crawl-runs.service';
     PrismaModule,
     CrawlerModule,
     WebshareModule,
+    CaptchaModule,
     CostLogsModule,
     PlatformConfigModule,
     PropertiesModule,

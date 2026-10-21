@@ -161,15 +161,106 @@ Flow when a page is blocked by a captcha:
      `textarea[name="g-recaptcha-response"]` (hCaptcha's compat shim) to the token, then trigger the
      page's own submit path: the `.h-captcha` `data-callback` function if present, else the inline
      script's call (Imperva: `protectionSubmitCaptcha("hcaptcha", payload, 10000, token)` — read the
-     page's inline script to see the exact arguments, then call it with the solved token). **Untested
-     end to end** — if the page doesn't move on, report `incorrect`, then ask the user.
+     page's inline script to see the exact arguments, then call it with the solved token). **Verified
+     end to end on pelio.eu (Imperva → hCaptcha), 2026-10-21:** the widget's `data-callback` is
+     `solvedCaptcha(payload)`; setting both textareas then `setTimeout(() => window.solvedCaptcha(token), 50)`
+     moved the page past the challenge within ~4s both times. If the page doesn't move on, report
+     `incorrect`, then follow §3b (retry / poll for a manual clear).
    - reCAPTCHA v2: set every `textarea[name="g-recaptcha-response"]` (`innerHTML` and `value`), then call
      the `data-callback` function (`window[el.dataset.callback](token)`) or submit the form.
 4. Check the page actually moved past the challenge (title/URL/listing selector present), then
    `--report=<taskId>:correct` (or `incorrect` if it didn't work — that refunds the solve).
 5. Solves cost money (~$0.003 each) and a token is single-use and short-lived: solve only when blocked,
-   inject immediately, and don't solve in a loop — if the same page blocks again right after a
-   successful solve, stop and ask the user.
+   inject immediately, and don't solve in a tight loop — see §3b for what to do when a solve fails or
+   the same page blocks again right after a successful one.
+
+## 3b. Run fully autonomously (default — the user does not want to be asked or to prompt you)
+
+The crawl only advances while you keep issuing tool calls. **A text-only message ends your turn and
+the crawl stops until the user sends something** — that is why users end up typing "status?" / "go".
+So:
+
+- **Never end a turn while pages are pending.** Chain the driver call (`evaluate_script` →
+  `eval(localStorage.mcpDriver)`) page after page. Status text is optional and short, and must always be
+  followed by the next tool call in the same message. Don't answer "status?" with a text-only stop;
+  answer in one line and keep calling. Don't offer to skip/pause an agency or ask whether to proceed on
+  a big one (the user has said so explicitly).
+- **Detect blocks yourself.** The driver returns `{blocked:true,…}` when the title matches a challenge
+  (Imperva "Pardon Our Interruption", "Just a moment", "Attention Required") or the body is nearly
+  empty. Handle it immediately, in the same turn:
+  1. Read the sitekey / `data-callback` (`document.querySelector('.h-captcha[data-sitekey]')`; for
+     Turnstile/reCAPTCHA see the §3a probe).
+  2. Start the solver **once** with `Bash run_in_background` (§3a). Keep the turn alive while it runs by
+     polling the page every ~15s (`async () => { await new Promise(r => setTimeout(r, 15000)); return
+     await eval(localStorage.getItem('mcpDriver')); }`) — if the user clears the captcha manually the
+     poll resumes the crawl on its own; then `Read` the solver's output file when its notification
+     arrives (don't start a second solve for the same block).
+  3. Inject the token (§3a step 3), confirm the page left the challenge, `--report=<taskId>:correct`,
+     and continue the driver.
+- **Never miss a block (detection only happens when a tool call returns):**
+  - Every driver call must report block state, including when it errors. On *any* error
+    (`Execution context was destroyed`, navigation timeout, empty result) check the page before retrying:
+    `() => ({t: document.title, u: location.href, blocked: /Pardon Our Interruption|Just a moment|Attention Required|Access Denied/i.test(document.title) || !!document.querySelector('.h-captcha, iframe[src*="hcaptcha"], #cf-challenge-running')})`.
+    Treat `blocked:true` from this check exactly like a `{blocked:true}` driver result.
+  - A repeated driver result (same `done` URL twice, or `pending` not decreasing over 3 calls) means a
+    silent block or stall: run the check above, don't just keep calling.
+  - Don't spend a turn on text only — not for status, not for "the user hasn't heard from you" nudges.
+    Put the one-line status in the same message as the next tool call.
+  - After an Edit/Write/long Bash wait, the very next call must be the block check/driver call, never a
+    pause. If a long background job (ingest, normalization) runs while pages remain, interleave driver
+    calls with it.
+- **When a solve fails** (`CAPTCHA_SOLVE_TIMEOUT`, `ERROR_ZERO_BALANCE`, unsupported type, or the page
+  doesn't accept the token): report `incorrect` if a token was injected, retry the solve at most twice
+  for that block (a timed-out task isn't charged), and after that just keep polling every ~15s so a
+  manual clear by the user resumes the crawl — still without ending the turn. If the *same* page blocks
+  right after a successful solve, retry once more, then fall back to polling.
+- **Pacing:** since captchas are now solved automatically, a block only costs ~30–180s of solve time,
+  so use a short randomized per-page wait (~250–650ms, e.g. `250 + Math.random()*400`); measured ~3s/page
+  on pelio (344 pages, 3+ solves). Back off to 1.5–3s if blocks start arriving back-to-back.
+- **Big agencies (>~500 listings):** localStorage (~5MB) is not enough for the collected items; store
+  them in IndexedDB instead (see the driver pattern used for housemarket-realestate: open db
+  `mcpcrawl`, store `items`, `getAll()` to compute pending) and keep only `mcpExpect`/`mcpDriver` in
+  localStorage.
+- **Finish the job in the same run:** when `pending` reaches 0, dump the items (`evaluate_script` with
+  `filePath`), strip the driver-only `_detail_done` flag, run the §6 ingest (dry-run, then real in the
+  background), wait for normalization/`cms-sync` to complete (§2), restore the tracked agency's
+  auto-update flag **to its original value** (it may already have been `false`), check removals (§2
+  caveat) and only then report. Save progress to the repo (`docs/mcp-crawl-progress/`) only if you have
+  to abandon the run.
+- A push notification is skipped while the user's terminal is active, so don't rely on it.
+
+## 3c. Preferred for big or captcha-heavy agencies: the autonomous watcher (no session involved)
+
+§3b still depends on *your* tool calls returning, so a block can sit unnoticed. For anything with more
+than a few dozen pages or a WAF that blocks, use `api/scripts/mcp-autocrawl.ts` instead: it launches its
+**own visible Chrome** (Playwright, `channel:'chrome'`, persistent profile in `%TEMP%/mcp-autocrawl-profile`
+— the MCP's Chrome can't be attached to from outside, it runs over a pipe), runs the site's `driver.js`
+(same file as §3b: async IIFE over IndexedDB `mcpcrawl`/`items` + `localStorage.mcpExpect`, returns
+`{pending,next}` or `{blocked:true}`) in a loop, and **solves captchas itself** (2captcha, same services
+as `solve-captcha.ts`: hCaptcha/Imperva, Turnstile, reCAPTCHA v2), injects the token, checks the page
+moved on, reports correct/incorrect and continues. Failed solves back off and retry; it never stops on a
+block.
+
+```
+cd api
+$env:TS_NODE_TRANSPILE_ONLY=1   # (PowerShell)  | TS_NODE_TRANSPILE_ONLY=1 in bash
+npx dotenv -e .env.staging -- node -r tsconfig-paths/register -r ts-node/register scripts/mcp-autocrawl.ts \
+  --driver=<driver.js> --start=<first url to crawl> --out=<items.json> [--seed=<items.json>] [--max-minutes=N]
+```
+
+- **Start it detached** (PowerShell `Start-Process cmd.exe -WindowStyle Hidden -ArgumentList '/c', '<cmd> > out.txt 2>&1'`),
+  not as a Bash `run_in_background` job — those are capped at 10 min and a big crawl takes longer.
+- `--seed=<items.json>` (`{source_url, raw}[]`, e.g. the collected listing items) is added to IndexedDB for
+  every key not already there (done items are kept), so restarting resumes where it left off. The Chrome
+  profile keeps IndexedDB between runs.
+- Progress: one line per page appended to `<out>.log` (`#n {done,pending,next}`; `BLOCK …`, `SOLVED task …`,
+  `token not accepted`, `stall on …` lines for blocks); a checkpoint is written to `<out>.checkpoint.json`
+  every 50 pages. At `pending 0` it writes `<out>` (driver-only `_detail_done` stripped) — go straight to
+  the §6 ingest.
+- Your job meanwhile: check `<out>.log` occasionally (tail it); don't drive pages yourself in parallel.
+  Process died or log stale >5 min → look at the `.stdout.txt`, fix, restart the same command (it resumes).
+- If the site needs a listing walk first, run the driver's listing mode the same way (the driver decides
+  listing vs detail from the URL) or collect the listing items via §4 and pass them as `--seed`.
 
 ## 4. Listing-page walk
 

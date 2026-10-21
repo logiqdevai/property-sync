@@ -1322,7 +1322,15 @@ const PREFECTURE_AREA_ALIASES: Record<string, Record<string, number>> = {
   },
 };
 
-const GOOGLE_COMMUNITY_PREFIXES = ['τοπικη κοινοτητα ', 'δημοτικη κοινοτητα '];
+// Prefectures whose catalog has one municipality for practically the whole prefecture, so a
+// bare-prefecture result can take it without any other signal. Κέρκυρα: Δήμος Κερκυραίων
+// (the other catalog municipality is the separate island of Paxos); Google only ever names
+// it "Δημοτική Κοινότητα Κερκυραίων", which no catalog node matches.
+const PREFECTURE_DEFAULT_MUNICIPALITY: Record<string, number> = {
+  κερκυρα: 70100,
+};
+
+const GOOGLE_COMMUNITY_PREFIXES =['τοπικη κοινοτητα ', 'δημοτικη κοινοτητα '];
 
 // Google names a village's local community in genitive ("Τοπική Κοινότητα Πευκοχωρίου",
 // "... Νέας Σκιώνης"); the catalog names the village in nominative ("Πευκοχώρι", "Νέα Σκιώνη").
@@ -1439,6 +1447,18 @@ function refineBarePrefecture(
       const aliased = aliases[label] != null ? LOCATION_BY_ID.get(aliases[label]) : undefined;
       if (aliased) return aliased;
     }
+  }
+  const defaultMunicipalityId =
+    PREFECTURE_DEFAULT_MUNICIPALITY[LOCATION_NORMALIZED_SEGMENTS.get(loc.id)?.[1] ?? ''];
+  const defaultMunicipality =
+    defaultMunicipalityId != null ? LOCATION_BY_ID.get(defaultMunicipalityId) : undefined;
+  // Not when the text or the coordinates name another municipality of the prefecture (Paxos).
+  if (
+    defaultMunicipality &&
+    municipalitiesNamedInside(loc, labels).size === 0 &&
+    ![...labels, ...googleSegments].some((label) => label.includes('παξ'))
+  ) {
+    return defaultMunicipality;
   }
   return loc;
 }

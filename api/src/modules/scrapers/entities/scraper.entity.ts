@@ -31,6 +31,9 @@ export class Scraper {
   @ApiProperty()
   use_proxy_browser: boolean;
 
+  @ApiProperty()
+  use_captcha_solver: boolean;
+
   @ApiProperty({
     enum: DiagnosticsMode,
     example: DiagnosticsMode.PRODUCTION,

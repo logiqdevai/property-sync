@@ -40,6 +40,15 @@ export class UpdateScraperDto {
 
   @ApiProperty({
     required: false,
+    description:
+      'When true, a crawl that hits a captcha wall (Imperva/hCaptcha, Cloudflare Turnstile, reCAPTCHA v2) solves it through the 2captcha integration and carries on instead of failing as blocked. Costs about $0.003 per solve, capped per crawl. Does not help when the site rejects the IP before showing a captcha -- combine with the residential proxy.',
+  })
+  @IsOptional()
+  @IsBoolean()
+  use_captcha_solver?: boolean;
+
+  @ApiProperty({
+    required: false,
     enum: DiagnosticsMode,
     description: "Debugging depth for this scraper's crawl runs",
   })

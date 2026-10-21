@@ -266,7 +266,10 @@ export async function waitForBotChallengeClearance(
     if (state === 'ok') return state;
   }
 
-  if (state === 'blocked') return state;
+  if (state === 'blocked') {
+    return (await trySolveCaptcha(page, config, rules, minReadyBodyLength)) ??
+      state;
+  }
 
   while (Date.now() < deadline) {
     await page.waitForTimeout(300);
@@ -274,7 +277,45 @@ export async function waitForBotChallengeClearance(
     if (state === 'ok' || state === 'blocked') break;
   }
 
+  if (state === 'blocked' || state === 'challenge') {
+    const solved = await trySolveCaptcha(
+      page,
+      config,
+      rules,
+      minReadyBodyLength,
+    );
+    if (solved) return solved;
+  }
+
   await page.waitForTimeout(500);
+  return state;
+}
+
+// Hands a still-blocked page to the per-crawl captcha hook (BlockHandlingConfig.captcha_solver) and
+// re-classifies it. Returns the new state, or undefined when there is no hook / nothing was solved,
+// so the caller keeps its own state.
+async function trySolveCaptcha(
+  page: Page,
+  config: BlockHandlingConfig | undefined,
+  rules: BlockRule[],
+  minReadyBodyLength: number,
+): Promise<ClassifyResult | undefined> {
+  if (!config?.captcha_solver) return undefined;
+  let solved = false;
+  try {
+    solved = await config.captcha_solver(page);
+  } catch {
+    return undefined; // the hook must never break the crawl; fall back to the blocked state
+  }
+  if (!solved) return undefined;
+
+  // The page navigates/reloads after a successful solve: give it a moment to settle.
+  const settleDeadline = Date.now() + 15_000;
+  let state: ClassifyResult = await classify(page, rules, minReadyBodyLength);
+  while (state !== 'ok' && Date.now() < settleDeadline) {
+    await page.waitForTimeout(500);
+    state = await classify(page, rules, minReadyBodyLength);
+  }
   return state;
 }
 
