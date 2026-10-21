@@ -26,6 +26,8 @@ the scraper doesn't have a working config yet, use `scraper-generation` first.
   (which explicitly assumes no browser MCP and falls back to `curl`), this skill's entire reason to
   exist is driving a real MCP-controlled browser — if `mcp__chrome-devtools__*` tools aren't
   available, stop and tell the user to connect that MCP server first.
+- **`CAPTCHA_API_KEY`** (2captcha) in `api/.env.staging` — optional but lets you clear supported
+  captchas yourself, see §3a.
 - **`DATABASE_URL`/`REDIS_URL`** — same as `scraper-generation` §0: read from `api/.env.production`
   or `api/.env.staging` (same DB for both).
 - Run `mcp-crawl-ingest.ts` (§6) from inside `api/` with
@@ -113,8 +115,61 @@ keep the collected items in the page's `localStorage` (same origin, survives nav
 the extraction script schedule the next navigation itself (`setTimeout(() => location.href = next,
 ~2-3.5s)`), so each page costs one tool call. Use only real top-level navigations — in-page
 `fetch()` / hidden iframes get a 405 or a bot challenge on WAF-protected sites and can get the
-whole session blocked. If a page shows a challenge ("Pardon Our Interruption", "Just a moment"),
-stop and ask the user to clear it in the visible Chrome; don't retry in a loop.
+whole session blocked. If a page shows a challenge ("Pardon Our Interruption", "Just a moment",
+a captcha widget), try the captcha solver (§3a) first; only if that fails or the captcha type isn't
+supported, ask the user to clear it in the visible Chrome. Don't retry in a loop.
+
+## 3a. Captcha solver (2captcha)
+
+`CAPTCHA_API_KEY` in `api/.env.staging` is a 2captcha key. The integration lives in
+`api/src/integrations/captcha/` (`CaptchaModule` / `CaptchaSolverService`); from this session use the
+CLI `api/scripts/solve-captcha.ts` (no Nest bootstrap, ~1s startup, solving takes ~10-60s but can reach
+~3 min, and the CLI gives up at 300s — run it with `run_in_background` (or a ≥330s timeout) and read
+its output file; a foreground call capped at 180s will cut off a slow solve you've already paid for):
+
+```
+cd api
+npx dotenv -e .env.staging -- node -r ts-node/register scripts/solve-captcha.ts --balance
+npx dotenv -e .env.staging -- node -r ts-node/register scripts/solve-captcha.ts --type=turnstile --url=<page-url> --sitekey=<key>
+# --type=recaptcha2 [--invisible] | recaptcha3 [--min-score=0.7 --page-action=x] | image --image-file=<png> [--numeric=1]
+# after the page accepts/rejects it: --report=<taskId>:correct|incorrect
+```
+
+It prints one JSON line: `{"ok":true,"token":"...","userAgent":"...","taskId":N}` or
+`{"ok":false,"code":"ERROR_ZERO_BALANCE",...}` (exit 1). Supported: Cloudflare Turnstile (widget and
+Challenge page), reCAPTCHA v2/v3, hCaptcha, image-to-text. Imperva's "Pardon Our Interruption" page
+(seen on pelio.eu, housemarket) is just a wrapped **hCaptcha** (`<div class="h-captcha"
+data-sitekey=…>`, `js.hcaptcha.com/1/api.js`) — use `--type=hcaptcha`. (hCaptcha is missing from
+2captcha's published docs but `HCaptchaTaskProxyless` works; verified ~30s, $0.003.) Not supported:
+sgcaptcha, GeeTest-flavoured Imperva pages are solvable only via a GeeTest task (not wired up). For
+anything unsupported (or `ERROR_ZERO_BALANCE`, any other `ok:false`) fall back to asking the user to
+clear it in Chrome.
+
+Flow when a page is blocked by a captcha:
+
+1. Find the sitekey with `evaluate_script` on the blocked page:
+   `() => ({ turnstile: document.querySelector('[data-sitekey].cf-turnstile, .cf-turnstile[data-sitekey]')?.dataset.sitekey,
+   recaptcha: document.querySelector('.g-recaptcha[data-sitekey]')?.dataset.sitekey ||
+   new URL(document.querySelector('iframe[src*="recaptcha/api2/anchor"]')?.src ?? 'http://x').searchParams.get('k'),
+   iframes: [...document.querySelectorAll('iframe')].map(f => f.src).slice(0, 8), url: location.href })`
+   If neither key is found, it is not a supported captcha — fall back to the user.
+2. Run the CLI with that `--url=<location.href>` and `--sitekey`.
+3. Inject the token with `evaluate_script` (embed it via `JSON.stringify`, as in §4):
+   - Turnstile: set `input[name="cf-turnstile-response"]`'s value, then call the widget callback if the
+     page has one (`window.turnstile` / the `data-callback` function), else submit the enclosing form.
+   - hCaptcha (incl. Imperva): set `textarea[name="h-captcha-response"]` and
+     `textarea[name="g-recaptcha-response"]` (hCaptcha's compat shim) to the token, then trigger the
+     page's own submit path: the `.h-captcha` `data-callback` function if present, else the inline
+     script's call (Imperva: `protectionSubmitCaptcha("hcaptcha", payload, 10000, token)` — read the
+     page's inline script to see the exact arguments, then call it with the solved token). **Untested
+     end to end** — if the page doesn't move on, report `incorrect`, then ask the user.
+   - reCAPTCHA v2: set every `textarea[name="g-recaptcha-response"]` (`innerHTML` and `value`), then call
+     the `data-callback` function (`window[el.dataset.callback](token)`) or submit the form.
+4. Check the page actually moved past the challenge (title/URL/listing selector present), then
+   `--report=<taskId>:correct` (or `incorrect` if it didn't work — that refunds the solve).
+5. Solves cost money (~$0.003 each) and a token is single-use and short-lived: solve only when blocked,
+   inject immediately, and don't solve in a loop — if the same page blocks again right after a
+   successful solve, stop and ask the user.
 
 ## 4. Listing-page walk
 
