@@ -1,9 +1,83 @@
 ---
 name: mcp-crawl
-description: Crawl one property-sync Scraper via the chrome-devtools MCP browser (a real, visible Chrome) instead of the server's Playwright crawler, when that agency's site blocks the server's datacenter IP (Cloudflare/WAF bot protection). Runs AI normalization and creates UserProperty rows for tracked users, but never pushes to the CRM. Use when asked to "crawl <scraper/agency> with chrome mcp", "the crawler is blocked/getting 403s for this agency", or when scraper-generation SKILL.md's diagnosis points at bot-management blocking, not a broken selector.
+description: Two modes. (1) Onboard new agencies end to end from a list of "url, EstateWeb email, password, name" lines plus the user email(s) to track for - creates the agency, tracks it for those users, copies content-publishing settings and connects a new EstateWeb account per user, like the admin "New agency" wizard. (2) Crawl, create or fix one property-sync Scraper via the chrome-devtools MCP browser (a real, visible Chrome) instead of the server's Playwright crawler when that agency's site blocks the server's datacenter IP (Cloudflare/WAF bot protection), runs AI normalization and creates UserProperty rows for tracked users without pushing to the CRM, and finds/updates an agency's City from its site. Use when asked to "add/onboard agencies", "crawl <scraper/agency> with chrome mcp", "the crawler is blocked/getting 403s for this agency", "set the agency city", or when scraper-generation SKILL.md's diagnosis points at bot-management blocking, not a broken selector.
 metadata:
-  version: "1.0.0"
+  version: "1.1.0"
 ---
+
+# mcp-crawl
+
+## Pick a mode first
+
+Unless the request already makes it obvious, **ask the user which one they want** (AskUserQuestion,
+two options) before doing anything else:
+
+1. **Add agencies** - onboard one or many agencies end to end (Option 1 below).
+2. **Create or fix a scraper / crawl** - drive the real Chrome via MCP, and find an agency's City
+   (Option 2 below, plus §10).
+
+## Option 1 - Add agencies
+
+Does what the admin "New agency" wizard does (agency -> users -> publishing -> EstateWeb), for as
+many agencies as the user gives, in one go. The work is done by `api/scripts/onboard-agency.ts`,
+which calls the same services the admin routes use (credentials are encrypted/validated exactly as
+in the app, every step is idempotent so a re-run skips what already exists).
+
+### 1a. Collect the input
+
+Ask only for what is missing, in one message:
+
+- **User email(s)** - the property-sync user(s) who should track the agencies. One or several. Each
+  must already exist and have their default AI (OpenAI) integration connected, otherwise tracking
+  fails for that user (the script reports it per user).
+- **Agency lines**, one per agency, in this shape (whitespace separated):
+  `<website url>  <EstateWeb login email>  <EstateWeb password>  <agency name>`
+  The name is everything after the password and may contain spaces and dashes (e.g. `ACME - PATRA`).
+  A password never contains spaces. If a line doesn't fit this shape, ask instead of guessing.
+- **Copy content publishing from** - optionally, the name/url/id of an existing agency whose
+  content-publishing config (languages, title/description strategies, AI families) should be
+  copied onto each new tracker, as the wizard's "Copy from agency" does. Ask once; "none" is fine.
+  It is read from the *same user's* tracker of that agency, so the user must track it.
+- **CRM client id** per agency - only if the user volunteered one. Don't ask.
+
+The EstateWeb login is the agency's account on the CRM, not the property-sync user. Every selected
+user gets their own EstateWeb connection created from those credentials, because an account links
+to exactly one tracker.
+
+### 1b. Run it
+
+1. Write the input as JSON to the **scratchpad** directory (never into the repo - it holds
+   passwords). Shape is documented at the top of the script:
+   `{ "users": [...], "copy_publishing_from": "...", "agencies": [{ "name", "base_url",
+   "estateweb": { "email", "password" }, "city?", "country?", "content_language?", "crm_client_id?" }] }`
+2. Dry run, read the output, then the real run (from `api/`; same DB as production, see §0):
+   ```
+   npx dotenv -e .env.production -- node -r tsconfig-paths/register -r ts-node/register scripts/onboard-agency.ts --input-file=<path> --dry-run
+   npx dotenv -e .env.production -- node -r tsconfig-paths/register -r ts-node/register scripts/onboard-agency.ts --input-file=<path>
+   ```
+3. **Delete the input file** when done.
+
+### 1c. Report
+
+Show a short table: agency, whether it was created or already existed, and per user tracked /
+publishing / EstateWeb. Never print the passwords back. Call out every `FAILED:` line with its
+reason; the common ones:
+
+- *"Connect <provider> on the Integrations page before tracking agencies"* - that user has no
+  OpenAI connection. Tell the user; nothing else was done for that user.
+- *"You already have a connection to this integration target"* - the EstateWeb target does not
+  allow multiple accounts (`integration_targets.allow_multiple`). Stop and tell the user rather
+  than reusing someone else's account.
+- Duplicate `base_url` is not an error: the existing agency is reused.
+
+Finish by offering Option 2's city step (§10) for the new agencies, since the name often ends with a
+town but the City field is left empty unless the input had `city`. Don't set a city without
+checking it (§10).
+
+## Option 2 - Create or fix a scraper / crawl
+
+Everything below this line (up to and including §9) is the MCP-driven crawl. §10 is the agency City
+step.
 
 # MCP-Driven Crawl Playbook
 
@@ -536,3 +610,36 @@ Notes that cost time before:
 - If `.env.production` can't connect, check whether `.env.staging` does (they can differ); and if a
   `REDIS_URL` host doesn't resolve from this machine (internal hostname), you need the publicly
   reachable one — set it in the process environment for that run rather than editing the env file.
+
+## 10. Find and set the agency's City
+
+`source_agencies.city` is the agency's usual area. The EstateWeb location resolver uses it to
+disambiguate same-named places elsewhere in Greece when matching a listing's location, so a wrong
+value is worse than an empty one. It is editable in the admin agency form and via
+`PATCH /admin/agencies/:id`; for doing it from here use `api/scripts/set-agency-city.ts` (plain
+Prisma, ~1s start). Do this for the agency the user names, or for each agency just onboarded in
+Option 1.
+
+1. **Find it on the agency's own site.** Look where an agency states its office: the footer, the
+   "Contact"/"Επικοινωνία" page, the "About" page, the address in the page `<head>` JSON-LD
+   (`"addressLocality"`). Fetch with `curl`/`WebFetch` first; if the site blocks that, load the page in
+   the chrome-devtools MCP browser (it is the same real Chrome this skill already drives) and read
+   the text there. The agency name often ends in a town too, but treat that as a hint to confirm
+   against the site, not as the answer. If the site shows several offices, use the head office
+   (the first/main address); if it genuinely lists several equal ones or none, say so and ask.
+2. **Match the stored format.** Cities are stored in Greek, nominative, no prefecture suffix
+   (e.g. `Θεσσαλονίκη`, `Αθήνα`, `Χανιά`). See what is already there so you reuse the spelling instead
+   of adding a second variant:
+   ```
+   cd api
+   npx dotenv -e .env.production -- node -r tsconfig-paths/register -r ts-node/register scripts/set-agency-city.ts --list-cities
+   ```
+   Write the city the same way (Latin `Athens` exists once but is the exception, don't copy it).
+3. **Set it**, dry-run first, then for real:
+   ```
+   npx dotenv -e .env.production -- node -r tsconfig-paths/register -r ts-node/register scripts/set-agency-city.ts --agency=<id | base_url | exact name> --city=<city> --dry-run
+   npx dotenv -e .env.production -- node -r tsconfig-paths/register -r ts-node/register scripts/set-agency-city.ts --agency=<id | base_url | exact name> --city=<city>
+   ```
+   The script prints `old -> new`. Report that line and where on the site you found it, so the user
+   can spot a wrong pick. Properties already resolved keep their stored location; a changed city only
+   affects later resolution, so don't promise the existing listings will move.
