@@ -1,9 +1,80 @@
 ---
 name: scraper-generation
-description: Build or fix a scraper (Scraper + ScraperVersion.config) for a real-estate agency site in property-sync, especially "hard" sites with no obvious unified listings page, sites that need one property category included/excluded, or a scraper whose crawl/normalization pipeline is stuck/broken. Use when asked to "create a scraper for <agency/url>", "the scraper isn't finding X", "exclude category Y", or "no properties/user properties were created after a crawl".
+description: Two modes. (1) Onboard new agencies end to end from a list of "url, EstateWeb email, password, name" lines plus the user email(s) to track for - creates the agency, tracks it for those users, copies content-publishing settings and connects a new EstateWeb account per user, like the admin "New agency" wizard. (2) Build or fix a scraper (Scraper + ScraperVersion.config) for a real-estate agency site in property-sync, especially "hard" sites with no obvious unified listings page, sites that need one property category included/excluded, or a scraper whose crawl/normalization pipeline is stuck/broken; also finds and sets an agency's City from its site. Use when asked to "add/onboard agencies", "create a scraper for <agency/url>", "the scraper isn't finding X", "exclude category Y", "set the agency city", or "no properties/user properties were created after a crawl".
 metadata:
-  version: "1.0.0"
+  version: "1.1.0"
 ---
+
+# Property-Sync Agencies and Scrapers
+
+## Pick a mode first
+
+Unless the request already makes it obvious, **ask the user which one they want** (AskUserQuestion,
+two options) before doing anything else:
+
+1. **Add agencies** - onboard one or many agencies end to end (Option 1 below).
+2. **Create or fix a scraper** - the scraper playbook (Option 2 below), which also covers finding
+   and setting an agency's City (§7).
+
+## Option 1 - Add agencies
+
+Does what the admin "New agency" wizard does (agency -> users -> publishing -> EstateWeb), for as
+many agencies as the user gives, in one go. The work is done by `api/scripts/onboard-agency.ts`,
+which calls the same services the admin routes use (credentials are encrypted/validated exactly as
+in the app, and every step is idempotent, so a re-run skips what already exists).
+
+### 1a. Collect the input
+
+Ask only for what is missing, in one message:
+
+- **User email(s)** - the property-sync user(s) who should track the agencies. One or several. Each
+  must already exist and have their default AI (OpenAI) integration connected, otherwise tracking
+  fails for that user (the script reports it per user).
+- **Agency lines**, one per agency, in this shape (whitespace separated):
+  `<website url>  <EstateWeb login email>  <EstateWeb password>  <agency name>`
+  The name is everything after the password and may contain spaces and dashes (e.g. `ACME - PATRA`).
+  A password never contains spaces. If a line doesn't fit this shape, ask instead of guessing.
+- **Copy content publishing from** - optionally, the name/url/id of an existing agency whose
+  content-publishing config (languages, title/description strategies, AI families) should be
+  copied onto each new tracker, as the wizard's "Copy from agency" does. Ask once; "none" is fine.
+  It is read from the *same user's* tracker of that agency, so the user must track it.
+- **CRM client id** per agency - only if the user volunteered one. Don't ask.
+
+The EstateWeb login is the agency's account on the CRM, not the property-sync user. Every selected
+user gets their own EstateWeb connection created from those credentials, because an account links
+to exactly one tracker.
+
+### 1b. Run it
+
+1. Write the input as JSON to the **scratchpad** directory (never into the repo - it holds
+   passwords). The shape is documented at the top of the script:
+   `{ "users": [...], "copy_publishing_from": "...", "agencies": [{ "name", "base_url",
+   "estateweb": { "email", "password" }, "city?", "country?", "content_language?", "crm_client_id?" }] }`
+2. Dry run, read the output, then the real run (from `api/`; same DB as production, see §0):
+   ```
+   npx dotenv -e .env.production -- node -r tsconfig-paths/register -r ts-node/register scripts/onboard-agency.ts --input-file=<path> --dry-run
+   npx dotenv -e .env.production -- node -r tsconfig-paths/register -r ts-node/register scripts/onboard-agency.ts --input-file=<path>
+   ```
+3. **Delete the input file** when done.
+
+### 1c. Report
+
+Show a short table: agency, whether it was created or already existed, and per user tracked /
+publishing / EstateWeb. Never print the passwords back. Call out every `FAILED:` line with its
+reason; the common ones:
+
+- *"Connect <provider> on the Integrations page before tracking agencies"* - that user has no
+  OpenAI connection. Tell the user; nothing else was done for that user.
+- *"You already have a connection to this integration target"* - the EstateWeb target does not
+  allow multiple accounts (`integration_targets.allow_multiple`). Stop and tell the user rather
+  than reusing someone else's account.
+- A duplicate `base_url` is not an error: the existing agency is reused.
+
+Finish by offering the city step (§7, "Set the agency's main city") for the new agencies: the name
+often ends with a town, but City stays empty unless the input had `city`. Don't set a city without
+checking it against the site.
+
+## Option 2 - Create or fix a scraper
 
 # Property-Sync Scraper Generation Playbook
 
@@ -277,6 +348,23 @@ is labelled correctly in the app.
    where id = $2 and (city is null or btrim(city) = '');
    ```
    Zero rows updated means the city is already set; compare it as above.
+
+**When the user asks for the city directly** ("set the city for agency X", or after Option 1) this
+step stands on its own, with no scraper involved. Find it the same way (steps 1-2), then use
+`api/scripts/set-agency-city.ts` (plain Prisma, about a second to start). Because the user asked for
+the change, a differing existing value may be replaced, but always show `old -> new` and where on the
+site you found it. Check the stored spelling first so you don't add a second variant of a city that
+already exists (stored in the agency's language, nominative, e.g. `Θεσσαλονίκη`, `Αθήνα`):
+
+```
+cd api
+npx dotenv -e .env.production -- node -r tsconfig-paths/register -r ts-node/register scripts/set-agency-city.ts --list-cities
+npx dotenv -e .env.production -- node -r tsconfig-paths/register -r ts-node/register scripts/set-agency-city.ts --agency=<id | base_url | exact name> --city=<city> --dry-run
+npx dotenv -e .env.production -- node -r tsconfig-paths/register -r ts-node/register scripts/set-agency-city.ts --agency=<id | base_url | exact name> --city=<city>
+```
+
+A changed city only affects later location resolution; properties already resolved keep their stored
+location, so don't promise existing listings will move.
 
 New scrapers default to `status: 'TESTING'` — see §8 for what that actually means in this system
 (it is **not** inert).
