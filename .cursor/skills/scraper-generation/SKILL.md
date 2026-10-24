@@ -1,6 +1,6 @@
 ---
 name: scraper-generation
-description: Two modes. (1) Onboard new agencies end to end from a list of "url, EstateWeb email, password, name" lines plus the user email(s) to track for - creates the agency, tracks it for those users, copies content-publishing settings and connects a new EstateWeb account per user, like the admin "New agency" wizard. (2) Build or fix a scraper (Scraper + ScraperVersion.config) for a real-estate agency site in property-sync, especially "hard" sites with no obvious unified listings page, sites that need one property category included/excluded, or a scraper whose crawl/normalization pipeline is stuck/broken; also finds and sets an agency's City from its site. Use when asked to "add/onboard agencies", "create a scraper for <agency/url>", "the scraper isn't finding X", "exclude category Y", "set the agency city", or "no properties/user properties were created after a crawl".
+description: Two modes. (1) Onboard new agencies end to end from a list of "url, EstateWeb email, password" lines plus the user email(s) to track for - creates the agency, tracks it for those users, copies content-publishing settings and connects a new EstateWeb account per user, like the admin "New agency" wizard. (2) Build or fix a scraper (Scraper + ScraperVersion.config) for a real-estate agency site in property-sync, especially "hard" sites with no obvious unified listings page, sites that need one property category included/excluded, or a scraper whose crawl/normalization pipeline is stuck/broken; also finds and sets an agency's City from its site. Use when asked to "add/onboard agencies", "create a scraper for <agency/url>", "the scraper isn't finding X", "exclude category Y", "set the agency city", or "no properties/user properties were created after a crawl".
 metadata:
   version: "1.1.0"
 ---
@@ -31,14 +31,21 @@ Ask only for what is missing, in one message:
   must already exist and have their default AI (OpenAI) integration connected, otherwise tracking
   fails for that user (the script reports it per user).
 - **Agency lines**, one per agency, in this shape (whitespace separated):
-  `<website url>  <EstateWeb login email>  <EstateWeb password>  <agency name>`
-  The name is everything after the password and may contain spaces and dashes (e.g. `ACME - PATRA`).
+  `<website url>  <EstateWeb login email>  <EstateWeb password>  [<name>]`
+  The trailing `<name>` is **not** the agency name (see below). It is the CRM last name used to find
+  the CRM client id (§1c), so keep it exactly as typed, spaces and dashes included.
+  The agency **name is always the site's domain** without `www.` and the TLD, e.g.
+  `https://stathopoulosmesitiko.gr/property-search/?` -> `stathopoulosmesitiko`,
+  `https://www.lesvos-home.gr/...` -> `lesvos-home`. Derive it from the url; do not use the typed name for the agency.
+  Use the website url exactly as the user gave it for `base_url` (query string and path included);
+  never reduce it to the site root. Only trailing slashes are trimmed.
   A password never contains spaces. If a line doesn't fit this shape, ask instead of guessing.
 - **Copy content publishing from** - optionally, the name/url/id of an existing agency whose
   content-publishing config (languages, title/description strategies, AI families) should be
   copied onto each new tracker, as the wizard's "Copy from agency" does. Ask once; "none" is fine.
   It is read from the *same user's* tracker of that agency, so the user must track it.
-- **CRM client id** per agency - only if the user volunteered one. Don't ask.
+- **CRM client id** per agency - never ask. If the user gave a number, pass it as `crm_client_id`;
+  otherwise find it from the typed name in §1c.
 
 The EstateWeb login is the agency's account on the CRM, not the property-sync user. Every selected
 user gets their own EstateWeb connection created from those credentials, because an account links
@@ -50,14 +57,28 @@ to exactly one tracker.
    passwords). The shape is documented at the top of the script:
    `{ "users": [...], "copy_publishing_from": "...", "agencies": [{ "name", "base_url",
    "estateweb": { "email", "password" }, "city?", "country?", "content_language?", "crm_client_id?" }] }`
-2. Dry run, read the output, then the real run (from `api/`; same DB as production, see §0):
+2. Dry run, read the output, then the real run (from `api/`; we work only with `.env.staging`, see §0):
    ```
-   npx dotenv -e .env.production -- node -r tsconfig-paths/register -r ts-node/register scripts/onboard-agency.ts --input-file=<path> --dry-run
-   npx dotenv -e .env.production -- node -r tsconfig-paths/register -r ts-node/register scripts/onboard-agency.ts --input-file=<path>
+   npx dotenv -e .env.staging -- node -r tsconfig-paths/register -r ts-node/register scripts/onboard-agency.ts --input-file=<path> --dry-run
+   npx dotenv -e .env.staging -- node -r tsconfig-paths/register -r ts-node/register scripts/onboard-agency.ts --input-file=<path>
    ```
 3. **Delete the input file** when done.
 
-### 1c. Report
+### 1c. Find the CRM client id
+
+Does the wizard's "Find CRM client by last name" and stores the id on the tracker's EstateWeb link.
+Run it per agency and user, after the onboarding run (it needs the EstateWeb link to exist). The
+search goes through the user's **default** EstateWeb account, as in the wizard. Use the typed name
+as `--last-name`; an exact last-name match is used, a single partial hit is used, anything
+ambiguous prints the candidates and writes nothing (rerun with `--client-id=<n>` to pick one):
+```
+npx dotenv -e .env.staging -- node -r tsconfig-paths/register -r ts-node/register scripts/find-crm-client.ts --agency=<id | base_url | exact name> --user=<email> --last-name=<typed name> --dry-run
+npx dotenv -e .env.staging -- node -r tsconfig-paths/register -r ts-node/register scripts/find-crm-client.ts --agency=<id | base_url | exact name> --user=<email> --last-name=<typed name>
+```
+An `EstateWeb upstream HTTP 500 on GET /api/client` means the user's default EstateWeb account
+cannot list clients; report it, don't retry in a loop.
+
+### 1d. Report
 
 Show a short table: agency, whether it was created or already existed, and per user tracked /
 publishing / EstateWeb. Never print the passwords back. Call out every `FAILED:` line with its
@@ -84,9 +105,8 @@ most of it is non-obvious and was learned the hard way by inspecting the real sy
 
 ## 0. Access you need
 
-- **`DATABASE_URL`** — ask the user, or read it from `api/.env.production` / `api/.env.staging`.
-  In this project both files point at the **same** Postgres instance — there is effectively one
-  shared DB for prod and staging, not two.
+- **`DATABASE_URL`** — read it from `api/.env.staging`. We work **only** with staging
+  — never use `api/.env.production` (stale, points at a retired host). The staging DB is the live one.
 - **`REDIS_URL`** — same env files. Only needed if you're debugging a stuck crawl (§8).
 - **No browser-automation MCP is normally connected** in this project's sessions, even if the user
   says "use chrome mcp." Don't block on that — fall back to `curl` for static HTML inspection and a
@@ -358,9 +378,9 @@ already exists (stored in the agency's language, nominative, e.g. `Θεσσαλ�
 
 ```
 cd api
-npx dotenv -e .env.production -- node -r tsconfig-paths/register -r ts-node/register scripts/set-agency-city.ts --list-cities
-npx dotenv -e .env.production -- node -r tsconfig-paths/register -r ts-node/register scripts/set-agency-city.ts --agency=<id | base_url | exact name> --city=<city> --dry-run
-npx dotenv -e .env.production -- node -r tsconfig-paths/register -r ts-node/register scripts/set-agency-city.ts --agency=<id | base_url | exact name> --city=<city>
+npx dotenv -e .env.staging -- node -r tsconfig-paths/register -r ts-node/register scripts/set-agency-city.ts --list-cities
+npx dotenv -e .env.staging -- node -r tsconfig-paths/register -r ts-node/register scripts/set-agency-city.ts --agency=<id | base_url | exact name> --city=<city> --dry-run
+npx dotenv -e .env.staging -- node -r tsconfig-paths/register -r ts-node/register scripts/set-agency-city.ts --agency=<id | base_url | exact name> --city=<city>
 ```
 
 A changed city only affects later location resolution; properties already resolved keep their stored
