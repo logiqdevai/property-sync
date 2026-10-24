@@ -4,6 +4,7 @@ import type {
   AgencyListQuery,
   BulkAgencyTrackingPayload,
   BulkAgencyTrackingResult,
+  IntegrationClientSearchResult,
   LinkIntegrationPayload,
   PaginatedResponse,
   TrackableAgency,
@@ -119,6 +120,22 @@ export const unlinkIntegration = async (agencyId: string): Promise<void> => {
   } catch (error: any) {
     throw new Error(
       error?.response?.data?.message || "Failed to unlink integration.",
+    );
+  }
+};
+
+export const searchIntegrationClients = async (
+  lastName: string,
+): Promise<IntegrationClientSearchResult> => {
+  try {
+    const response = await axiosInstance.get<IntegrationClientSearchResult>(
+      ApiRoutes.agencies.integrationClients,
+      { params: { last_name: lastName } },
+    );
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error?.response?.data?.message || "Failed to search CRM clients.",
     );
   }
 };

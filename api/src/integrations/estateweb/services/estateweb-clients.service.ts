@@ -2,7 +2,11 @@ import { HttpStatus, Injectable } from '@nestjs/common';
 import { NotificationType } from 'generated/prisma';
 import { EstateWebConfig } from '../config/estateweb.config';
 import { EstateWebException } from '../exceptions/estateweb.exception';
-import { EstateWebCrmClient } from '../interfaces/estateweb-crm-client.interface';
+import {
+  EstateWebClientListResponse,
+  EstateWebClientSearchParams,
+  EstateWebCrmClient,
+} from '../interfaces/estateweb-crm-client.interface';
 import { EstateWebClientService } from './estateweb-client.service';
 import { EstateWebIntegrationResolverService } from './estateweb-integration-resolver.service';
 import { EstateWebNotificationService } from './estateweb-notification.service';
@@ -44,6 +48,48 @@ export class EstateWebClientsService {
       );
 
     return this.getClient(userIntegrationId, clientId);
+  }
+
+  /**
+   * Client search (`GET /api/client?...`) is only available to the user's
+   * default EstateWeb integration account, so it never takes an arbitrary
+   * integration id.
+   */
+  async searchClientsForUser(
+    userId: string,
+    params: EstateWebClientSearchParams = {},
+  ): Promise<EstateWebClientListResponse> {
+    const { userIntegrationId } =
+      await this.estateWebIntegrationResolverService.resolveDefaultForUser(
+        userId,
+      );
+
+    return this.runValidatedOperation(
+      userIntegrationId,
+      'search-clients',
+      () =>
+        this.estateWebClientService.request<EstateWebClientListResponse>(
+          userIntegrationId,
+          {
+            method: 'GET',
+            path: this.estateWebConfig.getConfig().apiPaths.clients,
+            query: {
+              rpp: params.rpp ?? 50,
+              page: params.page ?? 1,
+              sort_col: params.sortCol ?? 'last_name',
+              sort_way: params.sortWay ?? 'ASC',
+              type: 0,
+              last_name: params.lastName ?? '',
+              first_name: params.firstName ?? '',
+              father_name: params.fatherName ?? '',
+              phone: params.phone ?? '',
+              email: params.email ?? '',
+              occupation: params.occupation ?? '',
+            },
+            operation: 'search-clients',
+          },
+        ),
+    );
   }
 
   async resolvePropertyNoteFromClient(

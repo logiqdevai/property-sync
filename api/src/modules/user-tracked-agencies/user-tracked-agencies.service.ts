@@ -8,6 +8,7 @@ import {
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
 import { UserIntegrationsService } from '@/modules/user-integrations/user-integrations.service';
 import { CmsSyncOrchestratorService } from '@/modules/cms-sync/services/cms-sync-orchestrator.service';
+import { EstateWebClientsService } from '@/integrations/estateweb/services/estateweb-clients.service';
 import { AiDefaults } from '@/integrations/ai/utils/ai.config';
 import { BrowseAgencyQueryType } from './dto/agency-query.schema';
 import {
@@ -28,7 +29,15 @@ export class UserTrackedAgenciesService {
     private readonly prisma: PrismaService,
     private readonly userIntegrationsService: UserIntegrationsService,
     private readonly cmsSyncOrchestratorService: CmsSyncOrchestratorService,
+    private readonly estateWebClientsService: EstateWebClientsService,
   ) {}
+
+  searchIntegrationClients(userId: string, lastName: string) {
+    return this.estateWebClientsService.searchClientsForUser(userId, {
+      lastName,
+      rpp: 20,
+    });
+  }
 
   async findAll(userId: string, query: BrowseAgencyQueryType) {
     const where: Prisma.SourceAgencyWhereInput = {

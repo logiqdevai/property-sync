@@ -28,6 +28,8 @@ import { LinkIntegrationDto } from './dto/link-integration.dto';
 import {
   BrowseAgencyQuerySchema,
   BrowseAgencyQueryType,
+  SearchIntegrationClientsQuerySchema,
+  SearchIntegrationClientsQueryType,
 } from './dto/agency-query.schema';
 import { Audited } from '@/modules/activity-logs/decorators/audited.decorator';
 import { trackedAgencyOfCurrentUser } from '@/modules/activity-logs/entities/audit-id-resolvers';
@@ -53,6 +55,25 @@ export class UserTrackedAgenciesController {
     query: BrowseAgencyQueryType,
   ) {
     return this.userTrackedAgenciesService.findAll(userId, query);
+  }
+
+  @Get('integration-clients')
+  @ApiOperation({
+    summary:
+      'Search CRM clients by last name via the default EstateWeb integration',
+  })
+  @ApiResponse({ status: 200, description: 'Matching CRM clients' })
+  @ApiResponse({ status: 404, description: 'No default EstateWeb integration' })
+  @ApiQuery({ name: 'last_name', required: true, type: String })
+  searchIntegrationClients(
+    @CurrentUser('id') userId: string,
+    @Query(new ZodValidationPipe(SearchIntegrationClientsQuerySchema))
+    query: SearchIntegrationClientsQueryType,
+  ) {
+    return this.userTrackedAgenciesService.searchIntegrationClients(
+      userId,
+      query.last_name,
+    );
   }
 
   @Audited({ action: 'tracked_agency.bulk_tracking' })

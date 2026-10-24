@@ -203,6 +203,7 @@ export const ApiRoutes = {
         prefix: "/agencies",
         list: "/agencies",
         bulkTracking: "/agencies/bulk-tracking",
+        integrationClients: "/agencies/integration-clients",
         track: (agencyId: string) => `/agencies/${agencyId}/track`,
         integrationLink: (agencyId: string) => `/agencies/${agencyId}/track/integration`,
         contentPublishing: (agencyId: string) =>

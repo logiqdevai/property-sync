@@ -40,3 +40,40 @@ export interface EstateWebCrmClient {
   updated_at: string | null;
   deleted_at: string | null;
 }
+
+export type EstateWebClientListItem = Pick<
+  EstateWebCrmClient,
+  | 'id'
+  | 'agent_id'
+  | 'last_name'
+  | 'first_name'
+  | 'father_name'
+  | 'occupation'
+  | 'phone_home'
+  | 'phone_work'
+  | 'mobile'
+  | 'mobile_work'
+  | 'email'
+  | 'group_id'
+  | 'user_id'
+  | 'created_at'
+  | 'updated_at'
+>;
+
+export interface EstateWebClientListResponse {
+  list: EstateWebClientListItem[];
+  total: number;
+}
+
+export interface EstateWebClientSearchParams {
+  lastName?: string;
+  firstName?: string;
+  fatherName?: string;
+  phone?: string;
+  email?: string;
+  occupation?: string;
+  page?: number;
+  rpp?: number;
+  sortCol?: string;
+  sortWay?: 'ASC' | 'DESC';
+}

@@ -19,3 +19,11 @@ export const BrowseAgencyQuerySchema = z.object({
 });
 
 export type BrowseAgencyQueryType = z.infer<typeof BrowseAgencyQuerySchema>;
+
+export const SearchIntegrationClientsQuerySchema = z.object({
+  last_name: z.string().trim().min(2).max(100),
+});
+
+export type SearchIntegrationClientsQueryType = z.infer<
+  typeof SearchIntegrationClientsQuerySchema
+>;

@@ -5,6 +5,7 @@ import {
   getIntegrationLink,
   getTrackableAgencies,
   linkIntegration,
+  searchIntegrationClients,
   trackAgency,
   unlinkIntegration,
   untrackAgency,
@@ -181,5 +182,11 @@ export const useUnlinkIntegration = () => {
         variant: "error",
       });
     },
+  });
+};
+
+export const useSearchIntegrationClients = () => {
+  return useMutation({
+    mutationFn: (lastName: string) => searchIntegrationClients(lastName),
   });
 };

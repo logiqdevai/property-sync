@@ -17,6 +17,7 @@ import { getIntegrationTypeLabel } from "@/config/constants/dropdowns/integratio
 import { IntegrationTypes } from "@/features/integration-targets/interfaces/integration-targets.interfaces";
 import { Routes } from "@/routes/routes";
 import { CmsIntegrationDescription } from "./cms-integration-description";
+import { IntegrationClientLookup } from "./integration-client-lookup";
 
 function parseClientId(raw: string): number | null {
   const trimmed = raw.trim();
@@ -123,6 +124,12 @@ export function TrackedAgencyIntegrationLink({
   };
 
   const clientIdField = (
+    <>
+    <IntegrationClientLookup
+      disabled={disabled || isPending}
+      selectedClientId={parsedClientId}
+      onSelect={(client) => setClientIdInput(String(client.id))}
+    />
     <label className="flex flex-col gap-1 text-sm">
       <span className="text-muted">CRM client ID</span>
       <span className="text-xs text-muted">
@@ -138,6 +145,7 @@ export function TrackedAgencyIntegrationLink({
         onChange={(e) => setClientIdInput(e.target.value)}
       />
     </label>
+    </>
   );
 
   return (

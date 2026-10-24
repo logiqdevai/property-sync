@@ -131,3 +131,26 @@ export interface LinkIntegrationPayload {
   user_integration_id: string;
   integration_client_id?: number | null;
 }
+
+export interface IntegrationClient {
+  id: number;
+  agent_id: number;
+  last_name: string;
+  first_name: string;
+  father_name: string;
+  occupation: string;
+  phone_home: string;
+  phone_work: string;
+  mobile: string;
+  mobile_work: string;
+  email: string;
+  group_id: number;
+  user_id: number;
+  created_at: string;
+  updated_at: string | null;
+}
+
+export interface IntegrationClientSearchResult {
+  list: IntegrationClient[];
+  total: number;
+}
