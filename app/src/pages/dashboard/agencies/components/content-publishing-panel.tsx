@@ -12,6 +12,7 @@ import {
   TextArea,
   useOverlayState,
 } from "@heroui/react";
+import { ChevronDown } from "lucide-react";
 import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import {
@@ -45,6 +46,11 @@ interface ContentPublishingPanelProps {
   agencyId: string;
   sourceLanguage?: ContentLanguage | string | null;
   embedded?: boolean;
+  /**
+   * Admin only: read the config of the first user's tracker and save/remove it on every
+   * listed user's tracker, instead of acting on the current user's own tracker.
+   */
+  userIds?: string[];
 }
 
 interface DraftFamily {
@@ -166,18 +172,69 @@ const draftFromConfig = (
   };
 };
 
+const buildPayloadFromDraft = (
+  draft: ReturnType<typeof draftFromConfig>,
+): UpsertContentPublishingConfigPayload => {
+  const familyNameByKey = new Map(
+    draft.families.map((family) => [family.key, family.name]),
+  );
+
+  const enabledOutputs: UpsertContentOutputPayload[] = draft.outputs
+    .filter((output) => output.enabled)
+    .map((output) => ({
+      language: output.language,
+      title_strategy: output.title_strategy,
+      description_strategy: output.description_strategy,
+      description_content_language:
+        output.description_strategy ===
+          DescriptionProductionStrategies.TRANSLATE &&
+        output.description_content_language &&
+        output.description_content_language !== output.language
+          ? output.description_content_language
+          : null,
+      ai_title_family:
+        output.title_strategy === TitleProductionStrategies.AI
+          ? (familyNameByKey.get(output.ai_title_family_key) ?? null)
+          : null,
+    }));
+
+  const familyPayload: UpsertAiTitleFamilyPayload[] = draft.families.map(
+    (family) => ({
+      name: family.name.trim(),
+      instructions: family.instructions.trim() || null,
+      writing_language: family.writing_language,
+      use_batch: family.use_batch,
+      is_enabled: family.is_enabled,
+    }),
+  );
+
+  return {
+    ai_titles_enabled: draft.aiTitlesEnabled,
+    use_ai_batch: draft.useAiBatch,
+    is_enabled: draft.isEnabled,
+    ai_title_families: draft.aiTitlesEnabled ? familyPayload : [],
+    outputs: enabledOutputs,
+  };
+};
+
 export function ContentPublishingPanel({
   agencyId,
   sourceLanguage,
   embedded = false,
+  userIds,
 }: ContentPublishingPanelProps) {
   const resolvedSource =
     (sourceLanguage as ContentLanguage) || ContentLanguages.EL;
   const modal = useOverlayState();
   const deleteConfirm = useOverlayState();
-  const { data, isPending } = useContentPublishingConfig(agencyId, true);
-  const upsert = useUpsertContentPublishingConfig(agencyId);
-  const remove = useDeleteContentPublishingConfig(agencyId);
+  const [showAdvanced, setShowAdvanced] = useState(false);
+  const { data, isPending } = useContentPublishingConfig(
+    agencyId,
+    true,
+    userIds?.[0],
+  );
+  const upsert = useUpsertContentPublishingConfig(agencyId, userIds);
+  const remove = useDeleteContentPublishingConfig(agencyId, userIds);
   const loadSourceConfig = useLoadContentPublishingConfig();
   const { data: agenciesData } = useTrackableAgencies({ limit: 100 });
 
@@ -237,12 +294,18 @@ export function ContentPublishingPanel({
         setIsEnabled(draft.isEnabled);
         setFamilies(draft.families);
         setOutputs(draft.outputs);
-        toast({
-          title: "Config copied",
-          description: "Review settings, then save.",
-          duration: 2000,
-          variant: "success",
-        });
+
+        const payload = buildPayloadFromDraft(draft);
+        if (!payload.outputs.length) {
+          toast({
+            title: "Config copied, not saved",
+            description: "The copied config has no output languages enabled.",
+            variant: "error",
+          });
+          return;
+        }
+        // Saves straight away; the upsert hook reports success, so no extra toast here.
+        upsert.mutate(payload);
       },
       onError: (error: Error) => {
         toast({
@@ -254,51 +317,14 @@ export function ContentPublishingPanel({
     });
   };
 
-  const familyNameByKey = new Map(
-    families.map((family) => [family.key, family.name]),
-  );
-
-  const buildPayload = (): UpsertContentPublishingConfigPayload => {
-    const enabledOutputs: UpsertContentOutputPayload[] = outputs
-      .filter((output) => output.enabled)
-      .map((output) => ({
-        language: output.language,
-        title_strategy: output.title_strategy,
-        description_strategy: output.description_strategy,
-        description_content_language:
-          output.description_strategy ===
-            DescriptionProductionStrategies.TRANSLATE &&
-          output.description_content_language &&
-          output.description_content_language !== output.language
-            ? output.description_content_language
-            : null,
-        ai_title_family:
-          output.title_strategy === TitleProductionStrategies.AI
-            ? (familyNameByKey.get(output.ai_title_family_key) ?? null)
-            : null,
-      }));
-
-    const familyPayload: UpsertAiTitleFamilyPayload[] = families.map(
-      (family) => ({
-        name: family.name.trim(),
-        instructions: family.instructions.trim() || null,
-        writing_language: family.writing_language,
-        use_batch: family.use_batch,
-        is_enabled: family.is_enabled,
-      }),
-    );
-
-    return {
-      ai_titles_enabled: aiTitlesEnabled,
-      use_ai_batch: useAiBatch,
-      is_enabled: isEnabled,
-      ai_title_families: aiTitlesEnabled ? familyPayload : [],
-      outputs: enabledOutputs,
-    };
-  };
-
   const handleSave = () => {
-    const payload = buildPayload();
+    const payload = buildPayloadFromDraft({
+      aiTitlesEnabled,
+      useAiBatch,
+      isEnabled,
+      families,
+      outputs,
+    });
     if (!payload.outputs.length) return;
     upsert.mutate(payload, {
       onSuccess: () => modal.close(),
@@ -333,8 +359,8 @@ export function ContentPublishingPanel({
                   Copy from agency
                 </span>
                 <span className="text-xs text-muted">
-                  Load another tracked agency&apos;s config into this form. Save
-                  to keep.
+                  Load another tracked agency&apos;s config into this form and
+                  save it.
                 </span>
               </div>
               <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
@@ -373,6 +399,20 @@ export function ContentPublishingPanel({
             </div>
           ) : null}
 
+          <button
+            type="button"
+            aria-expanded={showAdvanced}
+            onClick={() => setShowAdvanced((prev) => !prev)}
+            className="flex items-center justify-between gap-2 text-sm font-medium text-foreground"
+          >
+            Advanced settings
+            <ChevronDown
+              className={`size-4 transition-transform ${showAdvanced ? "rotate-180" : ""}`}
+            />
+          </button>
+
+          {showAdvanced ? (
+            <>
           <div className="flex items-start justify-between gap-3">
             <div className="flex min-w-0 flex-1 flex-col gap-0.5">
               <span className="text-sm text-foreground">Enabled</span>
@@ -811,6 +851,8 @@ export function ContentPublishingPanel({
               </div>
             ))}
           </div>
+            </>
+          ) : null}
         </>
       )}
     </>

@@ -132,3 +132,21 @@ export interface PaginatedResponse<T> {
   data: T[];
   pagination: PaginationMeta;
 }
+
+export interface AgencyTracker {
+  id: string;
+  user_id: string;
+  email: string;
+  user_integration_id: string | null;
+  integration_client_id: number | null;
+  integration_label: string | null;
+}
+
+export interface TrackAgencyUsersResult {
+  results: {
+    user_id: string;
+    email: string | null;
+    ok: boolean;
+    error?: string;
+  }[];
+}

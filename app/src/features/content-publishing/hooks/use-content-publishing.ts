@@ -11,10 +11,11 @@ import type { UpsertContentPublishingConfigPayload } from "../interfaces/content
 export const useContentPublishingConfig = (
   agencyId: string,
   enabled = true,
+  userId?: string,
 ) => {
   return useQuery({
-    queryKey: ["content-publishing", agencyId],
-    queryFn: () => getContentPublishingConfig(agencyId),
+    queryKey: ["content-publishing", agencyId, userId ?? "me"],
+    queryFn: () => getContentPublishingConfig(agencyId, userId),
     enabled: enabled && !!agencyId,
   });
 };
@@ -25,11 +26,24 @@ export const useLoadContentPublishingConfig = () => {
   });
 };
 
-export const useUpsertContentPublishingConfig = (agencyId: string) => {
+/** `userIds` (admin only) saves the same config onto each of those users' trackers. */
+export const useUpsertContentPublishingConfig = (
+  agencyId: string,
+  userIds?: string[],
+) => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (payload: UpsertContentPublishingConfigPayload) =>
-      upsertContentPublishingConfig(agencyId, payload),
+    mutationFn: async (payload: UpsertContentPublishingConfigPayload) => {
+      if (!userIds) {
+        return upsertContentPublishingConfig(agencyId, payload);
+      }
+      const saved = await Promise.all(
+        userIds.map((userId) =>
+          upsertContentPublishingConfig(agencyId, payload, userId),
+        ),
+      );
+      return saved[0];
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["content-publishing"] });
       toast({
@@ -71,10 +85,20 @@ export const useBulkSetAiBatch = () => {
   });
 };
 
-export const useDeleteContentPublishingConfig = (agencyId: string) => {
+export const useDeleteContentPublishingConfig = (
+  agencyId: string,
+  userIds?: string[],
+) => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: () => deleteContentPublishingConfig(agencyId),
+    mutationFn: async () => {
+      if (!userIds) {
+        return deleteContentPublishingConfig(agencyId);
+      }
+      await Promise.all(
+        userIds.map((userId) => deleteContentPublishingConfig(agencyId, userId)),
+      );
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["content-publishing"] });
     },

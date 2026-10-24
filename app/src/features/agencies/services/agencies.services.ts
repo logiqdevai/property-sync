@@ -1,7 +1,11 @@
 import axiosInstance from "@/config/api/axios";
 import { ApiRoutes } from "@/config/api/routes";
+import type { CreateConnectionPayload } from "@/features/user-integrations/interfaces/user-integrations.interfaces";
+import type { IntegrationClientSearchResult } from "@/features/user-tracked-agencies/interfaces/user-tracked-agencies.interfaces";
 import type {
   AgencyListQuery,
+  AgencyTracker,
+  TrackAgencyUsersResult,
   AgencyScheduleOverviewItem,
   CreateAgencyPayload,
   PaginatedResponse,
@@ -100,5 +104,78 @@ export const updateTrackerAdminSettings = async (
     throw new Error(
       error?.response?.data?.message || "Failed to update tracker settings. Please try again.",
     );
+  }
+};
+
+export const getAgencyTrackers = async (agencyId: string): Promise<AgencyTracker[]> => {
+  try {
+    const response = await axiosInstance.get(ApiRoutes.admin.agencies.trackers(agencyId));
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error?.response?.data?.message || "Failed to load users tracking this agency.",
+    );
+  }
+};
+
+export const trackAgencyUsers = async (
+  agencyId: string,
+  userIds: string[],
+): Promise<TrackAgencyUsersResult> => {
+  try {
+    const response = await axiosInstance.post(ApiRoutes.admin.agencies.trackers(agencyId), {
+      user_ids: userIds,
+    });
+    return response.data;
+  } catch (error: any) {
+    throw new Error(error?.response?.data?.message || "Failed to track agency for users.");
+  }
+};
+
+export const connectEstateWebForTracker = async (
+  agencyId: string,
+  userId: string,
+  payload: CreateConnectionPayload,
+) => {
+  try {
+    const response = await axiosInstance.post(
+      ApiRoutes.admin.agencies.trackerEstateWeb(agencyId, userId),
+      payload,
+    );
+    return response.data;
+  } catch (error: any) {
+    throw new Error(error?.response?.data?.message || "Failed to connect EstateWeb account.");
+  }
+};
+
+export const searchCrmClientsForTracker = async (
+  agencyId: string,
+  userId: string,
+  lastName: string,
+): Promise<IntegrationClientSearchResult> => {
+  try {
+    const response = await axiosInstance.get<IntegrationClientSearchResult>(
+      ApiRoutes.admin.agencies.trackerCrmClients(agencyId, userId),
+      { params: { last_name: lastName } },
+    );
+    return response.data;
+  } catch (error: any) {
+    throw new Error(error?.response?.data?.message || "Failed to search CRM clients.");
+  }
+};
+
+export const setCrmClientForTracker = async (
+  agencyId: string,
+  userId: string,
+  integrationClientId: number | null,
+) => {
+  try {
+    const response = await axiosInstance.put(
+      ApiRoutes.admin.agencies.trackerCrmClient(agencyId, userId),
+      { integration_client_id: integrationClientId },
+    );
+    return response.data;
+  } catch (error: any) {
+    throw new Error(error?.response?.data?.message || "Failed to save CRM client.");
   }
 };

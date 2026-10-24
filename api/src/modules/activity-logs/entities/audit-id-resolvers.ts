@@ -61,6 +61,23 @@ export const contentPublishingConfigOfCurrentUser = async (
   return one(row?.id);
 };
 
+/** `/admin/agencies/:id/trackers/:userId/content-publishing` -> that user's publishing config. */
+export const contentPublishingConfigOfAdminTarget = async (
+  req: Request,
+  { prisma }: AuditContext,
+): Promise<string[]> => {
+  const row = await prisma.contentPublishingConfig.findFirst({
+    where: {
+      user_tracked_agency: {
+        user_id: req.params.userId,
+        source_agency_id: req.params.id,
+      },
+    },
+    select: { id: true },
+  });
+  return one(row?.id);
+};
+
 /** `/integrations/targets/:targetId/settings` -> the current user's settings for that target. */
 export const integrationSettingsOfCurrentUser = async (
   req: Request,

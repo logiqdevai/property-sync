@@ -35,6 +35,15 @@ export const ApiRoutes = {
             trackerSettings: (agencyId: string, userId: string) =>
                 `/admin/agencies/${agencyId}/trackers/${userId}`,
             scheduleOverview: "/admin/agencies/schedule-overview",
+            trackers: (agencyId: string) => `/admin/agencies/${agencyId}/trackers`,
+            trackerContentPublishing: (agencyId: string, userId: string) =>
+                `/admin/agencies/${agencyId}/trackers/${userId}/content-publishing`,
+            trackerEstateWeb: (agencyId: string, userId: string) =>
+                `/admin/agencies/${agencyId}/trackers/${userId}/estateweb`,
+            trackerCrmClients: (agencyId: string, userId: string) =>
+                `/admin/agencies/${agencyId}/trackers/${userId}/crm-clients`,
+            trackerCrmClient: (agencyId: string, userId: string) =>
+                `/admin/agencies/${agencyId}/trackers/${userId}/crm-client`,
         },
         scrapers: {
             prefix: "/admin/scrapers",

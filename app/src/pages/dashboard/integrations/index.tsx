@@ -21,10 +21,8 @@ import {
   IntegrationCredentialFields,
 } from "./components/integration-credential-fields";
 import {
-  getConnectCredentialsSchema,
   getEditFormDefaultValues,
   getWebhookSetupSchema,
-  mapConnectFormToPayload,
   mapEditFormToPayload,
   type ConnectCredentialsFormValues,
   type WebhookSetupFormValues,
@@ -34,6 +32,10 @@ import { getIntegrationTypeDescription } from "@/config/constants/dropdowns/inte
 import { getAuthTypeLabel } from "@/config/constants/dropdowns/integrations/auth-type-form.options";
 import { IntegrationTypes } from "@/features/integration-targets/interfaces/integration-targets.interfaces";
 import { integrationSupportsWebhookUrl } from "@/lib/integration-webhook-url";
+import {
+  ConnectIntegrationForm,
+  type ConnectIntegrationPayload,
+} from "./components/connect-integration-form";
 import { LinkConnectionToAgencyModal } from "./components/link-connection-to-agency-modal";
 import { AllConnectionsModal } from "./components/all-connections-modal";
 import { IntegrationConnectionItem } from "./components/integration-connection-item";
@@ -195,7 +197,6 @@ export default function DashboardIntegrationsPage() {
   const disconnectIntegration = useDisconnectIntegration();
   const revealSecrets = useRevealUserIntegrationSecrets();
 
-  const connectForm = useForm<ConnectCredentialsFormValues>();
   const webhookSetupForm = useForm<WebhookSetupFormValues>();
   const editForm = useForm<ConnectCredentialsFormValues>();
 
@@ -215,13 +216,6 @@ export default function DashboardIntegrationsPage() {
       ),
     [targets],
   );
-
-  useEffect(() => {
-    if (!selectedTarget) {
-      return;
-    }
-    connectForm.reset({ auth_type: selectedTarget.auth_type } as ConnectCredentialsFormValues);
-  }, [selectedTarget, connectForm]);
 
   useEffect(() => {
     if (!editingConnection) {
@@ -282,20 +276,12 @@ export default function DashboardIntegrationsPage() {
     );
   }, [connections, showAllTarget]);
 
-  const submitConnect = connectForm.handleSubmit((values) => {
+  const submitConnect = (payload: ConnectIntegrationPayload) => {
     if (!selectedTarget) {
       return;
     }
 
-    const parsed = getConnectCredentialsSchema(
-      selectedTarget.auth_type,
-      selectedTarget.integration_type,
-    ).parse({
-      ...values,
-      auth_type: selectedTarget.auth_type,
-    });
-
-    connectIntegration.mutate(mapConnectFormToPayload(selectedTarget.id, parsed), {
+    connectIntegration.mutate(payload, {
       onSuccess: (connection) => {
         if (integrationSupportsWebhookUrl(selectedTarget.integration_type)) {
           setWebhookSetupConnection(connection);
@@ -314,7 +300,7 @@ export default function DashboardIntegrationsPage() {
         }
       },
     });
-  });
+  };
 
   const submitWebhookSetup = webhookSetupForm.handleSubmit((values) => {
     if (!webhookSetupConnection) {
@@ -371,7 +357,6 @@ export default function DashboardIntegrationsPage() {
   };
 
   const loading = targetsPending || connectionsPending;
-  const isConnectReadOnly = selectedTarget ? !selectedTarget.is_enabled && !isAdmin : false;
   const isEditReadOnly = editingConnection
     ? !editingConnection.integration_target.is_enabled && !isAdmin
     : false;
@@ -468,41 +453,12 @@ export default function DashboardIntegrationsPage() {
                     </div>
                   </Form>
                 ) : selectedTarget ? (
-                  <Form onSubmit={submitConnect} className="grid gap-4">
-                    {isConnectReadOnly && (
-                      <p className="text-sm text-muted">{VIEW_ONLY_INTEGRATION_MESSAGE}</p>
-                    )}
-                    {integrationSupportsWebhookUrl(selectedTarget.integration_type) ? (
-                      <p className="text-sm text-muted">
-                        Enter your API key first. After connecting you get a webhook URL to
-                        register in OpenAI before the signing secret.
-                      </p>
-                    ) : null}
-                    <IntegrationCredentialFields
-                      authType={selectedTarget.auth_type}
-                      integrationType={selectedTarget.integration_type}
-                      register={connectForm.register}
-                      errors={connectForm.formState.errors}
-                      isDisabled={isConnectReadOnly}
-                    />
-                    <div className="flex justify-end gap-2">
-                      <ActionButtonWithPending
-                        type="button"
-                        variant="secondary"
-                        onPress={closeConnectModal}
-                        isDisabled={connectIntegration.isPending}
-                      >
-                        Cancel
-                      </ActionButtonWithPending>
-                      <ActionButtonWithPending
-                        type="submit"
-                        isPending={connectIntegration.isPending}
-                        isDisabled={isConnectReadOnly}
-                      >
-                        Connect
-                      </ActionButtonWithPending>
-                    </div>
-                  </Form>
+                  <ConnectIntegrationForm
+                    target={selectedTarget}
+                    isPending={connectIntegration.isPending}
+                    onSubmit={submitConnect}
+                    onCancel={closeConnectModal}
+                  />
                 ) : null}
               </Modal.Body>
             </Modal.Dialog>

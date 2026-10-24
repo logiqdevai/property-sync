@@ -5,12 +5,19 @@ import type {
   UpsertContentPublishingConfigPayload,
 } from "../interfaces/content-publishing.interfaces";
 
+/** With `userId` (admin only) the config of that user's tracker is addressed instead of the caller's. */
+const contentPublishingUrl = (agencyId: string, userId?: string) =>
+  userId
+    ? ApiRoutes.admin.agencies.trackerContentPublishing(agencyId, userId)
+    : ApiRoutes.agencies.contentPublishing(agencyId);
+
 export const getContentPublishingConfig = async (
   agencyId: string,
+  userId?: string,
 ): Promise<ContentPublishingConfig | null> => {
   try {
     const response = await axiosInstance.get(
-      ApiRoutes.agencies.contentPublishing(agencyId),
+      contentPublishingUrl(agencyId, userId),
     );
     return response.data;
   } catch (error) {
@@ -21,10 +28,11 @@ export const getContentPublishingConfig = async (
 export const upsertContentPublishingConfig = async (
   agencyId: string,
   payload: UpsertContentPublishingConfigPayload,
+  userId?: string,
 ): Promise<ContentPublishingConfig> => {
   try {
     const response = await axiosInstance.put(
-      ApiRoutes.agencies.contentPublishing(agencyId),
+      contentPublishingUrl(agencyId, userId),
       payload,
     );
     return response.data;
@@ -35,9 +43,10 @@ export const upsertContentPublishingConfig = async (
 
 export const deleteContentPublishingConfig = async (
   agencyId: string,
+  userId?: string,
 ): Promise<void> => {
   try {
-    await axiosInstance.delete(ApiRoutes.agencies.contentPublishing(agencyId));
+    await axiosInstance.delete(contentPublishingUrl(agencyId, userId));
   } catch (error) {
     throw new Error("Failed to delete content publishing config.");
   }

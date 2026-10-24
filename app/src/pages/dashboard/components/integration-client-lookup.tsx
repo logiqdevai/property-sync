@@ -1,12 +1,18 @@
 import { useState } from "react";
 import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
-import { useSearchIntegrationClients } from "@/features/user-tracked-agencies/hooks/use-user-tracked-agencies";
-import type { IntegrationClient } from "@/features/user-tracked-agencies/interfaces/user-tracked-agencies.interfaces";
+import { useMutation } from "@tanstack/react-query";
+import { searchIntegrationClients } from "@/features/user-tracked-agencies/services/user-tracked-agencies.services";
+import type {
+  IntegrationClient,
+  IntegrationClientSearchResult,
+} from "@/features/user-tracked-agencies/interfaces/user-tracked-agencies.interfaces";
 
 type IntegrationClientLookupProps = {
   disabled?: boolean;
   selectedClientId: number | null;
   onSelect: (client: IntegrationClient) => void;
+  /** Defaults to searching through the current user's default EstateWeb connection. */
+  searchClients?: (lastName: string) => Promise<IntegrationClientSearchResult>;
 };
 
 const MIN_QUERY_LENGTH = 2;
@@ -29,9 +35,10 @@ export function IntegrationClientLookup({
   disabled = false,
   selectedClientId,
   onSelect,
+  searchClients = searchIntegrationClients,
 }: IntegrationClientLookupProps) {
   const [lastName, setLastName] = useState("");
-  const search = useSearchIntegrationClients();
+  const search = useMutation({ mutationFn: searchClients });
 
   const canSearch = lastName.trim().length >= MIN_QUERY_LENGTH;
 
