@@ -76,7 +76,9 @@ export class GeocodeCoordinatesJobService {
     }
 
     try {
-      const location = await this.googleMapsService.geocodeAddress(addressText);
+      const location = await this.googleMapsService.geocodeAddress(addressText, {
+        purpose: 'geocode_missing_coordinates',
+      });
       if (!location) {
         return {
           entity_id: data.entity_id,
@@ -140,7 +142,11 @@ export class GeocodeCoordinatesJobService {
     }
 
     try {
-      const location = await this.googleMapsService.geocodeAddress(addressText);
+      const location = await this.googleMapsService.geocodeAddress(addressText, {
+        userId: data.user_id,
+        userPropertyId: property.id,
+        purpose: 'geocode_missing_coordinates',
+      });
       if (!location) {
         return {
           entity_id: data.entity_id,

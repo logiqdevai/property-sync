@@ -29,6 +29,8 @@ import {
 const SINGLETON_ID = 'singleton';
 
 const DEFAULT_DEWATERMARK_COST_PER_IMAGE = 0.02;
+// Google Maps Platform public Geocoding rate ($5 per 1,000 requests).
+const DEFAULT_GOOGLE_GEOCODING_COST_PER_REQUEST = 0.005;
 const DEFAULT_TRANSLATION_PROVIDER = TranslationProvider.GOOGLE_TRANSLATE;
 
 const CACHE_TTL_MS = 30_000;
@@ -85,6 +87,14 @@ export class PlatformConfigService {
     return value !== null && value !== undefined
       ? Number(value)
       : DEFAULT_DEWATERMARK_COST_PER_IMAGE;
+  }
+
+  async getGoogleGeocodingCostPerRequest(): Promise<number> {
+    const row = await this.getCachedRow();
+    const value = row?.google_geocoding_cost_per_request;
+    return value !== null && value !== undefined
+      ? Number(value)
+      : DEFAULT_GOOGLE_GEOCODING_COST_PER_REQUEST;
   }
 
   async getGoogleTranslateCostPerMillionChars(): Promise<number> {

@@ -81,6 +81,12 @@ export class PlatformConfig {
     nullable: true,
     description: 'Null means the default value is used',
   })
+  google_geocoding_cost_per_request: number | null;
+
+  @ApiProperty({
+    nullable: true,
+    description: 'Null means the default value is used',
+  })
   google_translate_cost_per_million_chars: number | null;
 
   @ApiProperty({

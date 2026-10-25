@@ -5,6 +5,7 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
+import { sameLocationInputs } from './services/resolve-estateweb-location-job.service';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
@@ -4544,11 +4545,16 @@ export class UserPropertiesService {
           watermarkManualSelection: tracker.watermark_manual_selection,
           watermarkImageCount: tracker.watermark_image_count,
         });
-        await this.enqueueResolveEstateWebLocation(
-          'user_property',
-          created.id,
-          tracker.user_id,
-        );
+        // Same location inputs as the canonical Property => it inherits the canonical's
+        // resolved id (already copied by mapFromCanonical, or propagated when the canonical's
+        // own job finishes), so a second resolution for the same listing would be wasted.
+        if (!sameLocationInputs(created, property)) {
+          await this.enqueueResolveEstateWebLocation(
+            'user_property',
+            created.id,
+            tracker.user_id,
+          );
+        }
         await this.reattachClients(
           tracker.user_id,
           created.id,
@@ -4606,11 +4612,16 @@ export class UserPropertiesService {
           watermarkManualSelection: tracker.watermark_manual_selection,
           watermarkImageCount: tracker.watermark_image_count,
         });
-        await this.enqueueResolveEstateWebLocation(
-          'user_property',
-          created.id,
-          tracker.user_id,
-        );
+        // Same location inputs as the canonical Property => it inherits the canonical's
+        // resolved id (already copied by mapFromCanonical, or propagated when the canonical's
+        // own job finishes), so a second resolution for the same listing would be wasted.
+        if (!sameLocationInputs(created, property)) {
+          await this.enqueueResolveEstateWebLocation(
+            'user_property',
+            created.id,
+            tracker.user_id,
+          );
+        }
         await this.reattachClients(
           tracker.user_id,
           created.id,

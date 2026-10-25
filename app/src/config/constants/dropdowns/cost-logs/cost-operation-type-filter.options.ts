@@ -11,5 +11,6 @@ export const CostOperationTypeFilterOptions: { id: CostOperationType | "all"; la
   { id: CostOperationTypes.DEWATERMARK, label: "Dewatermark" },
   { id: CostOperationTypes.PROXY, label: "Proxy" },
   { id: CostOperationTypes.CAPTCHA, label: "Captcha" },
+  { id: CostOperationTypes.GEOCODING, label: "Geocoding" },
   { id: CostOperationTypes.OTHER, label: "Other" },
 ];

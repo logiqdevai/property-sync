@@ -7,6 +7,7 @@ export const CostOperationTypes = {
   DEWATERMARK: "DEWATERMARK",
   PROXY: "PROXY",
   CAPTCHA: "CAPTCHA",
+  GEOCODING: "GEOCODING",
   OTHER: "OTHER",
 } as const;
 
@@ -23,6 +24,7 @@ export const CostProviders = {
   AZURE: "AZURE",
   WEBSHARE: "WEBSHARE",
   TWOCAPTCHA: "TWOCAPTCHA",
+  GOOGLE_MAPS: "GOOGLE_MAPS",
 } as const;
 
 export type CostProvider = (typeof CostProviders)[keyof typeof CostProviders];

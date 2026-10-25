@@ -234,6 +234,13 @@ export type ActivityLog = $Result.DefaultSelection<Prisma.$ActivityLogPayload>
  * before/after are redacted snapshots; changes is `[{ path, from, to, redacted? }]`.
  */
 export type ActivityLogChange = $Result.DefaultSelection<Prisma.$ActivityLogChangePayload>
+/**
+ * Model GeocodeCache
+ * Persistent cache of Google Geocoding answers (reverse by ~110 m grid cell, forward by
+ * normalized address text) so repeated location re-checks and backfills don't re-bill Google.
+ * A row with result = NULL is a cached ZERO_RESULTS answer. Errors are never cached.
+ */
+export type GeocodeCache = $Result.DefaultSelection<Prisma.$GeocodeCachePayload>
 
 /**
  * Enums
@@ -461,7 +468,8 @@ export const IntegrationType: {
   GOOGLE_TRANSLATE: 'GOOGLE_TRANSLATE',
   AZURE: 'AZURE',
   WEBSHARE: 'WEBSHARE',
-  TWOCAPTCHA: 'TWOCAPTCHA'
+  TWOCAPTCHA: 'TWOCAPTCHA',
+  GOOGLE_MAPS: 'GOOGLE_MAPS'
 };
 
 export type IntegrationType = (typeof IntegrationType)[keyof typeof IntegrationType]
@@ -482,6 +490,7 @@ export const CostOperationType: {
   DEWATERMARK: 'DEWATERMARK',
   PROXY: 'PROXY',
   CAPTCHA: 'CAPTCHA',
+  GEOCODING: 'GEOCODING',
   OTHER: 'OTHER'
 };
 
@@ -1223,6 +1232,16 @@ export class PrismaClient<
     * ```
     */
   get activityLogChange(): Prisma.ActivityLogChangeDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.geocodeCache`: Exposes CRUD operations for the **GeocodeCache** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more GeocodeCaches
+    * const geocodeCaches = await prisma.geocodeCache.findMany()
+    * ```
+    */
+  get geocodeCache(): Prisma.GeocodeCacheDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -1692,7 +1711,8 @@ export namespace Prisma {
     PlatformConfig: 'PlatformConfig',
     Document: 'Document',
     ActivityLog: 'ActivityLog',
-    ActivityLogChange: 'ActivityLogChange'
+    ActivityLogChange: 'ActivityLogChange',
+    GeocodeCache: 'GeocodeCache'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -1708,7 +1728,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user" | "integrationTarget" | "userIntegrationSettings" | "userIntegration" | "sourceAgency" | "blockRule" | "userTrackedAgency" | "userTrackedAgencyIntegrationLink" | "scraper" | "scraperVersion" | "scraperExecutionTrace" | "crawlRun" | "diagnosticsPackage" | "diagnosticsArtifact" | "jobLog" | "jobLogItem" | "notification" | "notificationSetting" | "cmsSyncRun" | "sourceProperty" | "property" | "propertySourceLink" | "propertyHistory" | "userProperty" | "userPropertyClient" | "contentPublishingConfig" | "contentOutput" | "aiTitleFamily" | "propertyLocalizedContent" | "aiBatchRun" | "costLog" | "integrationProperty" | "platformConfig" | "document" | "activityLog" | "activityLogChange"
+      modelProps: "user" | "integrationTarget" | "userIntegrationSettings" | "userIntegration" | "sourceAgency" | "blockRule" | "userTrackedAgency" | "userTrackedAgencyIntegrationLink" | "scraper" | "scraperVersion" | "scraperExecutionTrace" | "crawlRun" | "diagnosticsPackage" | "diagnosticsArtifact" | "jobLog" | "jobLogItem" | "notification" | "notificationSetting" | "cmsSyncRun" | "sourceProperty" | "property" | "propertySourceLink" | "propertyHistory" | "userProperty" | "userPropertyClient" | "contentPublishingConfig" | "contentOutput" | "aiTitleFamily" | "propertyLocalizedContent" | "aiBatchRun" | "costLog" | "integrationProperty" | "platformConfig" | "document" | "activityLog" | "activityLogChange" | "geocodeCache"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -4376,6 +4396,80 @@ export namespace Prisma {
           }
         }
       }
+      GeocodeCache: {
+        payload: Prisma.$GeocodeCachePayload<ExtArgs>
+        fields: Prisma.GeocodeCacheFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.GeocodeCacheFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GeocodeCachePayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.GeocodeCacheFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GeocodeCachePayload>
+          }
+          findFirst: {
+            args: Prisma.GeocodeCacheFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GeocodeCachePayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.GeocodeCacheFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GeocodeCachePayload>
+          }
+          findMany: {
+            args: Prisma.GeocodeCacheFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GeocodeCachePayload>[]
+          }
+          create: {
+            args: Prisma.GeocodeCacheCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GeocodeCachePayload>
+          }
+          createMany: {
+            args: Prisma.GeocodeCacheCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.GeocodeCacheCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GeocodeCachePayload>[]
+          }
+          delete: {
+            args: Prisma.GeocodeCacheDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GeocodeCachePayload>
+          }
+          update: {
+            args: Prisma.GeocodeCacheUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GeocodeCachePayload>
+          }
+          deleteMany: {
+            args: Prisma.GeocodeCacheDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.GeocodeCacheUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.GeocodeCacheUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GeocodeCachePayload>[]
+          }
+          upsert: {
+            args: Prisma.GeocodeCacheUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GeocodeCachePayload>
+          }
+          aggregate: {
+            args: Prisma.GeocodeCacheAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateGeocodeCache>
+          }
+          groupBy: {
+            args: Prisma.GeocodeCacheGroupByArgs<ExtArgs>
+            result: $Utils.Optional<GeocodeCacheGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.GeocodeCacheCountArgs<ExtArgs>
+            result: $Utils.Optional<GeocodeCacheCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -4520,6 +4614,7 @@ export namespace Prisma {
     document?: DocumentOmit
     activityLog?: ActivityLogOmit
     activityLogChange?: ActivityLogChangeOmit
+    geocodeCache?: GeocodeCacheOmit
   }
 
   /* Types for Logging */
@@ -45855,6 +45950,7 @@ export namespace Prisma {
     dewatermark_cost_per_image: Decimal | null
     google_translate_cost_per_million_chars: Decimal | null
     azure_translate_cost_per_million_chars: Decimal | null
+    google_geocoding_cost_per_request: Decimal | null
     azure_translate_max_requests_per_second: number | null
   }
 
@@ -45873,6 +45969,7 @@ export namespace Prisma {
     dewatermark_cost_per_image: Decimal | null
     google_translate_cost_per_million_chars: Decimal | null
     azure_translate_cost_per_million_chars: Decimal | null
+    google_geocoding_cost_per_request: Decimal | null
     azure_translate_max_requests_per_second: number | null
   }
 
@@ -45892,6 +45989,7 @@ export namespace Prisma {
     dewatermark_cost_per_image: Decimal | null
     google_translate_cost_per_million_chars: Decimal | null
     azure_translate_cost_per_million_chars: Decimal | null
+    google_geocoding_cost_per_request: Decimal | null
     azure_translate_max_requests_per_second: number | null
     translation_provider: $Enums.TranslationProvider | null
     created_at: Date | null
@@ -45914,6 +46012,7 @@ export namespace Prisma {
     dewatermark_cost_per_image: Decimal | null
     google_translate_cost_per_million_chars: Decimal | null
     azure_translate_cost_per_million_chars: Decimal | null
+    google_geocoding_cost_per_request: Decimal | null
     azure_translate_max_requests_per_second: number | null
     translation_provider: $Enums.TranslationProvider | null
     created_at: Date | null
@@ -45936,6 +46035,7 @@ export namespace Prisma {
     dewatermark_cost_per_image: number
     google_translate_cost_per_million_chars: number
     azure_translate_cost_per_million_chars: number
+    google_geocoding_cost_per_request: number
     azure_translate_max_requests_per_second: number
     translation_provider: number
     created_at: number
@@ -45959,6 +46059,7 @@ export namespace Prisma {
     dewatermark_cost_per_image?: true
     google_translate_cost_per_million_chars?: true
     azure_translate_cost_per_million_chars?: true
+    google_geocoding_cost_per_request?: true
     azure_translate_max_requests_per_second?: true
   }
 
@@ -45977,6 +46078,7 @@ export namespace Prisma {
     dewatermark_cost_per_image?: true
     google_translate_cost_per_million_chars?: true
     azure_translate_cost_per_million_chars?: true
+    google_geocoding_cost_per_request?: true
     azure_translate_max_requests_per_second?: true
   }
 
@@ -45996,6 +46098,7 @@ export namespace Prisma {
     dewatermark_cost_per_image?: true
     google_translate_cost_per_million_chars?: true
     azure_translate_cost_per_million_chars?: true
+    google_geocoding_cost_per_request?: true
     azure_translate_max_requests_per_second?: true
     translation_provider?: true
     created_at?: true
@@ -46018,6 +46121,7 @@ export namespace Prisma {
     dewatermark_cost_per_image?: true
     google_translate_cost_per_million_chars?: true
     azure_translate_cost_per_million_chars?: true
+    google_geocoding_cost_per_request?: true
     azure_translate_max_requests_per_second?: true
     translation_provider?: true
     created_at?: true
@@ -46040,6 +46144,7 @@ export namespace Prisma {
     dewatermark_cost_per_image?: true
     google_translate_cost_per_million_chars?: true
     azure_translate_cost_per_million_chars?: true
+    google_geocoding_cost_per_request?: true
     azure_translate_max_requests_per_second?: true
     translation_provider?: true
     created_at?: true
@@ -46149,6 +46254,7 @@ export namespace Prisma {
     dewatermark_cost_per_image: Decimal | null
     google_translate_cost_per_million_chars: Decimal | null
     azure_translate_cost_per_million_chars: Decimal | null
+    google_geocoding_cost_per_request: Decimal | null
     azure_translate_max_requests_per_second: number | null
     translation_provider: $Enums.TranslationProvider | null
     created_at: Date
@@ -46190,6 +46296,7 @@ export namespace Prisma {
     dewatermark_cost_per_image?: boolean
     google_translate_cost_per_million_chars?: boolean
     azure_translate_cost_per_million_chars?: boolean
+    google_geocoding_cost_per_request?: boolean
     azure_translate_max_requests_per_second?: boolean
     translation_provider?: boolean
     created_at?: boolean
@@ -46212,6 +46319,7 @@ export namespace Prisma {
     dewatermark_cost_per_image?: boolean
     google_translate_cost_per_million_chars?: boolean
     azure_translate_cost_per_million_chars?: boolean
+    google_geocoding_cost_per_request?: boolean
     azure_translate_max_requests_per_second?: boolean
     translation_provider?: boolean
     created_at?: boolean
@@ -46234,6 +46342,7 @@ export namespace Prisma {
     dewatermark_cost_per_image?: boolean
     google_translate_cost_per_million_chars?: boolean
     azure_translate_cost_per_million_chars?: boolean
+    google_geocoding_cost_per_request?: boolean
     azure_translate_max_requests_per_second?: boolean
     translation_provider?: boolean
     created_at?: boolean
@@ -46256,13 +46365,14 @@ export namespace Prisma {
     dewatermark_cost_per_image?: boolean
     google_translate_cost_per_million_chars?: boolean
     azure_translate_cost_per_million_chars?: boolean
+    google_geocoding_cost_per_request?: boolean
     azure_translate_max_requests_per_second?: boolean
     translation_provider?: boolean
     created_at?: boolean
     updated_at?: boolean
   }
 
-  export type PlatformConfigOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "crawler_max_pages" | "crawler_page_timeout_ms" | "crawler_selector_timeout_ms" | "crawler_scroll_pause_ms" | "crawler_detail_concurrency" | "crawler_detail_delay_ms" | "crawler_worker_concurrency" | "crawler_job_timeout_ms" | "crawler_chromium_max_contexts_before_restart" | "crawler_max_concurrent_browser_pages" | "normalization_ai_raw_description_max_chars" | "dewatermark_cost_per_image" | "google_translate_cost_per_million_chars" | "azure_translate_cost_per_million_chars" | "azure_translate_max_requests_per_second" | "translation_provider" | "created_at" | "updated_at", ExtArgs["result"]["platformConfig"]>
+  export type PlatformConfigOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "crawler_max_pages" | "crawler_page_timeout_ms" | "crawler_selector_timeout_ms" | "crawler_scroll_pause_ms" | "crawler_detail_concurrency" | "crawler_detail_delay_ms" | "crawler_worker_concurrency" | "crawler_job_timeout_ms" | "crawler_chromium_max_contexts_before_restart" | "crawler_max_concurrent_browser_pages" | "normalization_ai_raw_description_max_chars" | "dewatermark_cost_per_image" | "google_translate_cost_per_million_chars" | "azure_translate_cost_per_million_chars" | "google_geocoding_cost_per_request" | "azure_translate_max_requests_per_second" | "translation_provider" | "created_at" | "updated_at", ExtArgs["result"]["platformConfig"]>
 
   export type $PlatformConfigPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "PlatformConfig"
@@ -46283,6 +46393,7 @@ export namespace Prisma {
       dewatermark_cost_per_image: Prisma.Decimal | null
       google_translate_cost_per_million_chars: Prisma.Decimal | null
       azure_translate_cost_per_million_chars: Prisma.Decimal | null
+      google_geocoding_cost_per_request: Prisma.Decimal | null
       azure_translate_max_requests_per_second: number | null
       translation_provider: $Enums.TranslationProvider | null
       created_at: Date
@@ -46725,6 +46836,7 @@ export namespace Prisma {
     readonly dewatermark_cost_per_image: FieldRef<"PlatformConfig", 'Decimal'>
     readonly google_translate_cost_per_million_chars: FieldRef<"PlatformConfig", 'Decimal'>
     readonly azure_translate_cost_per_million_chars: FieldRef<"PlatformConfig", 'Decimal'>
+    readonly google_geocoding_cost_per_request: FieldRef<"PlatformConfig", 'Decimal'>
     readonly azure_translate_max_requests_per_second: FieldRef<"PlatformConfig", 'Int'>
     readonly translation_provider: FieldRef<"PlatformConfig", 'TranslationProvider'>
     readonly created_at: FieldRef<"PlatformConfig", 'DateTime'>
@@ -50652,6 +50764,1091 @@ export namespace Prisma {
 
 
   /**
+   * Model GeocodeCache
+   */
+
+  export type AggregateGeocodeCache = {
+    _count: GeocodeCacheCountAggregateOutputType | null
+    _avg: GeocodeCacheAvgAggregateOutputType | null
+    _sum: GeocodeCacheSumAggregateOutputType | null
+    _min: GeocodeCacheMinAggregateOutputType | null
+    _max: GeocodeCacheMaxAggregateOutputType | null
+  }
+
+  export type GeocodeCacheAvgAggregateOutputType = {
+    lat: number | null
+    lng: number | null
+    hit_count: number | null
+  }
+
+  export type GeocodeCacheSumAggregateOutputType = {
+    lat: number | null
+    lng: number | null
+    hit_count: number | null
+  }
+
+  export type GeocodeCacheMinAggregateOutputType = {
+    id: string | null
+    cache_key: string | null
+    kind: string | null
+    lat: number | null
+    lng: number | null
+    hit_count: number | null
+    created_at: Date | null
+    last_hit_at: Date | null
+  }
+
+  export type GeocodeCacheMaxAggregateOutputType = {
+    id: string | null
+    cache_key: string | null
+    kind: string | null
+    lat: number | null
+    lng: number | null
+    hit_count: number | null
+    created_at: Date | null
+    last_hit_at: Date | null
+  }
+
+  export type GeocodeCacheCountAggregateOutputType = {
+    id: number
+    cache_key: number
+    kind: number
+    lat: number
+    lng: number
+    result: number
+    hit_count: number
+    created_at: number
+    last_hit_at: number
+    _all: number
+  }
+
+
+  export type GeocodeCacheAvgAggregateInputType = {
+    lat?: true
+    lng?: true
+    hit_count?: true
+  }
+
+  export type GeocodeCacheSumAggregateInputType = {
+    lat?: true
+    lng?: true
+    hit_count?: true
+  }
+
+  export type GeocodeCacheMinAggregateInputType = {
+    id?: true
+    cache_key?: true
+    kind?: true
+    lat?: true
+    lng?: true
+    hit_count?: true
+    created_at?: true
+    last_hit_at?: true
+  }
+
+  export type GeocodeCacheMaxAggregateInputType = {
+    id?: true
+    cache_key?: true
+    kind?: true
+    lat?: true
+    lng?: true
+    hit_count?: true
+    created_at?: true
+    last_hit_at?: true
+  }
+
+  export type GeocodeCacheCountAggregateInputType = {
+    id?: true
+    cache_key?: true
+    kind?: true
+    lat?: true
+    lng?: true
+    result?: true
+    hit_count?: true
+    created_at?: true
+    last_hit_at?: true
+    _all?: true
+  }
+
+  export type GeocodeCacheAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which GeocodeCache to aggregate.
+     */
+    where?: GeocodeCacheWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of GeocodeCaches to fetch.
+     */
+    orderBy?: GeocodeCacheOrderByWithRelationInput | GeocodeCacheOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: GeocodeCacheWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` GeocodeCaches from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` GeocodeCaches.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned GeocodeCaches
+    **/
+    _count?: true | GeocodeCacheCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: GeocodeCacheAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: GeocodeCacheSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: GeocodeCacheMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: GeocodeCacheMaxAggregateInputType
+  }
+
+  export type GetGeocodeCacheAggregateType<T extends GeocodeCacheAggregateArgs> = {
+        [P in keyof T & keyof AggregateGeocodeCache]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateGeocodeCache[P]>
+      : GetScalarType<T[P], AggregateGeocodeCache[P]>
+  }
+
+
+
+
+  export type GeocodeCacheGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: GeocodeCacheWhereInput
+    orderBy?: GeocodeCacheOrderByWithAggregationInput | GeocodeCacheOrderByWithAggregationInput[]
+    by: GeocodeCacheScalarFieldEnum[] | GeocodeCacheScalarFieldEnum
+    having?: GeocodeCacheScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: GeocodeCacheCountAggregateInputType | true
+    _avg?: GeocodeCacheAvgAggregateInputType
+    _sum?: GeocodeCacheSumAggregateInputType
+    _min?: GeocodeCacheMinAggregateInputType
+    _max?: GeocodeCacheMaxAggregateInputType
+  }
+
+  export type GeocodeCacheGroupByOutputType = {
+    id: string
+    cache_key: string
+    kind: string
+    lat: number | null
+    lng: number | null
+    result: JsonValue | null
+    hit_count: number
+    created_at: Date
+    last_hit_at: Date | null
+    _count: GeocodeCacheCountAggregateOutputType | null
+    _avg: GeocodeCacheAvgAggregateOutputType | null
+    _sum: GeocodeCacheSumAggregateOutputType | null
+    _min: GeocodeCacheMinAggregateOutputType | null
+    _max: GeocodeCacheMaxAggregateOutputType | null
+  }
+
+  type GetGeocodeCacheGroupByPayload<T extends GeocodeCacheGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<GeocodeCacheGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof GeocodeCacheGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], GeocodeCacheGroupByOutputType[P]>
+            : GetScalarType<T[P], GeocodeCacheGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type GeocodeCacheSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    cache_key?: boolean
+    kind?: boolean
+    lat?: boolean
+    lng?: boolean
+    result?: boolean
+    hit_count?: boolean
+    created_at?: boolean
+    last_hit_at?: boolean
+  }, ExtArgs["result"]["geocodeCache"]>
+
+  export type GeocodeCacheSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    cache_key?: boolean
+    kind?: boolean
+    lat?: boolean
+    lng?: boolean
+    result?: boolean
+    hit_count?: boolean
+    created_at?: boolean
+    last_hit_at?: boolean
+  }, ExtArgs["result"]["geocodeCache"]>
+
+  export type GeocodeCacheSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    cache_key?: boolean
+    kind?: boolean
+    lat?: boolean
+    lng?: boolean
+    result?: boolean
+    hit_count?: boolean
+    created_at?: boolean
+    last_hit_at?: boolean
+  }, ExtArgs["result"]["geocodeCache"]>
+
+  export type GeocodeCacheSelectScalar = {
+    id?: boolean
+    cache_key?: boolean
+    kind?: boolean
+    lat?: boolean
+    lng?: boolean
+    result?: boolean
+    hit_count?: boolean
+    created_at?: boolean
+    last_hit_at?: boolean
+  }
+
+  export type GeocodeCacheOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "cache_key" | "kind" | "lat" | "lng" | "result" | "hit_count" | "created_at" | "last_hit_at", ExtArgs["result"]["geocodeCache"]>
+
+  export type $GeocodeCachePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "GeocodeCache"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      cache_key: string
+      kind: string
+      lat: number | null
+      lng: number | null
+      result: Prisma.JsonValue | null
+      hit_count: number
+      created_at: Date
+      last_hit_at: Date | null
+    }, ExtArgs["result"]["geocodeCache"]>
+    composites: {}
+  }
+
+  type GeocodeCacheGetPayload<S extends boolean | null | undefined | GeocodeCacheDefaultArgs> = $Result.GetResult<Prisma.$GeocodeCachePayload, S>
+
+  type GeocodeCacheCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<GeocodeCacheFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: GeocodeCacheCountAggregateInputType | true
+    }
+
+  export interface GeocodeCacheDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['GeocodeCache'], meta: { name: 'GeocodeCache' } }
+    /**
+     * Find zero or one GeocodeCache that matches the filter.
+     * @param {GeocodeCacheFindUniqueArgs} args - Arguments to find a GeocodeCache
+     * @example
+     * // Get one GeocodeCache
+     * const geocodeCache = await prisma.geocodeCache.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends GeocodeCacheFindUniqueArgs>(args: SelectSubset<T, GeocodeCacheFindUniqueArgs<ExtArgs>>): Prisma__GeocodeCacheClient<$Result.GetResult<Prisma.$GeocodeCachePayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one GeocodeCache that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {GeocodeCacheFindUniqueOrThrowArgs} args - Arguments to find a GeocodeCache
+     * @example
+     * // Get one GeocodeCache
+     * const geocodeCache = await prisma.geocodeCache.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends GeocodeCacheFindUniqueOrThrowArgs>(args: SelectSubset<T, GeocodeCacheFindUniqueOrThrowArgs<ExtArgs>>): Prisma__GeocodeCacheClient<$Result.GetResult<Prisma.$GeocodeCachePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first GeocodeCache that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GeocodeCacheFindFirstArgs} args - Arguments to find a GeocodeCache
+     * @example
+     * // Get one GeocodeCache
+     * const geocodeCache = await prisma.geocodeCache.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends GeocodeCacheFindFirstArgs>(args?: SelectSubset<T, GeocodeCacheFindFirstArgs<ExtArgs>>): Prisma__GeocodeCacheClient<$Result.GetResult<Prisma.$GeocodeCachePayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first GeocodeCache that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GeocodeCacheFindFirstOrThrowArgs} args - Arguments to find a GeocodeCache
+     * @example
+     * // Get one GeocodeCache
+     * const geocodeCache = await prisma.geocodeCache.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends GeocodeCacheFindFirstOrThrowArgs>(args?: SelectSubset<T, GeocodeCacheFindFirstOrThrowArgs<ExtArgs>>): Prisma__GeocodeCacheClient<$Result.GetResult<Prisma.$GeocodeCachePayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more GeocodeCaches that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GeocodeCacheFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all GeocodeCaches
+     * const geocodeCaches = await prisma.geocodeCache.findMany()
+     * 
+     * // Get first 10 GeocodeCaches
+     * const geocodeCaches = await prisma.geocodeCache.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const geocodeCacheWithIdOnly = await prisma.geocodeCache.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends GeocodeCacheFindManyArgs>(args?: SelectSubset<T, GeocodeCacheFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GeocodeCachePayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a GeocodeCache.
+     * @param {GeocodeCacheCreateArgs} args - Arguments to create a GeocodeCache.
+     * @example
+     * // Create one GeocodeCache
+     * const GeocodeCache = await prisma.geocodeCache.create({
+     *   data: {
+     *     // ... data to create a GeocodeCache
+     *   }
+     * })
+     * 
+     */
+    create<T extends GeocodeCacheCreateArgs>(args: SelectSubset<T, GeocodeCacheCreateArgs<ExtArgs>>): Prisma__GeocodeCacheClient<$Result.GetResult<Prisma.$GeocodeCachePayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many GeocodeCaches.
+     * @param {GeocodeCacheCreateManyArgs} args - Arguments to create many GeocodeCaches.
+     * @example
+     * // Create many GeocodeCaches
+     * const geocodeCache = await prisma.geocodeCache.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends GeocodeCacheCreateManyArgs>(args?: SelectSubset<T, GeocodeCacheCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many GeocodeCaches and returns the data saved in the database.
+     * @param {GeocodeCacheCreateManyAndReturnArgs} args - Arguments to create many GeocodeCaches.
+     * @example
+     * // Create many GeocodeCaches
+     * const geocodeCache = await prisma.geocodeCache.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many GeocodeCaches and only return the `id`
+     * const geocodeCacheWithIdOnly = await prisma.geocodeCache.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends GeocodeCacheCreateManyAndReturnArgs>(args?: SelectSubset<T, GeocodeCacheCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GeocodeCachePayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a GeocodeCache.
+     * @param {GeocodeCacheDeleteArgs} args - Arguments to delete one GeocodeCache.
+     * @example
+     * // Delete one GeocodeCache
+     * const GeocodeCache = await prisma.geocodeCache.delete({
+     *   where: {
+     *     // ... filter to delete one GeocodeCache
+     *   }
+     * })
+     * 
+     */
+    delete<T extends GeocodeCacheDeleteArgs>(args: SelectSubset<T, GeocodeCacheDeleteArgs<ExtArgs>>): Prisma__GeocodeCacheClient<$Result.GetResult<Prisma.$GeocodeCachePayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one GeocodeCache.
+     * @param {GeocodeCacheUpdateArgs} args - Arguments to update one GeocodeCache.
+     * @example
+     * // Update one GeocodeCache
+     * const geocodeCache = await prisma.geocodeCache.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends GeocodeCacheUpdateArgs>(args: SelectSubset<T, GeocodeCacheUpdateArgs<ExtArgs>>): Prisma__GeocodeCacheClient<$Result.GetResult<Prisma.$GeocodeCachePayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more GeocodeCaches.
+     * @param {GeocodeCacheDeleteManyArgs} args - Arguments to filter GeocodeCaches to delete.
+     * @example
+     * // Delete a few GeocodeCaches
+     * const { count } = await prisma.geocodeCache.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends GeocodeCacheDeleteManyArgs>(args?: SelectSubset<T, GeocodeCacheDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more GeocodeCaches.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GeocodeCacheUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many GeocodeCaches
+     * const geocodeCache = await prisma.geocodeCache.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends GeocodeCacheUpdateManyArgs>(args: SelectSubset<T, GeocodeCacheUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more GeocodeCaches and returns the data updated in the database.
+     * @param {GeocodeCacheUpdateManyAndReturnArgs} args - Arguments to update many GeocodeCaches.
+     * @example
+     * // Update many GeocodeCaches
+     * const geocodeCache = await prisma.geocodeCache.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more GeocodeCaches and only return the `id`
+     * const geocodeCacheWithIdOnly = await prisma.geocodeCache.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends GeocodeCacheUpdateManyAndReturnArgs>(args: SelectSubset<T, GeocodeCacheUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GeocodeCachePayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one GeocodeCache.
+     * @param {GeocodeCacheUpsertArgs} args - Arguments to update or create a GeocodeCache.
+     * @example
+     * // Update or create a GeocodeCache
+     * const geocodeCache = await prisma.geocodeCache.upsert({
+     *   create: {
+     *     // ... data to create a GeocodeCache
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the GeocodeCache we want to update
+     *   }
+     * })
+     */
+    upsert<T extends GeocodeCacheUpsertArgs>(args: SelectSubset<T, GeocodeCacheUpsertArgs<ExtArgs>>): Prisma__GeocodeCacheClient<$Result.GetResult<Prisma.$GeocodeCachePayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of GeocodeCaches.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GeocodeCacheCountArgs} args - Arguments to filter GeocodeCaches to count.
+     * @example
+     * // Count the number of GeocodeCaches
+     * const count = await prisma.geocodeCache.count({
+     *   where: {
+     *     // ... the filter for the GeocodeCaches we want to count
+     *   }
+     * })
+    **/
+    count<T extends GeocodeCacheCountArgs>(
+      args?: Subset<T, GeocodeCacheCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], GeocodeCacheCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a GeocodeCache.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GeocodeCacheAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends GeocodeCacheAggregateArgs>(args: Subset<T, GeocodeCacheAggregateArgs>): Prisma.PrismaPromise<GetGeocodeCacheAggregateType<T>>
+
+    /**
+     * Group by GeocodeCache.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GeocodeCacheGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends GeocodeCacheGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: GeocodeCacheGroupByArgs['orderBy'] }
+        : { orderBy?: GeocodeCacheGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, GeocodeCacheGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetGeocodeCacheGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the GeocodeCache model
+   */
+  readonly fields: GeocodeCacheFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for GeocodeCache.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__GeocodeCacheClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the GeocodeCache model
+   */
+  interface GeocodeCacheFieldRefs {
+    readonly id: FieldRef<"GeocodeCache", 'String'>
+    readonly cache_key: FieldRef<"GeocodeCache", 'String'>
+    readonly kind: FieldRef<"GeocodeCache", 'String'>
+    readonly lat: FieldRef<"GeocodeCache", 'Float'>
+    readonly lng: FieldRef<"GeocodeCache", 'Float'>
+    readonly result: FieldRef<"GeocodeCache", 'Json'>
+    readonly hit_count: FieldRef<"GeocodeCache", 'Int'>
+    readonly created_at: FieldRef<"GeocodeCache", 'DateTime'>
+    readonly last_hit_at: FieldRef<"GeocodeCache", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * GeocodeCache findUnique
+   */
+  export type GeocodeCacheFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GeocodeCache
+     */
+    select?: GeocodeCacheSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GeocodeCache
+     */
+    omit?: GeocodeCacheOmit<ExtArgs> | null
+    /**
+     * Filter, which GeocodeCache to fetch.
+     */
+    where: GeocodeCacheWhereUniqueInput
+  }
+
+  /**
+   * GeocodeCache findUniqueOrThrow
+   */
+  export type GeocodeCacheFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GeocodeCache
+     */
+    select?: GeocodeCacheSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GeocodeCache
+     */
+    omit?: GeocodeCacheOmit<ExtArgs> | null
+    /**
+     * Filter, which GeocodeCache to fetch.
+     */
+    where: GeocodeCacheWhereUniqueInput
+  }
+
+  /**
+   * GeocodeCache findFirst
+   */
+  export type GeocodeCacheFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GeocodeCache
+     */
+    select?: GeocodeCacheSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GeocodeCache
+     */
+    omit?: GeocodeCacheOmit<ExtArgs> | null
+    /**
+     * Filter, which GeocodeCache to fetch.
+     */
+    where?: GeocodeCacheWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of GeocodeCaches to fetch.
+     */
+    orderBy?: GeocodeCacheOrderByWithRelationInput | GeocodeCacheOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for GeocodeCaches.
+     */
+    cursor?: GeocodeCacheWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` GeocodeCaches from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` GeocodeCaches.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of GeocodeCaches.
+     */
+    distinct?: GeocodeCacheScalarFieldEnum | GeocodeCacheScalarFieldEnum[]
+  }
+
+  /**
+   * GeocodeCache findFirstOrThrow
+   */
+  export type GeocodeCacheFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GeocodeCache
+     */
+    select?: GeocodeCacheSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GeocodeCache
+     */
+    omit?: GeocodeCacheOmit<ExtArgs> | null
+    /**
+     * Filter, which GeocodeCache to fetch.
+     */
+    where?: GeocodeCacheWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of GeocodeCaches to fetch.
+     */
+    orderBy?: GeocodeCacheOrderByWithRelationInput | GeocodeCacheOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for GeocodeCaches.
+     */
+    cursor?: GeocodeCacheWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` GeocodeCaches from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` GeocodeCaches.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of GeocodeCaches.
+     */
+    distinct?: GeocodeCacheScalarFieldEnum | GeocodeCacheScalarFieldEnum[]
+  }
+
+  /**
+   * GeocodeCache findMany
+   */
+  export type GeocodeCacheFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GeocodeCache
+     */
+    select?: GeocodeCacheSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GeocodeCache
+     */
+    omit?: GeocodeCacheOmit<ExtArgs> | null
+    /**
+     * Filter, which GeocodeCaches to fetch.
+     */
+    where?: GeocodeCacheWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of GeocodeCaches to fetch.
+     */
+    orderBy?: GeocodeCacheOrderByWithRelationInput | GeocodeCacheOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing GeocodeCaches.
+     */
+    cursor?: GeocodeCacheWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` GeocodeCaches from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` GeocodeCaches.
+     */
+    skip?: number
+    distinct?: GeocodeCacheScalarFieldEnum | GeocodeCacheScalarFieldEnum[]
+  }
+
+  /**
+   * GeocodeCache create
+   */
+  export type GeocodeCacheCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GeocodeCache
+     */
+    select?: GeocodeCacheSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GeocodeCache
+     */
+    omit?: GeocodeCacheOmit<ExtArgs> | null
+    /**
+     * The data needed to create a GeocodeCache.
+     */
+    data: XOR<GeocodeCacheCreateInput, GeocodeCacheUncheckedCreateInput>
+  }
+
+  /**
+   * GeocodeCache createMany
+   */
+  export type GeocodeCacheCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many GeocodeCaches.
+     */
+    data: GeocodeCacheCreateManyInput | GeocodeCacheCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * GeocodeCache createManyAndReturn
+   */
+  export type GeocodeCacheCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GeocodeCache
+     */
+    select?: GeocodeCacheSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the GeocodeCache
+     */
+    omit?: GeocodeCacheOmit<ExtArgs> | null
+    /**
+     * The data used to create many GeocodeCaches.
+     */
+    data: GeocodeCacheCreateManyInput | GeocodeCacheCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * GeocodeCache update
+   */
+  export type GeocodeCacheUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GeocodeCache
+     */
+    select?: GeocodeCacheSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GeocodeCache
+     */
+    omit?: GeocodeCacheOmit<ExtArgs> | null
+    /**
+     * The data needed to update a GeocodeCache.
+     */
+    data: XOR<GeocodeCacheUpdateInput, GeocodeCacheUncheckedUpdateInput>
+    /**
+     * Choose, which GeocodeCache to update.
+     */
+    where: GeocodeCacheWhereUniqueInput
+  }
+
+  /**
+   * GeocodeCache updateMany
+   */
+  export type GeocodeCacheUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update GeocodeCaches.
+     */
+    data: XOR<GeocodeCacheUpdateManyMutationInput, GeocodeCacheUncheckedUpdateManyInput>
+    /**
+     * Filter which GeocodeCaches to update
+     */
+    where?: GeocodeCacheWhereInput
+    /**
+     * Limit how many GeocodeCaches to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * GeocodeCache updateManyAndReturn
+   */
+  export type GeocodeCacheUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GeocodeCache
+     */
+    select?: GeocodeCacheSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the GeocodeCache
+     */
+    omit?: GeocodeCacheOmit<ExtArgs> | null
+    /**
+     * The data used to update GeocodeCaches.
+     */
+    data: XOR<GeocodeCacheUpdateManyMutationInput, GeocodeCacheUncheckedUpdateManyInput>
+    /**
+     * Filter which GeocodeCaches to update
+     */
+    where?: GeocodeCacheWhereInput
+    /**
+     * Limit how many GeocodeCaches to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * GeocodeCache upsert
+   */
+  export type GeocodeCacheUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GeocodeCache
+     */
+    select?: GeocodeCacheSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GeocodeCache
+     */
+    omit?: GeocodeCacheOmit<ExtArgs> | null
+    /**
+     * The filter to search for the GeocodeCache to update in case it exists.
+     */
+    where: GeocodeCacheWhereUniqueInput
+    /**
+     * In case the GeocodeCache found by the `where` argument doesn't exist, create a new GeocodeCache with this data.
+     */
+    create: XOR<GeocodeCacheCreateInput, GeocodeCacheUncheckedCreateInput>
+    /**
+     * In case the GeocodeCache was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<GeocodeCacheUpdateInput, GeocodeCacheUncheckedUpdateInput>
+  }
+
+  /**
+   * GeocodeCache delete
+   */
+  export type GeocodeCacheDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GeocodeCache
+     */
+    select?: GeocodeCacheSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GeocodeCache
+     */
+    omit?: GeocodeCacheOmit<ExtArgs> | null
+    /**
+     * Filter which GeocodeCache to delete.
+     */
+    where: GeocodeCacheWhereUniqueInput
+  }
+
+  /**
+   * GeocodeCache deleteMany
+   */
+  export type GeocodeCacheDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which GeocodeCaches to delete
+     */
+    where?: GeocodeCacheWhereInput
+    /**
+     * Limit how many GeocodeCaches to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * GeocodeCache without action
+   */
+  export type GeocodeCacheDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GeocodeCache
+     */
+    select?: GeocodeCacheSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GeocodeCache
+     */
+    omit?: GeocodeCacheOmit<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -51334,6 +52531,7 @@ export namespace Prisma {
     dewatermark_cost_per_image: 'dewatermark_cost_per_image',
     google_translate_cost_per_million_chars: 'google_translate_cost_per_million_chars',
     azure_translate_cost_per_million_chars: 'azure_translate_cost_per_million_chars',
+    google_geocoding_cost_per_request: 'google_geocoding_cost_per_request',
     azure_translate_max_requests_per_second: 'azure_translate_max_requests_per_second',
     translation_provider: 'translation_provider',
     created_at: 'created_at',
@@ -51403,6 +52601,21 @@ export namespace Prisma {
   };
 
   export type ActivityLogChangeScalarFieldEnum = (typeof ActivityLogChangeScalarFieldEnum)[keyof typeof ActivityLogChangeScalarFieldEnum]
+
+
+  export const GeocodeCacheScalarFieldEnum: {
+    id: 'id',
+    cache_key: 'cache_key',
+    kind: 'kind',
+    lat: 'lat',
+    lng: 'lng',
+    result: 'result',
+    hit_count: 'hit_count',
+    created_at: 'created_at',
+    last_hit_at: 'last_hit_at'
+  };
+
+  export type GeocodeCacheScalarFieldEnum = (typeof GeocodeCacheScalarFieldEnum)[keyof typeof GeocodeCacheScalarFieldEnum]
 
 
   export const SortOrder: {
@@ -55526,6 +56739,7 @@ export namespace Prisma {
     dewatermark_cost_per_image?: DecimalNullableFilter<"PlatformConfig"> | Decimal | DecimalJsLike | number | string | null
     google_translate_cost_per_million_chars?: DecimalNullableFilter<"PlatformConfig"> | Decimal | DecimalJsLike | number | string | null
     azure_translate_cost_per_million_chars?: DecimalNullableFilter<"PlatformConfig"> | Decimal | DecimalJsLike | number | string | null
+    google_geocoding_cost_per_request?: DecimalNullableFilter<"PlatformConfig"> | Decimal | DecimalJsLike | number | string | null
     azure_translate_max_requests_per_second?: IntNullableFilter<"PlatformConfig"> | number | null
     translation_provider?: EnumTranslationProviderNullableFilter<"PlatformConfig"> | $Enums.TranslationProvider | null
     created_at?: DateTimeFilter<"PlatformConfig"> | Date | string
@@ -55548,6 +56762,7 @@ export namespace Prisma {
     dewatermark_cost_per_image?: SortOrderInput | SortOrder
     google_translate_cost_per_million_chars?: SortOrderInput | SortOrder
     azure_translate_cost_per_million_chars?: SortOrderInput | SortOrder
+    google_geocoding_cost_per_request?: SortOrderInput | SortOrder
     azure_translate_max_requests_per_second?: SortOrderInput | SortOrder
     translation_provider?: SortOrderInput | SortOrder
     created_at?: SortOrder
@@ -55573,6 +56788,7 @@ export namespace Prisma {
     dewatermark_cost_per_image?: DecimalNullableFilter<"PlatformConfig"> | Decimal | DecimalJsLike | number | string | null
     google_translate_cost_per_million_chars?: DecimalNullableFilter<"PlatformConfig"> | Decimal | DecimalJsLike | number | string | null
     azure_translate_cost_per_million_chars?: DecimalNullableFilter<"PlatformConfig"> | Decimal | DecimalJsLike | number | string | null
+    google_geocoding_cost_per_request?: DecimalNullableFilter<"PlatformConfig"> | Decimal | DecimalJsLike | number | string | null
     azure_translate_max_requests_per_second?: IntNullableFilter<"PlatformConfig"> | number | null
     translation_provider?: EnumTranslationProviderNullableFilter<"PlatformConfig"> | $Enums.TranslationProvider | null
     created_at?: DateTimeFilter<"PlatformConfig"> | Date | string
@@ -55595,6 +56811,7 @@ export namespace Prisma {
     dewatermark_cost_per_image?: SortOrderInput | SortOrder
     google_translate_cost_per_million_chars?: SortOrderInput | SortOrder
     azure_translate_cost_per_million_chars?: SortOrderInput | SortOrder
+    google_geocoding_cost_per_request?: SortOrderInput | SortOrder
     azure_translate_max_requests_per_second?: SortOrderInput | SortOrder
     translation_provider?: SortOrderInput | SortOrder
     created_at?: SortOrder
@@ -55625,6 +56842,7 @@ export namespace Prisma {
     dewatermark_cost_per_image?: DecimalNullableWithAggregatesFilter<"PlatformConfig"> | Decimal | DecimalJsLike | number | string | null
     google_translate_cost_per_million_chars?: DecimalNullableWithAggregatesFilter<"PlatformConfig"> | Decimal | DecimalJsLike | number | string | null
     azure_translate_cost_per_million_chars?: DecimalNullableWithAggregatesFilter<"PlatformConfig"> | Decimal | DecimalJsLike | number | string | null
+    google_geocoding_cost_per_request?: DecimalNullableWithAggregatesFilter<"PlatformConfig"> | Decimal | DecimalJsLike | number | string | null
     azure_translate_max_requests_per_second?: IntNullableWithAggregatesFilter<"PlatformConfig"> | number | null
     translation_provider?: EnumTranslationProviderNullableWithAggregatesFilter<"PlatformConfig"> | $Enums.TranslationProvider | null
     created_at?: DateTimeWithAggregatesFilter<"PlatformConfig"> | Date | string
@@ -55940,6 +57158,80 @@ export namespace Prisma {
     after?: JsonNullableWithAggregatesFilter<"ActivityLogChange">
     changes?: JsonWithAggregatesFilter<"ActivityLogChange">
     created_at?: DateTimeWithAggregatesFilter<"ActivityLogChange"> | Date | string
+  }
+
+  export type GeocodeCacheWhereInput = {
+    AND?: GeocodeCacheWhereInput | GeocodeCacheWhereInput[]
+    OR?: GeocodeCacheWhereInput[]
+    NOT?: GeocodeCacheWhereInput | GeocodeCacheWhereInput[]
+    id?: StringFilter<"GeocodeCache"> | string
+    cache_key?: StringFilter<"GeocodeCache"> | string
+    kind?: StringFilter<"GeocodeCache"> | string
+    lat?: FloatNullableFilter<"GeocodeCache"> | number | null
+    lng?: FloatNullableFilter<"GeocodeCache"> | number | null
+    result?: JsonNullableFilter<"GeocodeCache">
+    hit_count?: IntFilter<"GeocodeCache"> | number
+    created_at?: DateTimeFilter<"GeocodeCache"> | Date | string
+    last_hit_at?: DateTimeNullableFilter<"GeocodeCache"> | Date | string | null
+  }
+
+  export type GeocodeCacheOrderByWithRelationInput = {
+    id?: SortOrder
+    cache_key?: SortOrder
+    kind?: SortOrder
+    lat?: SortOrderInput | SortOrder
+    lng?: SortOrderInput | SortOrder
+    result?: SortOrderInput | SortOrder
+    hit_count?: SortOrder
+    created_at?: SortOrder
+    last_hit_at?: SortOrderInput | SortOrder
+  }
+
+  export type GeocodeCacheWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    cache_key?: string
+    AND?: GeocodeCacheWhereInput | GeocodeCacheWhereInput[]
+    OR?: GeocodeCacheWhereInput[]
+    NOT?: GeocodeCacheWhereInput | GeocodeCacheWhereInput[]
+    kind?: StringFilter<"GeocodeCache"> | string
+    lat?: FloatNullableFilter<"GeocodeCache"> | number | null
+    lng?: FloatNullableFilter<"GeocodeCache"> | number | null
+    result?: JsonNullableFilter<"GeocodeCache">
+    hit_count?: IntFilter<"GeocodeCache"> | number
+    created_at?: DateTimeFilter<"GeocodeCache"> | Date | string
+    last_hit_at?: DateTimeNullableFilter<"GeocodeCache"> | Date | string | null
+  }, "id" | "cache_key">
+
+  export type GeocodeCacheOrderByWithAggregationInput = {
+    id?: SortOrder
+    cache_key?: SortOrder
+    kind?: SortOrder
+    lat?: SortOrderInput | SortOrder
+    lng?: SortOrderInput | SortOrder
+    result?: SortOrderInput | SortOrder
+    hit_count?: SortOrder
+    created_at?: SortOrder
+    last_hit_at?: SortOrderInput | SortOrder
+    _count?: GeocodeCacheCountOrderByAggregateInput
+    _avg?: GeocodeCacheAvgOrderByAggregateInput
+    _max?: GeocodeCacheMaxOrderByAggregateInput
+    _min?: GeocodeCacheMinOrderByAggregateInput
+    _sum?: GeocodeCacheSumOrderByAggregateInput
+  }
+
+  export type GeocodeCacheScalarWhereWithAggregatesInput = {
+    AND?: GeocodeCacheScalarWhereWithAggregatesInput | GeocodeCacheScalarWhereWithAggregatesInput[]
+    OR?: GeocodeCacheScalarWhereWithAggregatesInput[]
+    NOT?: GeocodeCacheScalarWhereWithAggregatesInput | GeocodeCacheScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"GeocodeCache"> | string
+    cache_key?: StringWithAggregatesFilter<"GeocodeCache"> | string
+    kind?: StringWithAggregatesFilter<"GeocodeCache"> | string
+    lat?: FloatNullableWithAggregatesFilter<"GeocodeCache"> | number | null
+    lng?: FloatNullableWithAggregatesFilter<"GeocodeCache"> | number | null
+    result?: JsonNullableWithAggregatesFilter<"GeocodeCache">
+    hit_count?: IntWithAggregatesFilter<"GeocodeCache"> | number
+    created_at?: DateTimeWithAggregatesFilter<"GeocodeCache"> | Date | string
+    last_hit_at?: DateTimeNullableWithAggregatesFilter<"GeocodeCache"> | Date | string | null
   }
 
   export type UserCreateInput = {
@@ -60019,6 +61311,7 @@ export namespace Prisma {
     dewatermark_cost_per_image?: Decimal | DecimalJsLike | number | string | null
     google_translate_cost_per_million_chars?: Decimal | DecimalJsLike | number | string | null
     azure_translate_cost_per_million_chars?: Decimal | DecimalJsLike | number | string | null
+    google_geocoding_cost_per_request?: Decimal | DecimalJsLike | number | string | null
     azure_translate_max_requests_per_second?: number | null
     translation_provider?: $Enums.TranslationProvider | null
     created_at?: Date | string
@@ -60041,6 +61334,7 @@ export namespace Prisma {
     dewatermark_cost_per_image?: Decimal | DecimalJsLike | number | string | null
     google_translate_cost_per_million_chars?: Decimal | DecimalJsLike | number | string | null
     azure_translate_cost_per_million_chars?: Decimal | DecimalJsLike | number | string | null
+    google_geocoding_cost_per_request?: Decimal | DecimalJsLike | number | string | null
     azure_translate_max_requests_per_second?: number | null
     translation_provider?: $Enums.TranslationProvider | null
     created_at?: Date | string
@@ -60063,6 +61357,7 @@ export namespace Prisma {
     dewatermark_cost_per_image?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     google_translate_cost_per_million_chars?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     azure_translate_cost_per_million_chars?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    google_geocoding_cost_per_request?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     azure_translate_max_requests_per_second?: NullableIntFieldUpdateOperationsInput | number | null
     translation_provider?: NullableEnumTranslationProviderFieldUpdateOperationsInput | $Enums.TranslationProvider | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -60085,6 +61380,7 @@ export namespace Prisma {
     dewatermark_cost_per_image?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     google_translate_cost_per_million_chars?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     azure_translate_cost_per_million_chars?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    google_geocoding_cost_per_request?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     azure_translate_max_requests_per_second?: NullableIntFieldUpdateOperationsInput | number | null
     translation_provider?: NullableEnumTranslationProviderFieldUpdateOperationsInput | $Enums.TranslationProvider | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -60107,6 +61403,7 @@ export namespace Prisma {
     dewatermark_cost_per_image?: Decimal | DecimalJsLike | number | string | null
     google_translate_cost_per_million_chars?: Decimal | DecimalJsLike | number | string | null
     azure_translate_cost_per_million_chars?: Decimal | DecimalJsLike | number | string | null
+    google_geocoding_cost_per_request?: Decimal | DecimalJsLike | number | string | null
     azure_translate_max_requests_per_second?: number | null
     translation_provider?: $Enums.TranslationProvider | null
     created_at?: Date | string
@@ -60129,6 +61426,7 @@ export namespace Prisma {
     dewatermark_cost_per_image?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     google_translate_cost_per_million_chars?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     azure_translate_cost_per_million_chars?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    google_geocoding_cost_per_request?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     azure_translate_max_requests_per_second?: NullableIntFieldUpdateOperationsInput | number | null
     translation_provider?: NullableEnumTranslationProviderFieldUpdateOperationsInput | $Enums.TranslationProvider | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -60151,6 +61449,7 @@ export namespace Prisma {
     dewatermark_cost_per_image?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     google_translate_cost_per_million_chars?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     azure_translate_cost_per_million_chars?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    google_geocoding_cost_per_request?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     azure_translate_max_requests_per_second?: NullableIntFieldUpdateOperationsInput | number | null
     translation_provider?: NullableEnumTranslationProviderFieldUpdateOperationsInput | $Enums.TranslationProvider | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -60529,6 +61828,90 @@ export namespace Prisma {
     after?: NullableJsonNullValueInput | InputJsonValue
     changes?: JsonNullValueInput | InputJsonValue
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type GeocodeCacheCreateInput = {
+    id?: string
+    cache_key: string
+    kind: string
+    lat?: number | null
+    lng?: number | null
+    result?: NullableJsonNullValueInput | InputJsonValue
+    hit_count?: number
+    created_at?: Date | string
+    last_hit_at?: Date | string | null
+  }
+
+  export type GeocodeCacheUncheckedCreateInput = {
+    id?: string
+    cache_key: string
+    kind: string
+    lat?: number | null
+    lng?: number | null
+    result?: NullableJsonNullValueInput | InputJsonValue
+    hit_count?: number
+    created_at?: Date | string
+    last_hit_at?: Date | string | null
+  }
+
+  export type GeocodeCacheUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    cache_key?: StringFieldUpdateOperationsInput | string
+    kind?: StringFieldUpdateOperationsInput | string
+    lat?: NullableFloatFieldUpdateOperationsInput | number | null
+    lng?: NullableFloatFieldUpdateOperationsInput | number | null
+    result?: NullableJsonNullValueInput | InputJsonValue
+    hit_count?: IntFieldUpdateOperationsInput | number
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    last_hit_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type GeocodeCacheUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    cache_key?: StringFieldUpdateOperationsInput | string
+    kind?: StringFieldUpdateOperationsInput | string
+    lat?: NullableFloatFieldUpdateOperationsInput | number | null
+    lng?: NullableFloatFieldUpdateOperationsInput | number | null
+    result?: NullableJsonNullValueInput | InputJsonValue
+    hit_count?: IntFieldUpdateOperationsInput | number
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    last_hit_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type GeocodeCacheCreateManyInput = {
+    id?: string
+    cache_key: string
+    kind: string
+    lat?: number | null
+    lng?: number | null
+    result?: NullableJsonNullValueInput | InputJsonValue
+    hit_count?: number
+    created_at?: Date | string
+    last_hit_at?: Date | string | null
+  }
+
+  export type GeocodeCacheUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    cache_key?: StringFieldUpdateOperationsInput | string
+    kind?: StringFieldUpdateOperationsInput | string
+    lat?: NullableFloatFieldUpdateOperationsInput | number | null
+    lng?: NullableFloatFieldUpdateOperationsInput | number | null
+    result?: NullableJsonNullValueInput | InputJsonValue
+    hit_count?: IntFieldUpdateOperationsInput | number
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    last_hit_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type GeocodeCacheUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    cache_key?: StringFieldUpdateOperationsInput | string
+    kind?: StringFieldUpdateOperationsInput | string
+    lat?: NullableFloatFieldUpdateOperationsInput | number | null
+    lng?: NullableFloatFieldUpdateOperationsInput | number | null
+    result?: NullableJsonNullValueInput | InputJsonValue
+    hit_count?: IntFieldUpdateOperationsInput | number
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    last_hit_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type StringFilter<$PrismaModel = never> = {
@@ -63669,6 +65052,7 @@ export namespace Prisma {
     dewatermark_cost_per_image?: SortOrder
     google_translate_cost_per_million_chars?: SortOrder
     azure_translate_cost_per_million_chars?: SortOrder
+    google_geocoding_cost_per_request?: SortOrder
     azure_translate_max_requests_per_second?: SortOrder
     translation_provider?: SortOrder
     created_at?: SortOrder
@@ -63690,6 +65074,7 @@ export namespace Prisma {
     dewatermark_cost_per_image?: SortOrder
     google_translate_cost_per_million_chars?: SortOrder
     azure_translate_cost_per_million_chars?: SortOrder
+    google_geocoding_cost_per_request?: SortOrder
     azure_translate_max_requests_per_second?: SortOrder
   }
 
@@ -63709,6 +65094,7 @@ export namespace Prisma {
     dewatermark_cost_per_image?: SortOrder
     google_translate_cost_per_million_chars?: SortOrder
     azure_translate_cost_per_million_chars?: SortOrder
+    google_geocoding_cost_per_request?: SortOrder
     azure_translate_max_requests_per_second?: SortOrder
     translation_provider?: SortOrder
     created_at?: SortOrder
@@ -63731,6 +65117,7 @@ export namespace Prisma {
     dewatermark_cost_per_image?: SortOrder
     google_translate_cost_per_million_chars?: SortOrder
     azure_translate_cost_per_million_chars?: SortOrder
+    google_geocoding_cost_per_request?: SortOrder
     azure_translate_max_requests_per_second?: SortOrder
     translation_provider?: SortOrder
     created_at?: SortOrder
@@ -63752,6 +65139,7 @@ export namespace Prisma {
     dewatermark_cost_per_image?: SortOrder
     google_translate_cost_per_million_chars?: SortOrder
     azure_translate_cost_per_million_chars?: SortOrder
+    google_geocoding_cost_per_request?: SortOrder
     azure_translate_max_requests_per_second?: SortOrder
   }
 
@@ -63998,6 +65386,79 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumActivityChangeOperationFilter<$PrismaModel>
     _max?: NestedEnumActivityChangeOperationFilter<$PrismaModel>
+  }
+
+  export type FloatNullableFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatNullableFilter<$PrismaModel> | number | null
+  }
+
+  export type GeocodeCacheCountOrderByAggregateInput = {
+    id?: SortOrder
+    cache_key?: SortOrder
+    kind?: SortOrder
+    lat?: SortOrder
+    lng?: SortOrder
+    result?: SortOrder
+    hit_count?: SortOrder
+    created_at?: SortOrder
+    last_hit_at?: SortOrder
+  }
+
+  export type GeocodeCacheAvgOrderByAggregateInput = {
+    lat?: SortOrder
+    lng?: SortOrder
+    hit_count?: SortOrder
+  }
+
+  export type GeocodeCacheMaxOrderByAggregateInput = {
+    id?: SortOrder
+    cache_key?: SortOrder
+    kind?: SortOrder
+    lat?: SortOrder
+    lng?: SortOrder
+    hit_count?: SortOrder
+    created_at?: SortOrder
+    last_hit_at?: SortOrder
+  }
+
+  export type GeocodeCacheMinOrderByAggregateInput = {
+    id?: SortOrder
+    cache_key?: SortOrder
+    kind?: SortOrder
+    lat?: SortOrder
+    lng?: SortOrder
+    hit_count?: SortOrder
+    created_at?: SortOrder
+    last_hit_at?: SortOrder
+  }
+
+  export type GeocodeCacheSumOrderByAggregateInput = {
+    lat?: SortOrder
+    lng?: SortOrder
+    hit_count?: SortOrder
+  }
+
+  export type FloatNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatNullableWithAggregatesFilter<$PrismaModel> | number | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedFloatNullableFilter<$PrismaModel>
+    _sum?: NestedFloatNullableFilter<$PrismaModel>
+    _min?: NestedFloatNullableFilter<$PrismaModel>
+    _max?: NestedFloatNullableFilter<$PrismaModel>
   }
 
   export type UserTrackedAgencyCreateNestedManyWithoutUserInput = {
@@ -67261,6 +68722,14 @@ export namespace Prisma {
     update?: XOR<XOR<ActivityLogUpdateToOneWithWhereWithoutChangesInput, ActivityLogUpdateWithoutChangesInput>, ActivityLogUncheckedUpdateWithoutChangesInput>
   }
 
+  export type NullableFloatFieldUpdateOperationsInput = {
+    set?: number | null
+    increment?: number
+    decrement?: number
+    multiply?: number
+    divide?: number
+  }
+
   export type NestedStringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -68100,6 +69569,22 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumActivityChangeOperationFilter<$PrismaModel>
     _max?: NestedEnumActivityChangeOperationFilter<$PrismaModel>
+  }
+
+  export type NestedFloatNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatNullableWithAggregatesFilter<$PrismaModel> | number | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedFloatNullableFilter<$PrismaModel>
+    _sum?: NestedFloatNullableFilter<$PrismaModel>
+    _min?: NestedFloatNullableFilter<$PrismaModel>
+    _max?: NestedFloatNullableFilter<$PrismaModel>
   }
 
   export type UserTrackedAgencyCreateWithoutUserInput = {

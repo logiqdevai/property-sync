@@ -165,6 +165,18 @@ export class UpdatePlatformConfigDto {
   @ApiPropertyOptional({
     nullable: true,
     description:
+      'Cost (USD) per Google Maps Geocoding request for cost logs; null resets to the in-code default ($0.005)',
+    example: 0.005,
+  })
+  @IsOptional()
+  @ValidateIf((_, value) => value !== null)
+  @IsNumber()
+  @Min(0)
+  google_geocoding_cost_per_request?: number | null;
+
+  @ApiPropertyOptional({
+    nullable: true,
+    description:
       'Cost (USD) per million characters for Azure Translator cost logs; null resets to the in-code default ($10)',
     example: 10,
   })

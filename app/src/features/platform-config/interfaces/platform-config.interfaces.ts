@@ -21,6 +21,7 @@ export interface PlatformConfig {
   normalization_ai_raw_description_max_chars: number | null;
   dewatermark_cost_per_image: number | null;
   google_translate_cost_per_million_chars: number | null;
+  google_geocoding_cost_per_request: number | null;
   azure_translate_cost_per_million_chars: number | null;
   translation_provider: TranslationProvider | null;
   created_at: string;
@@ -41,6 +42,7 @@ export interface UpdatePlatformConfigPayload {
   normalization_ai_raw_description_max_chars?: number | null;
   dewatermark_cost_per_image?: number | null;
   google_translate_cost_per_million_chars?: number | null;
+  google_geocoding_cost_per_request?: number | null;
   azure_translate_cost_per_million_chars?: number | null;
   translation_provider?: TranslationProvider | null;
 }

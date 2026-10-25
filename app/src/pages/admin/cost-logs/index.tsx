@@ -60,6 +60,9 @@ function formatQuantity(row: {
   if (row.operation_type === "CAPTCHA") {
     return row.unit_count !== null ? `${row.unit_count} solve(s)` : "—";
   }
+  if (row.operation_type === "GEOCODING") {
+    return row.unit_count !== null ? `${row.unit_count} request(s)` : "—";
+  }
   if (row.operation_type === "TRANSLATION") {
     return row.input_quantity !== null ? `${row.input_quantity} chars` : "—";
   }
@@ -80,6 +83,9 @@ function formatOperationQuantityLine(
   }
   if (operation === "CAPTCHA") {
     return quantity.unit_count ? `${formatNumber(quantity.unit_count)} solve(s)` : null;
+  }
+  if (operation === "GEOCODING") {
+    return quantity.unit_count ? `${formatNumber(quantity.unit_count)} request(s)` : null;
   }
   if (operation === "TRANSLATION") {
     return quantity.input_quantity ? `${formatNumber(quantity.input_quantity)} chars` : null;

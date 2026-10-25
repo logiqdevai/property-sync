@@ -185,6 +185,7 @@ enum IntegrationType {
   AZURE
   WEBSHARE
   TWOCAPTCHA
+  GOOGLE_MAPS
 }
 
 enum TranslationProvider {
@@ -200,6 +201,7 @@ enum CostOperationType {
   DEWATERMARK
   PROXY
   CAPTCHA
+  GEOCODING
   OTHER
 }
 
@@ -1311,6 +1313,7 @@ model PlatformConfig {
   dewatermark_cost_per_image                   Decimal?             @db.Decimal(12, 6)
   google_translate_cost_per_million_chars      Decimal?             @db.Decimal(12, 6)
   azure_translate_cost_per_million_chars       Decimal?             @db.Decimal(12, 6)
+  google_geocoding_cost_per_request            Decimal?             @db.Decimal(12, 6)
   azure_translate_max_requests_per_second      Int?
   translation_provider                         TranslationProvider?
   created_at                                   DateTime             @default(now())
@@ -1407,4 +1410,24 @@ model ActivityLogChange {
   @@index([activity_log_id])
   @@index([entity_type, entity_id, created_at(sort: Desc)])
   @@map("activity_log_changes")
+}
+
+/// Persistent cache of Google Geocoding answers (reverse by ~110 m grid cell, forward by
+/// normalized address text) so repeated location re-checks and backfills don't re-bill Google.
+/// A row with result = NULL is a cached ZERO_RESULTS answer. Errors are never cached.
+model GeocodeCache {
+  id          String    @id @default(uuid())
+  cache_key   String    @unique
+  kind        String // 'reverse' | 'forward'
+  // Requested coordinates of a 'reverse' row (null for 'forward'); used for nearby reuse.
+  lat         Float?
+  lng         Float?
+  result      Json?
+  hit_count   Int       @default(0)
+  created_at  DateTime  @default(now())
+  last_hit_at DateTime?
+
+  @@index([created_at])
+  @@index([kind, lat])
+  @@map("geocode_cache")
 }

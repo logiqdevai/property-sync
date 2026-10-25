@@ -693,6 +693,7 @@ exports.Prisma.PlatformConfigScalarFieldEnum = {
   dewatermark_cost_per_image: 'dewatermark_cost_per_image',
   google_translate_cost_per_million_chars: 'google_translate_cost_per_million_chars',
   azure_translate_cost_per_million_chars: 'azure_translate_cost_per_million_chars',
+  google_geocoding_cost_per_request: 'google_geocoding_cost_per_request',
   azure_translate_max_requests_per_second: 'azure_translate_max_requests_per_second',
   translation_provider: 'translation_provider',
   created_at: 'created_at',
@@ -752,6 +753,18 @@ exports.Prisma.ActivityLogChangeScalarFieldEnum = {
   created_at: 'created_at'
 };
 
+exports.Prisma.GeocodeCacheScalarFieldEnum = {
+  id: 'id',
+  cache_key: 'cache_key',
+  kind: 'kind',
+  lat: 'lat',
+  lng: 'lng',
+  result: 'result',
+  hit_count: 'hit_count',
+  created_at: 'created_at',
+  last_hit_at: 'last_hit_at'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -798,7 +811,8 @@ exports.IntegrationType = exports.$Enums.IntegrationType = {
   GOOGLE_TRANSLATE: 'GOOGLE_TRANSLATE',
   AZURE: 'AZURE',
   WEBSHARE: 'WEBSHARE',
-  TWOCAPTCHA: 'TWOCAPTCHA'
+  TWOCAPTCHA: 'TWOCAPTCHA',
+  GOOGLE_MAPS: 'GOOGLE_MAPS'
 };
 
 exports.AuthType = exports.$Enums.AuthType = {
@@ -1014,6 +1028,7 @@ exports.CostOperationType = exports.$Enums.CostOperationType = {
   DEWATERMARK: 'DEWATERMARK',
   PROXY: 'PROXY',
   CAPTCHA: 'CAPTCHA',
+  GEOCODING: 'GEOCODING',
   OTHER: 'OTHER'
 };
 
@@ -1081,7 +1096,8 @@ exports.Prisma.ModelName = {
   PlatformConfig: 'PlatformConfig',
   Document: 'Document',
   ActivityLog: 'ActivityLog',
-  ActivityLogChange: 'ActivityLogChange'
+  ActivityLogChange: 'ActivityLogChange',
+  GeocodeCache: 'GeocodeCache'
 };
 
 /**

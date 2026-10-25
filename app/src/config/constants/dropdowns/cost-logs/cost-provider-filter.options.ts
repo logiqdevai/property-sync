@@ -11,4 +11,5 @@ export const CostProviderFilterOptions: { id: CostProvider | "all"; label: strin
   { id: CostProviders.DEWATERMARK, label: "Dewatermark" },
   { id: CostProviders.WEBSHARE, label: "Webshare" },
   { id: CostProviders.TWOCAPTCHA, label: "2captcha" },
+  { id: CostProviders.GOOGLE_MAPS, label: "Google Maps" },
 ];

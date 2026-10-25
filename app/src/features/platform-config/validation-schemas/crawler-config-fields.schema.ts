@@ -55,6 +55,7 @@ export interface CrawlerConfigFieldDef {
     | "normalization_ai_raw_description_max_chars"
     | "dewatermark_cost_per_image"
     | "google_translate_cost_per_million_chars"
+    | "google_geocoding_cost_per_request"
     | "azure_translate_cost_per_million_chars";
   group: CrawlerConfigGroup;
   label: string;
@@ -163,6 +164,16 @@ export const CRAWLER_CONFIG_FIELDS: CrawlerConfigFieldDef[] = [
     hint: "Cost attributed per dewatermarked image in the cost log.",
     isDecimal: true,
     step: 0.01,
+  },
+  {
+    key: "google_geocoding_cost_per_request",
+    group: CrawlerConfigGroups.AI_AND_COSTS,
+    label: "Google Geocoding cost per request (USD)",
+    defaultValue: 0.005,
+    min: 0,
+    hint: "Google Maps Geocoding public rate ($5 per 1,000 requests). Used for GEOCODING cost logs.",
+    isDecimal: true,
+    step: 0.001,
   },
   {
     key: "google_translate_cost_per_million_chars",

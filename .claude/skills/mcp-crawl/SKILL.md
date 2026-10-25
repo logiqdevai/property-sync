@@ -537,6 +537,29 @@ Notes that cost time before:
   `REDIS_URL` host doesn't resolve from this machine (internal hostname), you need the publicly
   reachable one — set it in the process environment for that run rather than editing the env file.
 
+## 9b. Produce the localized content (after normalization, before telling the user it is ready)
+
+A crawl/ingest never creates translated text: `property_localized_contents` rows (TITLE/DESCRIPTION per
+language) only appear when content production runs (the app's "Produce content" action, or a push).
+A property with a non-empty crawled description therefore shows empty translated descriptions in the
+dashboard's Localized content tab until you run it. Do not assume which languages or strategies apply:
+read the tracker's real config first and let the app's own job apply it:
+
+```sql
+select co.language, co.title_strategy, co.description_strategy, co.description_content_language
+from content_publishing_configs cp join content_outputs co on co.config_id = cp.id
+where cp.user_tracked_agency_id = '<tracker-id>' order by 1;
+```
+
+Then enqueue the real `content-production` job (same payload as `UserPropertiesService.produceContent`: a
+`job_log` row plus one BullMQ job) for only this agency's properties that have a description, with
+`run_translations: true`, `run_ai_titles: false` (titles already exist; set true only if the config needs
+them and they are missing), `regenerate: false`, `push_to_crm: false`, using a throwaway `_tmp-*` script
+that you delete afterwards. Verify with a count of `property_localized_contents` by `content_type` and
+`language` for the agency. A language that reuses another language's text through
+`description_content_language` has no row of its own, which is expected. Properties whose source has no
+description legitimately stay empty.
+
 ## 10. Clean up when the agency is done
 
 Before reporting, remove everything you created only to run the crawl. Keep only what is worth keeping.
