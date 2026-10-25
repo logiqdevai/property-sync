@@ -6,6 +6,7 @@ ALTER TYPE "IntegrationType" ADD VALUE 'GOOGLE_MAPS';
 
 -- AlterTable
 ALTER TABLE "platform_config" ADD COLUMN "google_geocoding_cost_per_request" DECIMAL(12,6);
+ALTER TABLE "platform_config" ADD COLUMN "dewatermark_cost_per_credit" DECIMAL(12,6);
 
 -- CreateTable
 CREATE TABLE "geocode_cache" (

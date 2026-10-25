@@ -35,4 +35,6 @@ export interface DewatermarkEraseWatermarkResult {
   imageId?: string;
   maskBase?: string;
   watermarkMask?: string;
+  /** Credits this erase consumed, measured from the account balance; undefined when unknown. */
+  creditsConsumed?: number;
 }

@@ -165,6 +165,18 @@ export class UpdatePlatformConfigDto {
   @ApiPropertyOptional({
     nullable: true,
     description:
+      'Cost (USD) per Dewatermark credit; multiplied by the credits each erase actually consumed (measured from creditInfo). Null falls back to the per-image cost',
+    example: 0.02,
+  })
+  @IsOptional()
+  @ValidateIf((_, value) => value !== null)
+  @IsNumber()
+  @Min(0)
+  dewatermark_cost_per_credit?: number | null;
+
+  @ApiPropertyOptional({
+    nullable: true,
+    description:
       'Cost (USD) per Google Maps Geocoding request for cost logs; null resets to the in-code default ($0.005)',
     example: 0.005,
   })

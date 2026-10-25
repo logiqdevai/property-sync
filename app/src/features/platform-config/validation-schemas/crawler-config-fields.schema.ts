@@ -56,6 +56,7 @@ export interface CrawlerConfigFieldDef {
     | "dewatermark_cost_per_image"
     | "google_translate_cost_per_million_chars"
     | "google_geocoding_cost_per_request"
+    | "dewatermark_cost_per_credit"
     | "azure_translate_cost_per_million_chars";
   group: CrawlerConfigGroup;
   label: string;
@@ -162,6 +163,16 @@ export const CRAWLER_CONFIG_FIELDS: CrawlerConfigFieldDef[] = [
     defaultValue: 0.02,
     min: 0,
     hint: "Cost attributed per dewatermarked image in the cost log.",
+    isDecimal: true,
+    step: 0.01,
+  },
+  {
+    key: "dewatermark_cost_per_credit",
+    group: CrawlerConfigGroups.AI_AND_COSTS,
+    label: "Dewatermark cost per credit (USD)",
+    defaultValue: 0.02,
+    min: 0,
+    hint: "Price of one Dewatermark credit. Each erase's real credit use is measured from the account balance; falls back to the per-image cost when it can't be measured.",
     isDecimal: true,
     step: 0.01,
   },

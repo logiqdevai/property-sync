@@ -948,6 +948,9 @@ export class ContentProductionService {
       try {
         const costProvider =
           this.platformConfigService.toCostLogProvider(translationProvider);
+        // Azure reports the characters it actually billed (X-metered-usage); Google reports
+        // nothing, so its cost stays source-length x configured rate.
+        const azureUsage: { meteredChars?: number } = {};
         const text =
           costProvider === IntegrationType.AZURE
             ? await this.azureTranslationService.translate(
@@ -955,6 +958,7 @@ export class ContentProductionService {
                 job.sourceText,
                 contentLanguage,
                 job.language,
+                azureUsage,
               )
             : await this.googleTranslationService.translate(
                 job.sourceText,
@@ -968,21 +972,25 @@ export class ContentProductionService {
           production: 'TRANSLATE',
           text,
         });
+        const billedChars = azureUsage.meteredChars ?? job.sourceText.length;
         const totalCost = await this.platformConfigService.getTranslateCost(
           costProvider,
-          job.sourceText.length,
+          billedChars,
         );
         await this.costLogsService.record({
           userId,
           operationType: CostOperationType.TRANSLATION,
           provider: costProvider,
-          inputQuantity: job.sourceText.length,
+          inputQuantity: billedChars,
           totalCost,
           userPropertyId: userProperty.id,
           metadata: {
             content_type: job.contentType,
             target_language: job.language,
             translation_provider: costProvider,
+            ...(azureUsage.meteredChars != null
+              ? { chars_source: 'azure_x_metered_usage' }
+              : {}),
           },
         });
         written += 1;

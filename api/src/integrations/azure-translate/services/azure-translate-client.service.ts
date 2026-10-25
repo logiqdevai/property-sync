@@ -19,6 +19,12 @@ export interface AzureTranslateRequestOptions {
   query: Record<string, string | string[] | undefined>;
   body: unknown;
   apiKey: string;
+  /** Filled with Azure's own billed character count (X-metered-usage) when the call succeeds. */
+  usage?: AzureTranslateUsage;
+}
+
+export interface AzureTranslateUsage {
+  meteredChars?: number;
 }
 
 const sleep = (ms: number) =>
@@ -84,6 +90,10 @@ export class AzureTranslateClientService {
       }
 
       if (response.ok) {
+        const metered = Number(response.headers.get('x-metered-usage'));
+        if (options.usage && Number.isFinite(metered) && metered > 0) {
+          options.usage.meteredChars = (options.usage.meteredChars ?? 0) + metered;
+        }
         try {
           return (await response.json()) as T;
         } catch {

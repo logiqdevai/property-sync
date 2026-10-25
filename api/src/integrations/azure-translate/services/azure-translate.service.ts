@@ -6,7 +6,10 @@ import {
   AzureTranslateOptions,
   AzureTranslateResult,
 } from '../interfaces/azure-translate.interface';
-import { AzureTranslateClientService } from './azure-translate-client.service';
+import {
+  AzureTranslateClientService,
+  AzureTranslateUsage,
+} from './azure-translate-client.service';
 
 @Injectable()
 export class AzureTranslateService {
@@ -17,6 +20,7 @@ export class AzureTranslateService {
   async translate(
     auth: AzureTranslateAuthContext,
     options: AzureTranslateOptions,
+    usage?: AzureTranslateUsage,
   ): Promise<AzureTranslateResult[]> {
     const texts = Array.isArray(options.text) ? options.text : [options.text];
 
@@ -36,6 +40,7 @@ export class AzureTranslateService {
         query: { to: options.to, from: options.from },
         body,
         apiKey: auth.apiKey,
+        usage,
       });
     } catch (error) {
       this.logger.error(`Error translating text: ${error.message}`);
@@ -48,8 +53,9 @@ export class AzureTranslateService {
     text: string,
     to: string,
     from?: string,
+    usage?: AzureTranslateUsage,
   ): Promise<string> {
-    const [result] = await this.translate(auth, { text, to, from });
+    const [result] = await this.translate(auth, { text, to, from }, usage);
     return result?.translations?.[0]?.text ?? '';
   }
 }

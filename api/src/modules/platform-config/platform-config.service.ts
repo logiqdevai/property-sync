@@ -89,6 +89,15 @@ export class PlatformConfigService {
       : DEFAULT_DEWATERMARK_COST_PER_IMAGE;
   }
 
+  // USD per Dewatermark credit; defaults to the per-image rate, i.e. 1 credit per image.
+  async getDewatermarkCostPerCredit(): Promise<number> {
+    const row = await this.getCachedRow();
+    const value = row?.dewatermark_cost_per_credit;
+    return value !== null && value !== undefined
+      ? Number(value)
+      : await this.getDewatermarkCostPerImage();
+  }
+
   async getGoogleGeocodingCostPerRequest(): Promise<number> {
     const row = await this.getCachedRow();
     const value = row?.google_geocoding_cost_per_request;

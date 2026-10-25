@@ -691,6 +691,7 @@ exports.Prisma.PlatformConfigScalarFieldEnum = {
   crawler_max_concurrent_browser_pages: 'crawler_max_concurrent_browser_pages',
   normalization_ai_raw_description_max_chars: 'normalization_ai_raw_description_max_chars',
   dewatermark_cost_per_image: 'dewatermark_cost_per_image',
+  dewatermark_cost_per_credit: 'dewatermark_cost_per_credit',
   google_translate_cost_per_million_chars: 'google_translate_cost_per_million_chars',
   azure_translate_cost_per_million_chars: 'azure_translate_cost_per_million_chars',
   google_geocoding_cost_per_request: 'google_geocoding_cost_per_request',

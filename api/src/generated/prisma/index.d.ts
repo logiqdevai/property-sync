@@ -45948,6 +45948,7 @@ export namespace Prisma {
     crawler_max_concurrent_browser_pages: number | null
     normalization_ai_raw_description_max_chars: number | null
     dewatermark_cost_per_image: Decimal | null
+    dewatermark_cost_per_credit: Decimal | null
     google_translate_cost_per_million_chars: Decimal | null
     azure_translate_cost_per_million_chars: Decimal | null
     google_geocoding_cost_per_request: Decimal | null
@@ -45967,6 +45968,7 @@ export namespace Prisma {
     crawler_max_concurrent_browser_pages: number | null
     normalization_ai_raw_description_max_chars: number | null
     dewatermark_cost_per_image: Decimal | null
+    dewatermark_cost_per_credit: Decimal | null
     google_translate_cost_per_million_chars: Decimal | null
     azure_translate_cost_per_million_chars: Decimal | null
     google_geocoding_cost_per_request: Decimal | null
@@ -45987,6 +45989,7 @@ export namespace Prisma {
     crawler_max_concurrent_browser_pages: number | null
     normalization_ai_raw_description_max_chars: number | null
     dewatermark_cost_per_image: Decimal | null
+    dewatermark_cost_per_credit: Decimal | null
     google_translate_cost_per_million_chars: Decimal | null
     azure_translate_cost_per_million_chars: Decimal | null
     google_geocoding_cost_per_request: Decimal | null
@@ -46010,6 +46013,7 @@ export namespace Prisma {
     crawler_max_concurrent_browser_pages: number | null
     normalization_ai_raw_description_max_chars: number | null
     dewatermark_cost_per_image: Decimal | null
+    dewatermark_cost_per_credit: Decimal | null
     google_translate_cost_per_million_chars: Decimal | null
     azure_translate_cost_per_million_chars: Decimal | null
     google_geocoding_cost_per_request: Decimal | null
@@ -46033,6 +46037,7 @@ export namespace Prisma {
     crawler_max_concurrent_browser_pages: number
     normalization_ai_raw_description_max_chars: number
     dewatermark_cost_per_image: number
+    dewatermark_cost_per_credit: number
     google_translate_cost_per_million_chars: number
     azure_translate_cost_per_million_chars: number
     google_geocoding_cost_per_request: number
@@ -46057,6 +46062,7 @@ export namespace Prisma {
     crawler_max_concurrent_browser_pages?: true
     normalization_ai_raw_description_max_chars?: true
     dewatermark_cost_per_image?: true
+    dewatermark_cost_per_credit?: true
     google_translate_cost_per_million_chars?: true
     azure_translate_cost_per_million_chars?: true
     google_geocoding_cost_per_request?: true
@@ -46076,6 +46082,7 @@ export namespace Prisma {
     crawler_max_concurrent_browser_pages?: true
     normalization_ai_raw_description_max_chars?: true
     dewatermark_cost_per_image?: true
+    dewatermark_cost_per_credit?: true
     google_translate_cost_per_million_chars?: true
     azure_translate_cost_per_million_chars?: true
     google_geocoding_cost_per_request?: true
@@ -46096,6 +46103,7 @@ export namespace Prisma {
     crawler_max_concurrent_browser_pages?: true
     normalization_ai_raw_description_max_chars?: true
     dewatermark_cost_per_image?: true
+    dewatermark_cost_per_credit?: true
     google_translate_cost_per_million_chars?: true
     azure_translate_cost_per_million_chars?: true
     google_geocoding_cost_per_request?: true
@@ -46119,6 +46127,7 @@ export namespace Prisma {
     crawler_max_concurrent_browser_pages?: true
     normalization_ai_raw_description_max_chars?: true
     dewatermark_cost_per_image?: true
+    dewatermark_cost_per_credit?: true
     google_translate_cost_per_million_chars?: true
     azure_translate_cost_per_million_chars?: true
     google_geocoding_cost_per_request?: true
@@ -46142,6 +46151,7 @@ export namespace Prisma {
     crawler_max_concurrent_browser_pages?: true
     normalization_ai_raw_description_max_chars?: true
     dewatermark_cost_per_image?: true
+    dewatermark_cost_per_credit?: true
     google_translate_cost_per_million_chars?: true
     azure_translate_cost_per_million_chars?: true
     google_geocoding_cost_per_request?: true
@@ -46252,6 +46262,7 @@ export namespace Prisma {
     crawler_max_concurrent_browser_pages: number | null
     normalization_ai_raw_description_max_chars: number | null
     dewatermark_cost_per_image: Decimal | null
+    dewatermark_cost_per_credit: Decimal | null
     google_translate_cost_per_million_chars: Decimal | null
     azure_translate_cost_per_million_chars: Decimal | null
     google_geocoding_cost_per_request: Decimal | null
@@ -46294,6 +46305,7 @@ export namespace Prisma {
     crawler_max_concurrent_browser_pages?: boolean
     normalization_ai_raw_description_max_chars?: boolean
     dewatermark_cost_per_image?: boolean
+    dewatermark_cost_per_credit?: boolean
     google_translate_cost_per_million_chars?: boolean
     azure_translate_cost_per_million_chars?: boolean
     google_geocoding_cost_per_request?: boolean
@@ -46317,6 +46329,7 @@ export namespace Prisma {
     crawler_max_concurrent_browser_pages?: boolean
     normalization_ai_raw_description_max_chars?: boolean
     dewatermark_cost_per_image?: boolean
+    dewatermark_cost_per_credit?: boolean
     google_translate_cost_per_million_chars?: boolean
     azure_translate_cost_per_million_chars?: boolean
     google_geocoding_cost_per_request?: boolean
@@ -46340,6 +46353,7 @@ export namespace Prisma {
     crawler_max_concurrent_browser_pages?: boolean
     normalization_ai_raw_description_max_chars?: boolean
     dewatermark_cost_per_image?: boolean
+    dewatermark_cost_per_credit?: boolean
     google_translate_cost_per_million_chars?: boolean
     azure_translate_cost_per_million_chars?: boolean
     google_geocoding_cost_per_request?: boolean
@@ -46363,6 +46377,7 @@ export namespace Prisma {
     crawler_max_concurrent_browser_pages?: boolean
     normalization_ai_raw_description_max_chars?: boolean
     dewatermark_cost_per_image?: boolean
+    dewatermark_cost_per_credit?: boolean
     google_translate_cost_per_million_chars?: boolean
     azure_translate_cost_per_million_chars?: boolean
     google_geocoding_cost_per_request?: boolean
@@ -46372,7 +46387,7 @@ export namespace Prisma {
     updated_at?: boolean
   }
 
-  export type PlatformConfigOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "crawler_max_pages" | "crawler_page_timeout_ms" | "crawler_selector_timeout_ms" | "crawler_scroll_pause_ms" | "crawler_detail_concurrency" | "crawler_detail_delay_ms" | "crawler_worker_concurrency" | "crawler_job_timeout_ms" | "crawler_chromium_max_contexts_before_restart" | "crawler_max_concurrent_browser_pages" | "normalization_ai_raw_description_max_chars" | "dewatermark_cost_per_image" | "google_translate_cost_per_million_chars" | "azure_translate_cost_per_million_chars" | "google_geocoding_cost_per_request" | "azure_translate_max_requests_per_second" | "translation_provider" | "created_at" | "updated_at", ExtArgs["result"]["platformConfig"]>
+  export type PlatformConfigOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "crawler_max_pages" | "crawler_page_timeout_ms" | "crawler_selector_timeout_ms" | "crawler_scroll_pause_ms" | "crawler_detail_concurrency" | "crawler_detail_delay_ms" | "crawler_worker_concurrency" | "crawler_job_timeout_ms" | "crawler_chromium_max_contexts_before_restart" | "crawler_max_concurrent_browser_pages" | "normalization_ai_raw_description_max_chars" | "dewatermark_cost_per_image" | "dewatermark_cost_per_credit" | "google_translate_cost_per_million_chars" | "azure_translate_cost_per_million_chars" | "google_geocoding_cost_per_request" | "azure_translate_max_requests_per_second" | "translation_provider" | "created_at" | "updated_at", ExtArgs["result"]["platformConfig"]>
 
   export type $PlatformConfigPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "PlatformConfig"
@@ -46391,6 +46406,7 @@ export namespace Prisma {
       crawler_max_concurrent_browser_pages: number | null
       normalization_ai_raw_description_max_chars: number | null
       dewatermark_cost_per_image: Prisma.Decimal | null
+      dewatermark_cost_per_credit: Prisma.Decimal | null
       google_translate_cost_per_million_chars: Prisma.Decimal | null
       azure_translate_cost_per_million_chars: Prisma.Decimal | null
       google_geocoding_cost_per_request: Prisma.Decimal | null
@@ -46834,6 +46850,7 @@ export namespace Prisma {
     readonly crawler_max_concurrent_browser_pages: FieldRef<"PlatformConfig", 'Int'>
     readonly normalization_ai_raw_description_max_chars: FieldRef<"PlatformConfig", 'Int'>
     readonly dewatermark_cost_per_image: FieldRef<"PlatformConfig", 'Decimal'>
+    readonly dewatermark_cost_per_credit: FieldRef<"PlatformConfig", 'Decimal'>
     readonly google_translate_cost_per_million_chars: FieldRef<"PlatformConfig", 'Decimal'>
     readonly azure_translate_cost_per_million_chars: FieldRef<"PlatformConfig", 'Decimal'>
     readonly google_geocoding_cost_per_request: FieldRef<"PlatformConfig", 'Decimal'>
@@ -52529,6 +52546,7 @@ export namespace Prisma {
     crawler_max_concurrent_browser_pages: 'crawler_max_concurrent_browser_pages',
     normalization_ai_raw_description_max_chars: 'normalization_ai_raw_description_max_chars',
     dewatermark_cost_per_image: 'dewatermark_cost_per_image',
+    dewatermark_cost_per_credit: 'dewatermark_cost_per_credit',
     google_translate_cost_per_million_chars: 'google_translate_cost_per_million_chars',
     azure_translate_cost_per_million_chars: 'azure_translate_cost_per_million_chars',
     google_geocoding_cost_per_request: 'google_geocoding_cost_per_request',
@@ -56737,6 +56755,7 @@ export namespace Prisma {
     crawler_max_concurrent_browser_pages?: IntNullableFilter<"PlatformConfig"> | number | null
     normalization_ai_raw_description_max_chars?: IntNullableFilter<"PlatformConfig"> | number | null
     dewatermark_cost_per_image?: DecimalNullableFilter<"PlatformConfig"> | Decimal | DecimalJsLike | number | string | null
+    dewatermark_cost_per_credit?: DecimalNullableFilter<"PlatformConfig"> | Decimal | DecimalJsLike | number | string | null
     google_translate_cost_per_million_chars?: DecimalNullableFilter<"PlatformConfig"> | Decimal | DecimalJsLike | number | string | null
     azure_translate_cost_per_million_chars?: DecimalNullableFilter<"PlatformConfig"> | Decimal | DecimalJsLike | number | string | null
     google_geocoding_cost_per_request?: DecimalNullableFilter<"PlatformConfig"> | Decimal | DecimalJsLike | number | string | null
@@ -56760,6 +56779,7 @@ export namespace Prisma {
     crawler_max_concurrent_browser_pages?: SortOrderInput | SortOrder
     normalization_ai_raw_description_max_chars?: SortOrderInput | SortOrder
     dewatermark_cost_per_image?: SortOrderInput | SortOrder
+    dewatermark_cost_per_credit?: SortOrderInput | SortOrder
     google_translate_cost_per_million_chars?: SortOrderInput | SortOrder
     azure_translate_cost_per_million_chars?: SortOrderInput | SortOrder
     google_geocoding_cost_per_request?: SortOrderInput | SortOrder
@@ -56786,6 +56806,7 @@ export namespace Prisma {
     crawler_max_concurrent_browser_pages?: IntNullableFilter<"PlatformConfig"> | number | null
     normalization_ai_raw_description_max_chars?: IntNullableFilter<"PlatformConfig"> | number | null
     dewatermark_cost_per_image?: DecimalNullableFilter<"PlatformConfig"> | Decimal | DecimalJsLike | number | string | null
+    dewatermark_cost_per_credit?: DecimalNullableFilter<"PlatformConfig"> | Decimal | DecimalJsLike | number | string | null
     google_translate_cost_per_million_chars?: DecimalNullableFilter<"PlatformConfig"> | Decimal | DecimalJsLike | number | string | null
     azure_translate_cost_per_million_chars?: DecimalNullableFilter<"PlatformConfig"> | Decimal | DecimalJsLike | number | string | null
     google_geocoding_cost_per_request?: DecimalNullableFilter<"PlatformConfig"> | Decimal | DecimalJsLike | number | string | null
@@ -56809,6 +56830,7 @@ export namespace Prisma {
     crawler_max_concurrent_browser_pages?: SortOrderInput | SortOrder
     normalization_ai_raw_description_max_chars?: SortOrderInput | SortOrder
     dewatermark_cost_per_image?: SortOrderInput | SortOrder
+    dewatermark_cost_per_credit?: SortOrderInput | SortOrder
     google_translate_cost_per_million_chars?: SortOrderInput | SortOrder
     azure_translate_cost_per_million_chars?: SortOrderInput | SortOrder
     google_geocoding_cost_per_request?: SortOrderInput | SortOrder
@@ -56840,6 +56862,7 @@ export namespace Prisma {
     crawler_max_concurrent_browser_pages?: IntNullableWithAggregatesFilter<"PlatformConfig"> | number | null
     normalization_ai_raw_description_max_chars?: IntNullableWithAggregatesFilter<"PlatformConfig"> | number | null
     dewatermark_cost_per_image?: DecimalNullableWithAggregatesFilter<"PlatformConfig"> | Decimal | DecimalJsLike | number | string | null
+    dewatermark_cost_per_credit?: DecimalNullableWithAggregatesFilter<"PlatformConfig"> | Decimal | DecimalJsLike | number | string | null
     google_translate_cost_per_million_chars?: DecimalNullableWithAggregatesFilter<"PlatformConfig"> | Decimal | DecimalJsLike | number | string | null
     azure_translate_cost_per_million_chars?: DecimalNullableWithAggregatesFilter<"PlatformConfig"> | Decimal | DecimalJsLike | number | string | null
     google_geocoding_cost_per_request?: DecimalNullableWithAggregatesFilter<"PlatformConfig"> | Decimal | DecimalJsLike | number | string | null
@@ -61309,6 +61332,7 @@ export namespace Prisma {
     crawler_max_concurrent_browser_pages?: number | null
     normalization_ai_raw_description_max_chars?: number | null
     dewatermark_cost_per_image?: Decimal | DecimalJsLike | number | string | null
+    dewatermark_cost_per_credit?: Decimal | DecimalJsLike | number | string | null
     google_translate_cost_per_million_chars?: Decimal | DecimalJsLike | number | string | null
     azure_translate_cost_per_million_chars?: Decimal | DecimalJsLike | number | string | null
     google_geocoding_cost_per_request?: Decimal | DecimalJsLike | number | string | null
@@ -61332,6 +61356,7 @@ export namespace Prisma {
     crawler_max_concurrent_browser_pages?: number | null
     normalization_ai_raw_description_max_chars?: number | null
     dewatermark_cost_per_image?: Decimal | DecimalJsLike | number | string | null
+    dewatermark_cost_per_credit?: Decimal | DecimalJsLike | number | string | null
     google_translate_cost_per_million_chars?: Decimal | DecimalJsLike | number | string | null
     azure_translate_cost_per_million_chars?: Decimal | DecimalJsLike | number | string | null
     google_geocoding_cost_per_request?: Decimal | DecimalJsLike | number | string | null
@@ -61355,6 +61380,7 @@ export namespace Prisma {
     crawler_max_concurrent_browser_pages?: NullableIntFieldUpdateOperationsInput | number | null
     normalization_ai_raw_description_max_chars?: NullableIntFieldUpdateOperationsInput | number | null
     dewatermark_cost_per_image?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    dewatermark_cost_per_credit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     google_translate_cost_per_million_chars?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     azure_translate_cost_per_million_chars?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     google_geocoding_cost_per_request?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
@@ -61378,6 +61404,7 @@ export namespace Prisma {
     crawler_max_concurrent_browser_pages?: NullableIntFieldUpdateOperationsInput | number | null
     normalization_ai_raw_description_max_chars?: NullableIntFieldUpdateOperationsInput | number | null
     dewatermark_cost_per_image?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    dewatermark_cost_per_credit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     google_translate_cost_per_million_chars?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     azure_translate_cost_per_million_chars?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     google_geocoding_cost_per_request?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
@@ -61401,6 +61428,7 @@ export namespace Prisma {
     crawler_max_concurrent_browser_pages?: number | null
     normalization_ai_raw_description_max_chars?: number | null
     dewatermark_cost_per_image?: Decimal | DecimalJsLike | number | string | null
+    dewatermark_cost_per_credit?: Decimal | DecimalJsLike | number | string | null
     google_translate_cost_per_million_chars?: Decimal | DecimalJsLike | number | string | null
     azure_translate_cost_per_million_chars?: Decimal | DecimalJsLike | number | string | null
     google_geocoding_cost_per_request?: Decimal | DecimalJsLike | number | string | null
@@ -61424,6 +61452,7 @@ export namespace Prisma {
     crawler_max_concurrent_browser_pages?: NullableIntFieldUpdateOperationsInput | number | null
     normalization_ai_raw_description_max_chars?: NullableIntFieldUpdateOperationsInput | number | null
     dewatermark_cost_per_image?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    dewatermark_cost_per_credit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     google_translate_cost_per_million_chars?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     azure_translate_cost_per_million_chars?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     google_geocoding_cost_per_request?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
@@ -61447,6 +61476,7 @@ export namespace Prisma {
     crawler_max_concurrent_browser_pages?: NullableIntFieldUpdateOperationsInput | number | null
     normalization_ai_raw_description_max_chars?: NullableIntFieldUpdateOperationsInput | number | null
     dewatermark_cost_per_image?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    dewatermark_cost_per_credit?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     google_translate_cost_per_million_chars?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     azure_translate_cost_per_million_chars?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     google_geocoding_cost_per_request?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
@@ -65050,6 +65080,7 @@ export namespace Prisma {
     crawler_max_concurrent_browser_pages?: SortOrder
     normalization_ai_raw_description_max_chars?: SortOrder
     dewatermark_cost_per_image?: SortOrder
+    dewatermark_cost_per_credit?: SortOrder
     google_translate_cost_per_million_chars?: SortOrder
     azure_translate_cost_per_million_chars?: SortOrder
     google_geocoding_cost_per_request?: SortOrder
@@ -65072,6 +65103,7 @@ export namespace Prisma {
     crawler_max_concurrent_browser_pages?: SortOrder
     normalization_ai_raw_description_max_chars?: SortOrder
     dewatermark_cost_per_image?: SortOrder
+    dewatermark_cost_per_credit?: SortOrder
     google_translate_cost_per_million_chars?: SortOrder
     azure_translate_cost_per_million_chars?: SortOrder
     google_geocoding_cost_per_request?: SortOrder
@@ -65092,6 +65124,7 @@ export namespace Prisma {
     crawler_max_concurrent_browser_pages?: SortOrder
     normalization_ai_raw_description_max_chars?: SortOrder
     dewatermark_cost_per_image?: SortOrder
+    dewatermark_cost_per_credit?: SortOrder
     google_translate_cost_per_million_chars?: SortOrder
     azure_translate_cost_per_million_chars?: SortOrder
     google_geocoding_cost_per_request?: SortOrder
@@ -65115,6 +65148,7 @@ export namespace Prisma {
     crawler_max_concurrent_browser_pages?: SortOrder
     normalization_ai_raw_description_max_chars?: SortOrder
     dewatermark_cost_per_image?: SortOrder
+    dewatermark_cost_per_credit?: SortOrder
     google_translate_cost_per_million_chars?: SortOrder
     azure_translate_cost_per_million_chars?: SortOrder
     google_geocoding_cost_per_request?: SortOrder
@@ -65137,6 +65171,7 @@ export namespace Prisma {
     crawler_max_concurrent_browser_pages?: SortOrder
     normalization_ai_raw_description_max_chars?: SortOrder
     dewatermark_cost_per_image?: SortOrder
+    dewatermark_cost_per_credit?: SortOrder
     google_translate_cost_per_million_chars?: SortOrder
     azure_translate_cost_per_million_chars?: SortOrder
     google_geocoding_cost_per_request?: SortOrder

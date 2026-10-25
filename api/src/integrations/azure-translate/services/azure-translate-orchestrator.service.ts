@@ -4,6 +4,7 @@ import { ResolvedAzureTranslateIntegration } from '../interfaces/azure-translate
 import { AzureTranslateOptions, AzureTranslateResult } from '../interfaces/azure-translate.interface';
 import { AzureTranslateIntegrationResolverService } from './azure-translate-integration-resolver.service';
 import { AzureTranslateService } from './azure-translate.service';
+import { AzureTranslateUsage } from './azure-translate-client.service';
 
 @Injectable()
 export class AzureTranslateOrchestratorService {
@@ -57,9 +58,10 @@ export class AzureTranslateOrchestratorService {
     text: string,
     to: string,
     from?: string,
+    usage?: AzureTranslateUsage,
   ): Promise<string> {
     const auth = await this.authForUser(userId);
-    return this.translateService.translateText(auth, text, to, from);
+    return this.translateService.translateText(auth, text, to, from, usage);
   }
 
   async translateText(

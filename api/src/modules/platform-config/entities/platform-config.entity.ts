@@ -85,6 +85,12 @@ export class PlatformConfig {
 
   @ApiProperty({
     nullable: true,
+    description: 'Null means the per-image cost is used',
+  })
+  dewatermark_cost_per_credit: number | null;
+
+  @ApiProperty({
+    nullable: true,
     description: 'Null means the default value is used',
   })
   google_translate_cost_per_million_chars: number | null;

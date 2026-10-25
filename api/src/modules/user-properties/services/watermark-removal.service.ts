@@ -60,19 +60,28 @@ export class WatermarkRemovalService {
     private readonly imagesCuration: UserPropertyImagesCurationService,
   ) {}
 
+  // creditsConsumed is the real balance drop measured around the erase (see the Dewatermark
+  // orchestrator); when it could not be measured the flat per-image cost is used instead.
   private async recordDewatermarkCost(params: {
     userId: string;
     userPropertyId: string;
+    creditsConsumed?: number;
   }): Promise<void> {
-    const costPerImage =
-      await this.platformConfigService.getDewatermarkCostPerImage();
+    const measured = params.creditsConsumed != null;
+    const totalCost = measured
+      ? params.creditsConsumed! *
+        (await this.platformConfigService.getDewatermarkCostPerCredit())
+      : await this.platformConfigService.getDewatermarkCostPerImage();
     await this.costLogsService.record({
       userId: params.userId,
       operationType: CostOperationType.DEWATERMARK,
       provider: IntegrationType.DEWATERMARK,
       unitCount: 1,
-      totalCost: costPerImage,
+      totalCost,
       userPropertyId: params.userPropertyId,
+      metadata: measured
+        ? { credits_consumed: params.creditsConsumed }
+        : { estimated: true },
     });
   }
 
@@ -179,6 +188,7 @@ export class WatermarkRemovalService {
         await this.recordDewatermarkCost({
           userId: params.userId,
           userPropertyId: params.userPropertyId,
+          creditsConsumed: dewatermarkResult.creditsConsumed,
         });
 
         // Embeds exactly what source identity this GCS file replaced, so
@@ -278,6 +288,7 @@ export class WatermarkRemovalService {
     await this.recordDewatermarkCost({
       userId: params.userId,
       userPropertyId: params.userPropertyId,
+      creditsConsumed: dewatermarkResult.creditsConsumed,
     });
 
     const sourceIdentityHash = hashSourceIdentity(
@@ -474,6 +485,7 @@ export class WatermarkRemovalService {
     await this.recordDewatermarkCost({
       userId: params.userId,
       userPropertyId: params.userPropertyId,
+      creditsConsumed: dewatermarkResult.creditsConsumed,
     });
 
     const zindex =

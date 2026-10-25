@@ -3,6 +3,7 @@ import { ContentLanguage } from 'generated/prisma';
 import { AzureTranslateOrchestratorService } from '@/integrations/azure-translate/services/azure-translate-orchestrator.service';
 import { AzureTranslateException } from '@/integrations/azure-translate/exceptions/azure-translate.exception';
 import { CONTENT_LANGUAGE_TO_GOOGLE_CODE } from '../constants/content-language.constants';
+import { AzureTranslateUsage } from '@/integrations/azure-translate/services/azure-translate-client.service';
 import { TranslationFailureReporterService } from './translation-failure-reporter.service';
 
 @Injectable()
@@ -25,6 +26,7 @@ export class AzureTranslationService {
     text: string,
     source: ContentLanguage,
     target: ContentLanguage,
+    usage?: AzureTranslateUsage,
   ): Promise<string> {
     if (!text?.trim()) return text ?? '';
     if (source === target) return text;
@@ -51,6 +53,7 @@ export class AzureTranslationService {
         text,
         CONTENT_LANGUAGE_TO_GOOGLE_CODE[target],
         CONTENT_LANGUAGE_TO_GOOGLE_CODE[source],
+        usage,
       );
     } catch (error) {
       if (error instanceof AzureTranslateException) {
