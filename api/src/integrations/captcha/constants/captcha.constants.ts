@@ -25,3 +25,6 @@ export const CAPTCHA_RETRYABLE_ERROR_CODES = new Set([
   'ERROR_CAPTCHA_UNSOLVABLE',
   'ERROR_BAD_DUPLICATES',
 ]);
+
+/** Logged per solve when 2captcha's response carries no `cost` (observed ~$0.003 for hCaptcha). */
+export const DEFAULT_CAPTCHA_SOLVE_COST_USD = 0.003;

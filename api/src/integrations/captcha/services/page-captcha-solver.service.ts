@@ -3,6 +3,7 @@ import type { Page } from 'playwright';
 import { CostOperationType, IntegrationType } from 'generated/prisma';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
 import type { CaptchaSolveHook } from '@/integrations/crawler/block-handling/block-handling.interface';
+import { DEFAULT_CAPTCHA_SOLVE_COST_USD } from '../constants/captcha.constants';
 import { CaptchaSolution } from '../interfaces/captcha.interfaces';
 import { CaptchaSolverService } from './captcha-solver.service';
 
@@ -232,7 +233,6 @@ export class PageCaptchaSolverService {
     solution: CaptchaSolution,
     ctx: { scraperId: string; crawlRunId: string },
   ): Promise<void> {
-    if (solution.cost == null) return;
     try {
       await this.prisma.costLog.create({
         data: {
@@ -240,8 +240,9 @@ export class PageCaptchaSolverService {
           provider: IntegrationType.TWOCAPTCHA,
           model: kind,
           unit_count: 1,
-          total_cost: solution.cost,
+          total_cost: solution.cost ?? DEFAULT_CAPTCHA_SOLVE_COST_USD,
           metadata: {
+            ...(solution.cost == null ? { estimated: true } : {}),
             taskId: solution.taskId,
             scraperId: ctx.scraperId,
             crawlRunId: ctx.crawlRunId,

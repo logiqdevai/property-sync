@@ -25,6 +25,7 @@ import { ConfigService } from '@nestjs/config';
 import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
 import { dirname, resolve } from 'path';
 import { chromium, Page } from 'playwright';
+import { recordCaptchaCost } from './captcha-cost-log';
 import { CaptchaConfig } from '../src/integrations/captcha/config/captcha.config';
 import { CaptchaClientService } from '../src/integrations/captcha/services/captcha-client.service';
 import { CaptchaSolverService } from '../src/integrations/captcha/services/captcha-solver.service';
@@ -144,6 +145,7 @@ async function solveBlock(page: Page): Promise<boolean> {
     return false;
   }
   solves++;
+  await recordCaptchaCost(type, solution.taskId, solution.cost, { source: 'mcp-autocrawl', url: probe.url });
   await page.evaluate(
     ({ token, kind, cb }) => {
       const set = (sel: string) =>

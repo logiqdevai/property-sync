@@ -33,6 +33,9 @@ function formatUsd(value: string | null | undefined) {
   return `$${num.toFixed(6)}`;
 }
 
+// Cards that stay visible at $0 until the first row exists, so they are never mistaken for missing.
+const ALWAYS_SHOWN_OPERATIONS: string[] = ["CAPTCHA", "GEOCODING"];
+
 function formatOperationLabel(operation: string) {
   return operation
     .toLowerCase()
@@ -150,7 +153,12 @@ export default function CostLogsListPage() {
             {isPending ? "—" : formatUsd(data?.total_cost)}
           </p>
         </div>
-        {Object.entries(byOperation).map(([operation, cost]) => {
+        {[
+          ...Object.entries(byOperation),
+          ...ALWAYS_SHOWN_OPERATIONS.filter((op) => !(op in byOperation)).map(
+            (op) => [op, "0"] as [string, string],
+          ),
+        ].map(([operation, cost]) => {
           const quantityLine = formatOperationQuantityLine(
             operation,
             quantityByOperation[operation],

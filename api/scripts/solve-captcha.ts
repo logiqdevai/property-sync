@@ -21,9 +21,8 @@
  * Solving takes ~10-60s; run it with a generous timeout.
  */
 import { ConfigService } from '@nestjs/config';
-import { PrismaPg } from '@prisma/adapter-pg';
 import { readFileSync } from 'fs';
-import { CostOperationType, IntegrationType, PrismaClient } from '../src/generated/prisma';
+import { recordCaptchaCost } from './captcha-cost-log';
 import { CaptchaConfig } from '../src/integrations/captcha/config/captcha.config';
 import { CaptchaException } from '../src/integrations/captcha/exceptions/captcha.exception';
 import { CaptchaClientService } from '../src/integrations/captcha/services/captcha-client.service';
@@ -111,32 +110,8 @@ async function main() {
         `Unknown --type=${type} (turnstile|recaptcha2|recaptcha3|hcaptcha|image)`,
       );
   }
-  await recordCost(type, solution.taskId, solution.cost);
+  await recordCaptchaCost(type, solution.taskId, solution.cost);
   return { ok: true, ...solution };
-}
-
-// Best-effort: a failed log must never lose the token the session is waiting for.
-async function recordCost(type: string, taskId: number, cost?: string) {
-  if (!process.env.DATABASE_URL || cost == null) return;
-  const prisma = new PrismaClient({
-    adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL }),
-  });
-  try {
-    await prisma.costLog.create({
-      data: {
-        operation_type: CostOperationType.CAPTCHA,
-        provider: IntegrationType.TWOCAPTCHA,
-        model: type,
-        unit_count: 1,
-        total_cost: cost,
-        metadata: { taskId },
-      },
-    });
-  } catch (e) {
-    console.error(`cost log failed: ${e instanceof Error ? e.message : String(e)}`);
-  } finally {
-    await prisma.$disconnect();
-  }
 }
 
 main()

@@ -170,7 +170,7 @@ Flow when a page is blocked by a captcha:
      the `data-callback` function (`window[el.dataset.callback](token)`) or submit the form.
 4. Check the page actually moved past the challenge (title/URL/listing selector present), then
    `--report=<taskId>:correct` (or `incorrect` if it didn't work — that refunds the solve).
-5. Solves cost money (~$0.003 each) and a token is single-use and short-lived: solve only when blocked,
+5. Every paid solve is logged to `cost_logs` (CAPTCHA / 2captcha) by `solve-captcha.ts`, `mcp-autocrawl.ts` and the server hook -- but only when the script runs through `dotenv -e .env.staging` so `DATABASE_URL` is set (otherwise it prints "captcha cost NOT logged"). Solves cost money (~$0.003 each) and a token is single-use and short-lived: solve only when blocked,
    inject immediately, and don't solve in a tight loop — see §3b for what to do when a solve fails or
    the same page blocks again right after a successful one.
 
