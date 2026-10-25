@@ -296,6 +296,13 @@ Playwright's locator engine. Write a throwaway script (delete it after, don't co
   last page and confirm graceful termination (§2).
 - Visit one real detail-page URL and check `description_selector`, `price_selector`,
   `external_id_selector`, and image gallery unique count (no location check: we never configure one).
+- **Never judge "this site has no description" from one page.** Many sites render the prose description
+  only on some listings (an optional block that is simply absent from the sample you opened). Fetch
+  ~20 detail pages spread across the whole listing set (every Nth id, same-origin fetch from a real
+  browser tab with ~700ms between requests), and for each list every text block over ~150 characters
+  outside the specs/amenities tables. If any listing has one, set `description_selector` to that block.
+  A missing description means every language of the CRM ad (ORIGINAL strategy) is empty and the
+  TRANSLATE slots have nothing to translate, and it is only noticed after the whole agency was crawled.
 
 ### 6a. Ground-truth cross-check: you pick a sample, the user confirms it
 

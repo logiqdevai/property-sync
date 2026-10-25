@@ -536,3 +536,20 @@ Notes that cost time before:
 - If `.env.production` can't connect, check whether `.env.staging` does (they can differ); and if a
   `REDIS_URL` host doesn't resolve from this machine (internal hostname), you need the publicly
   reachable one — set it in the process environment for that run rather than editing the env file.
+
+## 10. Clean up when the agency is done
+
+Before reporting, remove everything you created only to run the crawl. Keep only what is worth keeping.
+
+- In `docs/mcp-crawl-progress/<agency>/` keep `driver.js` and the final `items.json`. Delete the rest:
+  `ingest*.log`, `resolve-*.log`, `stdout*.txt`, `items.json.log`, `items.json.checkpoint.json`, and any
+  backup or seed copy of the items (e.g. `items.v1.json`).
+- Delete the throwaway scripts you wrote (`_q*.cjs`, `_tmp*.ts`/`.cjs` in `api/`, `api/scripts/` and
+  `scripts/scraper-generator/`) as soon as each has served its purpose, and any scratch files in `%TEMP%`.
+- Delete the per-agency Chrome profile directories you passed to `mcp-autocrawl.ts` via `--profile`
+  (`%TEMP%/mcp-autocrawl-<agency>*`), after confirming no `mcp-autocrawl` process or Chrome using them is
+  still running. Leave the default shared `mcp-autocrawl-profile` alone.
+- If you need a one-off job restricted to one agency (e.g. re-resolving EstateWeb locations), copy the
+  generic script to a `_tmp-*` file with the agency filter, run it, and delete the copy. Never run the
+  `*-all-user-properties-*` scripts as they are: they act on every user's properties.
+- Finish with `git status` and confirm that the only untracked paths are the ones you meant to keep.
