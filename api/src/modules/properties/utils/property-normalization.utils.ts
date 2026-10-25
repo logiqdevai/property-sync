@@ -435,6 +435,14 @@ function toDecimal(value: number | null | undefined): Prisma.Decimal | null {
   return value != null ? new Prisma.Decimal(value) : null;
 }
 
+// EstateWeb rejects fractional square meters (HTTP 500), so always store a whole number.
+function toSquareMetersDecimal(
+  value: number | null | undefined,
+): Prisma.Decimal | null {
+  if (value == null || !Number.isFinite(value)) return null;
+  return new Prisma.Decimal(Math.round(value));
+}
+
 function toCoordinateDecimal(
   value: number | null | undefined,
 ): Prisma.Decimal | null {
@@ -645,7 +653,7 @@ export function buildPropertyRecord(
     country: 'GR',
     latitude: toCoordinateDecimal(latLng.latitude ?? n.latitude),
     longitude: toCoordinateDecimal(latLng.longitude ?? n.longitude),
-    square_meters: toDecimal(n.square_meters),
+    square_meters: toSquareMetersDecimal(n.square_meters),
     bedrooms: n.bedrooms ?? null,
     bathrooms: n.bathrooms ?? null,
     floor: n.floor != null && String(n.floor).trim() !== ''

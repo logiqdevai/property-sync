@@ -1,0 +1,29 @@
+Bootstrapping the app (Prisma, normalization pipeline, etc.)…
+[31m[Nest] 27116  - [39m10/25/2026, 12:02:07 PM [31m  ERROR[39m [38;5;3m[TwillioConfig] [39m[31mTWILIO_ACCOUNT_SID or TWILIO_AUTH_TOKEN is not configured[39m
+Scraper: sithoniaproperties (b485ae28-939c-4189-967d-9f47323df1db), source_agency_id=1ba43f1a-0d38-4ef9-a44b-ceb473e54717
+Loaded 65 item(s) from ../docs/mcp-crawl-progress/sithoniaproperties/items.json.
+Created CrawlRun e33466ec-b2a7-4a23-aa07-b767962e9fff
+SourceProperty upsert done: 65 created, 0 updated/touched (of 65 item(s), 65 unique).
+Kicking off AI normalization (background)…
+
+Done. CrawlRun e33466ec-b2a7-4a23-aa07-b767962e9fff is normalizing in the background (BullMQ chunks or an OpenAI Batch submission -- this does not block on completion). No CRM push happens as part of this. Track progress in the app's Crawl Runs / Job Queue pages, then review the new UserProperty rows for this agency before doing anything with the CRM.
+[33m[Nest] 27116  - [39m10/25/2026, 12:03:18 PM [33m   WARN[39m [38;5;3m[PropertyNormalizationService] [39m[33m[enqueueResolveEstateWebLocation] failed to enqueue property=87eaa4e1-0774-4cce-8a67-4010e9b76cc0: Connection is closed.[39m
+[33m[Nest] 27116  - [39m10/25/2026, 12:03:19 PM [33m   WARN[39m [38;5;3m[UserPropertiesService] [39m[33m[enqueueResolveEstateWebLocation] failed to enqueue user_property=30e1e052-3f0b-472d-badd-9a745376c09f: Connection is closed.[39m
+[33m[Nest] 27116  - [39m10/25/2026, 12:03:20 PM [33m   WARN[39m [38;5;3m[PropertyNormalizationService] [39m[33m[enqueueResolveEstateWebLocation] failed to enqueue property=34b25861-f2e2-4274-be7b-5546270451a4: Connection is closed.[39m
+[33m[Nest] 27116  - [39m10/25/2026, 12:03:20 PM [33m   WARN[39m [38;5;3m[UserPropertiesService] [39m[33m[enqueueResolveEstateWebLocation] failed to enqueue user_property=1d9aafd2-f911-468e-bcda-1b7bc211d519: Connection is closed.[39m
+[33m[Nest] 27116  - [39m10/25/2026, 12:03:22 PM [33m   WARN[39m [38;5;3m[PropertyNormalizationService] [39m[33m[enqueueResolveEstateWebLocation] failed to enqueue property=c1c28f98-09ea-41f8-ad3f-f30e76c18583: Connection is closed.[39m
+[33m[Nest] 27116  - [39m10/25/2026, 12:03:22 PM [33m   WARN[39m [38;5;3m[UserPropertiesService] [39m[33m[enqueueResolveEstateWebLocation] failed to enqueue user_property=2e30cbe3-b120-4f20-81b0-d65d38eaac14: Connection is closed.[39m
+[33m[Nest] 27116  - [39m10/25/2026, 12:03:23 PM [33m   WARN[39m [38;5;3m[PropertyNormalizationService] [39m[33m[enqueueResolveEstateWebLocation] failed to enqueue property=77315177-20af-4fe8-9b71-3d9e47b910d8: Connection is closed.[39m
+[33m[Nest] 27116  - [39m10/25/2026, 12:03:24 PM [33m   WARN[39m [38;5;3m[UserPropertiesService] [39m[33m[enqueueResolveEstateWebLocation] failed to enqueue user_property=5025d4cc-6d4c-4461-abe4-d727ea16b11b: Connection is closed.[39m
+[33m[Nest] 27116  - [39m10/25/2026, 12:03:25 PM [33m   WARN[39m [38;5;3m[PropertyNormalizationService] [39m[33m[enqueueResolveEstateWebLocation] failed to enqueue property=8ec0f528-93a8-4161-8a5b-300cc328ee3c: Connection is closed.[39m
+[33m[Nest] 27116  - [39m10/25/2026, 12:03:26 PM [33m   WARN[39m [38;5;3m[UserPropertiesService] [39m[33m[enqueueResolveEstateWebLocation] failed to enqueue user_property=0533409e-9496-4200-aa35-fd524a6c9639: Connection is closed.[39m
+[33m[Nest] 27116  - [39m10/25/2026, 12:03:27 PM [33m   WARN[39m [38;5;3m[PropertyNormalizationService] [39m[33m[enqueueResolveEstateWebLocation] failed to enqueue property=be2f985f-3a24-4d8b-b73f-b3c02c0e0e55: Connection is closed.[39m
+[33m[Nest] 27116  - [39m10/25/2026, 12:03:27 PM [33m   WARN[39m [38;5;3m[UserPropertiesService] [39m[33m[enqueueResolveEstateWebLocation] failed to enqueue user_property=80016c5d-46ca-4c02-899b-2d4f47388246: Connection is closed.[39m
+[33m[Nest] 27116  - [39m10/25/2026, 12:03:28 PM [33m   WARN[39m [38;5;3m[PropertyNormalizationService] [39m[33m[enqueueResolveEstateWebLocation] failed to enqueue property=6ad246b0-db03-40d4-930e-df26d34d57f8: Connection is closed.[39m
+[33m[Nest] 27116  - [39m10/25/2026, 12:03:29 PM [33m   WARN[39m [38;5;3m[UserPropertiesService] [39m[33m[enqueueResolveEstateWebLocation] failed to enqueue user_property=f33c63fd-7bd0-403e-a834-ba0b678415f7: Connection is closed.[39m
+[33m[Nest] 27116  - [39m10/25/2026, 12:03:30 PM [33m   WARN[39m [38;5;3m[PropertyNormalizationService] [39m[33m[enqueueResolveEstateWebLocation] failed to enqueue property=cc9e7990-3413-4e4c-bc8a-0cb9a8038413: Connection is closed.[39m
+[33m[Nest] 27116  - [39m10/25/2026, 12:03:31 PM [33m   WARN[39m [38;5;3m[UserPropertiesService] [39m[33m[enqueueResolveEstateWebLocation] failed to enqueue user_property=73fb86b3-25ee-462d-abf4-cae0fc21c211: Connection is closed.[39m
+[33m[Nest] 27116  - [39m10/25/2026, 12:03:32 PM [33m   WARN[39m [38;5;3m[PropertyNormalizationService] [39m[33m[enqueueResolveEstateWebLocation] failed to enqueue property=f37eac94-2747-4146-8438-cbf8e573eb87: Connection is closed.[39m
+[33m[Nest] 27116  - [39m10/25/2026, 12:03:32 PM [33m   WARN[39m [38;5;3m[UserPropertiesService] [39m[33m[enqueueResolveEstateWebLocation] failed to enqueue user_property=73f9724f-705e-42fe-b358-91b10b98a9fa: Connection is closed.[39m
+[33m[Nest] 27116  - [39m10/25/2026, 12:03:34 PM [33m   WARN[39m [38;5;3m[PropertyNormalizationService] [39m[33m[enqueueResolveEstateWebLocation] failed to enqueue property=68a74ca9-7662-4ebe-98ad-db9b99cec1fb: Connection is closed.[39m
+[33m[Nest] 27116  - [39m10/25/2026, 12:03:34 PM [33m   WARN[39m [38;5;3m[UserPropertiesService] [39m[33m[enqueueResolveEstateWebLocation] failed to enqueue user_property=860b9c8e-47a3-46cb-a936-9b78f5396f61: Connection is closed.[39m

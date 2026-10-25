@@ -160,6 +160,15 @@ still exist on non-WP stacks).
 
 ## 3. Category include/exclude
 
+**Sales only, every sale category.** We keep only sale listings (never rentals), but all property
+categories (residential, commercial, land, other...). The agency's `base_url` is often a single-category
+search (e.g. residential only), so **always check the site's other categories** before settling on
+`start_url`: list the category options in the search form, count the sale results for each (and for the
+form with no category), and confirm the per-category counts sum to the unfiltered sale count. If the
+unfiltered sale search covers them all, use that as `start_url` and tell the user how many listings the
+original `base_url` would have missed. Only drop a category if the user asks. Also check whether an
+optional region filter hides listings (compare counts with and without it) and report it.
+
 The site's filter usually only accepts **one** category value — array syntax
 (`category_id[]=`), comma-separated (`category_id=7,8`), and repeated params
 (`category_id=7&category_id=8`) are all worth trying but commonly don't work (last-value-wins or a
@@ -288,11 +297,12 @@ Playwright's locator engine. Write a throwaway script (delete it after, don't co
 - Visit one real detail-page URL and check `description_selector`, `price_selector`,
   `external_id_selector`, and image gallery unique count (no location check: we never configure one).
 
-### 6a. Ground-truth cross-check: ask the user for a known example property
+### 6a. Ground-truth cross-check: you pick a sample, the user confirms it
 
-Before trusting `external_id_selector`/`price_selector` (or any detail-page field selector), **ask the
-user for one example property URL from the agency plus that property's real ID and price as shown on
-the page**. A selector can be syntactically valid and still resolve to the wrong element — e.g. it
+Before trusting `external_id_selector`/`price_selector` (or any detail-page field selector), **pick one
+example property yourself and give the user its full URL, ID and price (block below) for them to confirm
+against the live page**. Do not ask the user to supply an example. Do not write the Scraper to the DB
+until they confirm the sample. A selector can be syntactically valid and still resolve to the wrong element — e.g. it
 matches a different row/column than intended — without erroring anywhere. The only real proof is
 resolving the selector against a page whose correct answer you already know, then confirming the
 extracted text equals it exactly (not "looks plausible"). This applies to any site's markup — don't
@@ -358,8 +368,9 @@ far more than a generic "scraper for X" note.
 
 ### Set the agency's main city
 
-`source_agencies.city` is the agency's main city. Set it whenever you create a scraper, so the agency
-is labelled correctly in the app.
+`source_agencies.city` is the agency's main city. **Always find it yourself while building a scraper**,
+without being asked or asking whether to look: do the site lookup below during investigation, report
+the city and where you found it, and set it (when blank) as part of creating the scraper.
 
 1. Find the main city from the agency's own site, in this order: the contact or about page address,
    or the footer (an `<address>` block, or schema.org `PostalAddress`/`addressLocality` in JSON-LD);
