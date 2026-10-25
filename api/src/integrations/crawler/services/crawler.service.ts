@@ -29,7 +29,6 @@ import {
   PROXY_BROWSER_MIN_PAGE_TIMEOUT_MS,
   PAGINATION_CLICK_MAX_ATTEMPTS,
   PAGINATION_CLICK_RETRY_DELAY_MS,
-  SHARED_PLACEHOLDER_IMAGE_MIN_OCCURRENCES,
   START_PAGE_GOTO_MAX_ATTEMPTS,
   START_PAGE_GOTO_RETRY_DELAY_MS,
 } from '../constants/crawler.constants';
@@ -43,6 +42,7 @@ import { FieldExtractionService } from './field-extraction.service';
 import { StealthBrowserService } from './stealth-browser.service';
 import { ProxyBrowserSession } from '../interfaces/proxy-browser-session.interface';
 import { redactSecrets } from '@/shared/utils/redact-secrets.util';
+import { stripSharedPlaceholdersFromItems } from '../utils/placeholder-images.util';
 
 export interface CrawlRunOptions {
   onPageComplete?: () => void | Promise<void>;
@@ -502,62 +502,17 @@ export class CrawlerService {
     }
   }
 
-  // Card-level image extraction (field.image and the broader per-card img/
-  // background-image sweep above) has no way to tell a real listing photo from
-  // a fallback graphic the site renders for photo-less listings (often the
-  // agency's own header logo) -- the URL itself gives no textual hint, unlike
-  // "logo.png". A genuine property photo essentially never repeats verbatim
-  // across unrelated listings, so treat any image URL seen this often across
-  // one crawl's items as a shared placeholder and strip it everywhere.
+  // Card-level image extraction can't tell a real listing photo from a fallback graphic
+  // (often the agency's logo); see placeholder-images.util.ts for how those are detected.
   private stripSharedPlaceholderImages(
     items: CrawlItem[],
     log: (msg: string, data?: Record<string, unknown>) => void,
   ): void {
-    const counts = new Map<string, number>();
-    const bump = (url: unknown) => {
-      if (typeof url === 'string' && url) {
-        counts.set(url, (counts.get(url) ?? 0) + 1);
-      }
-    };
-    for (const item of items) {
-      bump(item.raw.image);
-      for (const url of (item.raw._all_images as string[] | undefined) ?? []) {
-        bump(url);
-      }
-    }
-
-    const placeholders = new Set(
-      [...counts.entries()]
-        .filter(
-          ([, count]) => count >= SHARED_PLACEHOLDER_IMAGE_MIN_OCCURRENCES,
-        )
-        .map(([url]) => url),
-    );
-    if (placeholders.size === 0) return;
-
-    let affectedItems = 0;
-    for (const item of items) {
-      let affected = false;
-      if (
-        typeof item.raw.image === 'string' &&
-        placeholders.has(item.raw.image)
-      ) {
-        item.raw.image = null;
-        affected = true;
-      }
-      const allImages = item.raw._all_images as string[] | undefined;
-      if (allImages?.length) {
-        const filtered = allImages.filter((url) => !placeholders.has(url));
-        if (filtered.length !== allImages.length) {
-          item.raw._all_images = filtered;
-          affected = true;
-        }
-      }
-      if (affected) affectedItems++;
-    }
-
+    const { placeholderKeys, affectedItems } =
+      stripSharedPlaceholdersFromItems(items);
+    if (placeholderKeys.length === 0) return;
     log('stripped_shared_placeholder_images', {
-      urls: [...placeholders],
+      keys: placeholderKeys,
       affected_items: affectedItems,
     });
   }

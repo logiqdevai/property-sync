@@ -1,3 +1,4 @@
+import { stripSharedPlaceholdersFromItems } from '@/integrations/crawler/utils/placeholder-images.util';
 import { Logger, OnModuleInit } from '@nestjs/common';
 import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Job } from 'bullmq';
@@ -358,6 +359,14 @@ export class CrawlProcessor extends WorkerHost implements OnModuleInit {
           `detail enrichment timed out after ${crawl_job_timeout_ms}ms`,
         );
         detailSummary = { ...enrichmentSummary, reused };
+        // Detail pages bring their own gallery images, which the listing-level pass in
+        // runCrawl never saw -- run the shared-placeholder check again over the full set.
+        const placeholders = stripSharedPlaceholdersFromItems(crawlResult.items);
+        if (placeholders.placeholderKeys.length > 0) {
+          this.logger.log(
+            `crawl job ${crawlRunId}: stripped shared placeholder images (${placeholders.placeholderKeys.join(', ')}) from ${placeholders.affectedItems} listings`,
+          );
+        }
         if (reused > 0 || enrichmentSummary.notAttempted > 0) {
           this.logger.log(
             `crawl job ${crawlRunId}: detail pages — fetched ${enrichmentSummary.attempted}, reused ${reused}, not reached ${enrichmentSummary.notAttempted}`,

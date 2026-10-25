@@ -210,6 +210,11 @@ interface ScraperConfig {
 Notes that aren't obvious from the types alone:
 
 - `fields.url` (type `href`) becomes `CrawlItem.source_url`. Always include it.
+- **Never add a location to the scraper config.** Do not put a `location` entry in `fields` and do
+  not set `detail_page.location_selector`, even when the card or detail page shows an address, area
+  or breadcrumb. The only location the scraper side carries is the agency's **City**
+  (`source_agencies.city`, see "Set the agency's main city" in §7). Listing location is left to
+  the title/description and the coordinates the crawler extracts on its own.
 - Text extraction (`api/src/integrations/crawler/services/field-extraction.service.ts`) takes the
   matched element's full `textContent`, whitespace-collapsed — it does **not** strip label prefixes
   like `"Price: "` or `"Code: "`. That's fine; downstream AI normalization handles it. Don't waste time
@@ -278,7 +283,7 @@ Playwright's locator engine. Write a throwaway script (delete it after, don't co
 - If pagination is configured, fetch page 2 and confirm different content, and fetch one page past the
   last page and confirm graceful termination (§2).
 - Visit one real detail-page URL and check `description_selector`, `price_selector`,
-  `location_selector`, `external_id_selector`, and image gallery unique count.
+  `external_id_selector`, and image gallery unique count (no location check: we never configure one).
 
 ### 6a. Ground-truth cross-check: ask the user for a known example property
 
@@ -356,8 +361,8 @@ is labelled correctly in the app.
 1. Find the main city from the agency's own site, in this order: the contact or about page address,
    or the footer (an `<address>` block, or schema.org `PostalAddress`/`addressLocality` in JSON-LD);
    then the office or location text in the header or footer. Only if the site shows no office address,
-   use the most common city in the listings' location field, and say in `notes` that it came from
-   listings, since listings can be in other cities than the office.
+   use the most common city named in the listing titles or descriptions, and say in `notes` that it
+   came from listings, since listings can be in other cities than the office.
 2. Write the city name in the agency's `content_language` (for `EL` agencies, the Greek name), matching
    how existing rows are written. Use the city name, not the region. If the site only documents the
    region, use the region and say so in `notes`.
