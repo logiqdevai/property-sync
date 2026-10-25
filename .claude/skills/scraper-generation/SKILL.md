@@ -56,7 +56,10 @@ to exactly one tracker.
 1. Write the input as JSON to the **scratchpad** directory (never into the repo - it holds
    passwords). The shape is documented at the top of the script:
    `{ "users": [...], "copy_publishing_from": "...", "agencies": [{ "name", "base_url",
-   "estateweb": { "email", "password" }, "city?", "country?", "content_language?", "crm_client_id?" }] }`
+   "estateweb": { "email", "password" }, "city?", "country?", "content_language?", "crawl_interval?", "crm_client_id?" }] }`
+   Do not set `crawl_interval` unless the user asks: the script gives every **newly created** agency
+   `0 9 * * *` (once a day at 09:00, scheduler timezone Europe/Athens) instead of the schema default
+   `0 */6 * * *`. An agency that already exists keeps its current interval.
 2. Dry run, read the output, then the real run (from `api/`; we work only with `.env.staging`, see §0):
    ```
    npx dotenv -e .env.staging -- node -r tsconfig-paths/register -r ts-node/register scripts/onboard-agency.ts --input-file=<path> --dry-run

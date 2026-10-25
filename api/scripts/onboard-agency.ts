@@ -28,6 +28,7 @@
 //         "base_url": "https://stathopoulosmesitiko.gr",
 //         "estateweb": { "email": "...", "password": "..." },             // or { "username", "password" }
 //         "city": "Πάτρα", "country": "GR", "content_language": "EL",    // all optional
+//         "crawl_interval": "0 9 * * *",                                  // optional, default 09:00 daily
 //         "crm_client_id": 12345                                          // optional
 //       }
 //     ]
@@ -58,8 +59,13 @@ interface AgencyInput {
   city?: string;
   country?: string;
   content_language?: ContentLanguage;
+  crawl_interval?: string;
   crm_client_id?: number;
 }
+
+// New agencies crawl once a day at 09:00 (scheduler timezone, Europe/Athens),
+// not the schema default of every 6 hours.
+const DEFAULT_ONBOARD_CRAWL_INTERVAL = '0 9 * * *';
 
 interface InputFile {
   users: string[];
@@ -198,6 +204,8 @@ async function main() {
               base_url: baseUrl,
               ...(item.city && { city: item.city }),
               country: item.country ?? 'GR',
+              crawl_interval:
+                item.crawl_interval ?? DEFAULT_ONBOARD_CRAWL_INTERVAL,
               ...(item.content_language && {
                 content_language: item.content_language,
               }),
