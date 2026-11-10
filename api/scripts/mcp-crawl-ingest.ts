@@ -62,6 +62,14 @@
 //   --force               Proceed even if the pre-flight safety check finds
 //                         a tracker with auto_update_to_crm=true already
 //                         linked for this agency.
+//   --skip-spike-check    Mark this CrawlRun with metadata.skip_spike_check
+//                         (same flag the admin "Run now" option sets), which
+//                         bypasses the removal-spike / incomplete-coverage
+//                         guard so listings missing from this crawl ARE marked
+//                         removed (and REMOVE operations are pushed to the CRM,
+//                         regardless of auto_update_to_crm). Use ONLY after
+//                         every missing listing was verified gone on the live
+//                         site.
 
 import { promises as fsp } from 'fs';
 import { NestFactory } from '@nestjs/core';
@@ -103,6 +111,7 @@ function parseArgs(): ScriptArgs {
     itemsFile: getFlag('items-file'),
     dryRun: argv.includes('--dry-run'),
     force: argv.includes('--force'),
+    skipSpikeCheck: argv.includes('--skip-spike-check'),
   };
 }
 
@@ -198,7 +207,10 @@ async function main() {
         scraper_id: scraper.id,
         status: CrawlRunStatus.RUNNING,
         started_at: startedAt,
-        metadata: { source: 'mcp-crawl' } as object,
+        metadata: {
+          source: 'mcp-crawl',
+          ...(args.skipSpikeCheck && { skip_spike_check: true }),
+        } as object,
       },
     });
     console.log(`Created CrawlRun ${crawlRun.id}`);

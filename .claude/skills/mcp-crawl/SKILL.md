@@ -1,6 +1,6 @@
 ---
 name: mcp-crawl
-description: Crawl one property-sync Scraper via the chrome-devtools MCP browser (a real, visible Chrome) instead of the server's Playwright crawler, when that agency's site blocks the server's datacenter IP (Cloudflare/WAF bot protection). Runs AI normalization and creates UserProperty rows for tracked users, but never pushes to the CRM. Use when asked to "crawl <scraper/agency> with chrome mcp", "the crawler is blocked/getting 403s for this agency", or when scraper-generation SKILL.md's diagnosis points at bot-management blocking, not a broken selector.
+description: Crawl one property-sync Scraper via the chrome-devtools MCP browser (a real, visible Chrome) instead of the server's Playwright crawler, when that agency's site blocks the server's datacenter IP (Cloudflare/WAF bot protection). Runs AI normalization and creates UserProperty rows for tracked users; the ingest never pushes creates/updates to the CRM (they are held as pending_crm_update for the user to review and push), removals are verified automatically, and after the user pushes the skill verifies the live CRM photos and fixes missing ones on its own. Use when asked to "crawl <scraper/agency> with chrome mcp", "the crawler is blocked/getting 403s for this agency", or when scraper-generation SKILL.md's diagnosis points at bot-management blocking, not a broken selector.
 metadata:
   version: "1.0.0"
 ---
@@ -13,8 +13,11 @@ scoring Railway's datacenter IP + headless fingerprint — see
 network. This drives that real Chrome yourself, via the `chrome-devtools` MCP tools, through the
 Scraper's *existing* `ScraperVersion.config` (same selectors a normal crawl would use), then hands
 the results to the same downstream pipeline (`SourceProperty` upsert → AI normalization →
-`Property`/`UserProperty` creation) a normal crawl uses. It deliberately stops there — it never
-pushes anything to the CRM (see §7).
+`Property`/`UserProperty` creation) a normal crawl uses. The ingest itself never pushes anything to
+the CRM (§2 switches auto-update off for the run, and restores it only after the crawl's final step
+has run so creates/updates stay held as `pending_crm_update`). The user reviews and pushes them with the
+app's own button; the skill verifies removals itself (§8a) and, once the user says they pushed, checks
+the live CRM photos and fixes missing ones without asking (§9).
 
 This is the sibling of `scraper-generation` (which *authors* a `Scraper`/`ScraperVersion.config`).
 This skill *runs* an existing one through a different transport when the normal one is blocked. If
@@ -81,28 +84,34 @@ row with `auto_update_to_crm = true` AND `ui.is_active = true`:
 1. Remember the original (`uta.id` + `true`) — write it down in your reply so it survives a context
    reset.
 2. `update user_tracked_agencies set auto_update_to_crm = false where id = '<uta.id>' and
-   auto_update_to_crm = true;` (prod DB, so tell the user in one line that you did it).
+   auto_update_to_crm = true;` (prod DB; no need to message the user about it).
 3. Crawl and ingest (§4-§6) with the flag off. **Never** use `--force` to get past the check.
-4. **Restore it only once normalization has finished** — the `normalize-crawl-chunk` job(s) for the
-   `CrawlRun` are `COMPLETED` and the `Property` count has reached the item count (see §7). Turning
-   it back on earlier lets the still-running normalization auto-push to the CRM. Then
+4. **Restore it only once the crawl's FINAL step has run — not when the chunk job completes.** The
+   push decision is made in the crawl's finalization (`PropertyNormalizationService` →
+   `planAndEnqueueCrawlSync`), which reads `auto_update_to_crm` *at that moment*: flag off → new/updated
+   listings are held (`user_properties.pending_crm_update = true`, shown at
+   `/dashboard/properties?pending_crm_update=true`) and only removals are pushed; flag on → everything is
+   pushed. The `normalize-crawl-chunk` job showing `COMPLETED` is **not** the end (seen: finalization ran
+   a minute or two later, saw the restored flag and pushed 16 creates + 1 update + 7 removals the user
+   wanted held). So restore only when **all** of these hold (§7): `crawl_runs.metadata.normalization_status
+   = 'completed'`, a `cms_sync_runs` row exists for the `CrawlRun` (or the finalization logged that there
+   was nothing to sync), and it is no longer changing. Then
    `update user_tracked_agencies set auto_update_to_crm = true where id = '<uta.id>' and
-   auto_update_to_crm = false;` and tell the user it is back on.
+   auto_update_to_crm = false;`.
 5. If the run is abandoned or blocked (bot challenge you can't clear), restore the flag right away
-   — never leave a user's auto-update off unannounced. Say in the final reply whether it is on or
-   off and what it was before.
+   and tell the user — never leave a user's auto-update off unannounced.
 
-Restoring it does not push anything by itself, but later syncs for that user will resume pushing
-normal updates; the listings this skill created still need the user's review (§7) and the
-no-photos warning (§8) before they press "Update CRM".
+Restoring at the right time pushes nothing: the new/changed listings stay `pending_crm_update` for the
+user to review and push with the app's own button. The push itself then produces the translated content
+(§9b) and the user's push is what §9 verifies.
 
 **Caveat — removals are pushed even with auto-update off.** A full-coverage ingest runs removal
 detection, and the app then enqueues a `cms-sync` job that sends `REMOVE` operations to the CRM for
 listings that disappeared from the site, regardless of `auto_update_to_crm` (seen on a realeze run:
 one genuinely unpublished listing was removed from the CRM minutes after ingest). Creates/updates
-are what the flag holds back. So after ingest, look at `cms_sync_runs` for the `CrawlRun`
-(`total_removed`, `payload.operations`) and tell the user about any removals; verify a sample
-against the live site (e.g. a "property is not published" page) before calling them correct.
+are what the flag holds back. A "Property removal spike" notification can follow when several
+listings vanished at once; that alone is not a problem. Verify the removals yourself (§8a) and tell the
+user if a listing marked removed is still live on the site.
 
 ## 3. Decide the run size
 
@@ -223,10 +232,12 @@ So:
   localStorage.
 - **Finish the job in the same run:** when `pending` reaches 0, dump the items (`evaluate_script` with
   `filePath`), strip the driver-only `_detail_done` flag, run the §6 ingest (dry-run, then real in the
-  background), wait for normalization/`cms-sync` to complete (§2), restore the tracked agency's
-  auto-update flag **to its original value** (it may already have been `false`), check removals (§2
-  caveat) and only then report. Save progress to the repo (`docs/mcp-crawl-progress/`) only if you have
-  to abandon the run.
+  background), wait for the crawl's FINAL step to finish (§2 step 4, §7 — not just the chunk job),
+  restore the tracked agency's auto-update flag **to its original value** (it may already have been
+  `false`), verify the removals (§8a), and then report in a few lines: how many listings are held at
+  `/dashboard/properties?pending_crm_update=true` for review, and any problem. Don't wait for the user
+  to push; §9 runs when they tell you they did. Save progress to the repo (`docs/mcp-crawl-progress/`)
+  only if you have to abandon the run.
 - A push notification is skipped while the user's terminal is active, so don't rely on it.
 
 ## 3c. Preferred for big or captcha-heavy agencies: the autonomous watcher (no session involved)
@@ -450,13 +461,14 @@ pipeline's stuck/silent-skip failure modes (AI key resolution falling back to th
 normalization guard conflicts, etc.); the same diagnosis applies here since it's the same
 `normalizeForCrawlRun()` call.
 
-## 7. Review before touching the CRM at all
+## 7. Verify the ingest, restore auto-update at the right moment, hand the held listings to the user
 
-Stop here and tell the user to review the new `UserProperty` rows for this agency in the dashboard
-(`/dashboard/properties`, filtered by agency) before anything else happens. Nothing so far has
-touched EstateWeb.
+Nothing so far has touched EstateWeb except removals (§2 caveat). Verify the rows yourself, then
+restore the auto-update flag **only when the crawl's final step has run** (below), and tell the user the
+new/changed listings are waiting at `/dashboard/properties?pending_crm_update=true` (filter by the
+agency) for them to review and push. Don't wait for them.
 
-Before calling the rows "reviewed/ready", run the **source-image check** (read-only SQL). Every
+Before restoring the flag, run the **source-image check** (read-only SQL). Every
 `UserProperty` in scope must already carry source images, otherwise there is nothing to push later:
 
 ```sql
@@ -469,61 +481,117 @@ where user_id = '<tracker-user-id>' and canonical_property_id in (
   where sp.source_agency_id = '<agency-id>');
 ```
 
-If `no_source_images > 0`, the detail-page extraction (§5) missed the gallery for those listings —
-fix the extraction and re-ingest; don't move on.
+**This check is mandatory and runs BEFORE you report to the user, never after they push.** Run it
+for every agency, over the held rows (`pending_crm_update`), and put the result in the report. If
+`no_source_images > 0`, the detail-page extraction (§5) missed the gallery for those listings —
+fix the extraction and re-ingest; don't move on. Also look for **placeholder photos**: one image
+URL shared by several different listings of the agency (`_all_images` of the items file) means the
+site has no real photo for them — normalization drops it and they end up with 0 images. Tell the
+user those listings have no photos on the site so they can leave them unpushed. A listing with only
+1 photo is fine if the live detail page really has 1 gallery image (spot-check one).
 
-Also tell the user, in one line, that normalization is done when the `normalize-crawl-chunk` job in
-`job_logs` (filter by the `CrawlRun` id) is `COMPLETED` and the `Property` count reaches the item
-count — the `CrawlRun.metadata.normalization_status` can stay `running` even after that, so don't
-wait on it.
-
-## 8. The user presses "Update CRM" — warn them what it will do to images
-
-This skill never pushes properties itself; that is the app's explicit "Update CRM" / "Push to CRM"
-button. **Warn the user before they press it**: for an agency whose site blocks the server, the
-server can't download the photos either (a bare `fetch()` hits the same WAF), and the CRM push
-treats that as success — so the listings are created/updated **with zero photos** and no error is
-shown (the CREATE path's `uploadImages` only logs a warning per failed image, `cms_sync_runs` still
-says `SUCCESS`, `total_failed = 0`). That is expected; §9 fixes it. Never tell the user the work is
-"done" or "ready" at this step.
-
-## 9. Image gate — do NOT report "ready/done" until every listing has photos in the CRM
-
-After the user says the push finished, verify the CRM listings really have images. Check the cached
-CRM gallery (it is refreshed after each push/upload):
+**When is it safe to restore the flag?** Not when the `normalize-crawl-chunk` job shows `COMPLETED`: the
+crawl's finalization (removal detection, content production, `planAndEnqueueCrawlSync`) runs *after*
+it and reads the flag when it runs. Poll (every ~15s, no user prompt) until **all** hold:
 
 ```sql
-select count(*) total,
-       count(*) filter (where ip.images is null or ip.images::text in ('[]','null')) missing_images
-from user_properties up
-join integration_properties ip on ip.user_property_id = up.id
-where up.user_id = '<tracker-user-id>' and up.integration_property_id is not null
-  and up.canonical_property_id in (
-    select l.property_id from property_source_links l
-    join source_properties sp on sp.id = l.source_property_id
-    where sp.source_agency_id = '<agency-id>');
+select metadata->>'normalization_status' as norm, total_removed from crawl_runs where id = '<crawl-run-id>';
+select id, status, total_created, total_updated, total_removed from cms_sync_runs where crawl_run_id = '<crawl-run-id>';
+select count(*) from notifications where crawl_run_id = '<crawl-run-id>';   -- removal-spike notice, if any
 ```
 
-Also ask the user to open one listing in EstateWeb as a spot-check (the cache is only a cache).
-Properties with no `integration_property_id` yet haven't been pushed — they are out of scope here,
-not "missing images".
+`norm = 'completed'`, every new `SourceProperty` is linked to a `Property`, and the `cms_sync_runs`
+rows (a removals-only run, or none if nothing was removed) have stopped changing for ~1 minute. Restoring
+before that lets the finalization see `auto_update_to_crm = true` and push the creates/updates too.
+Check the held rows afterwards. Count them through the canonical property, never through
+`up.property_id` (that column is the agency's external id, a string, and a join on it silently
+returns 0):
 
-If `missing_images = 0` → report ready. If `> 0` → **fix it yourself, don't hand it back**: push the
-photos through a real local Chrome with the existing script, which needs the CRM listing to already
-exist (that's why this comes after §8). Use `--property-ids` with ONLY the missing ones (take the
-`up.id`s from the query above) — the script has no de-dup, so never run it by `--agency` over
-listings that already have photos, and never re-run it on one that succeeded (duplicate photos in
-EstateWeb):
+```sql
+select count(*) from user_properties up
+join property_source_links l on l.property_id = up.canonical_property_id
+join source_properties sp on sp.id = l.source_property_id
+where sp.source_agency_id = '<agency-id>' and up.pending_crm_update;
+```
+
+Report that number to the user, not an assumption (a re-ingest with a changed driver marks existing
+listings as changed too).
+
+## 8. The user reviews and pushes (the skill never pushes creates/updates itself)
+
+The new/changed listings sit at `/dashboard/properties?pending_crm_update=true` until the user presses
+the app's own push button. Only removals have already been sent (§2 caveat). Tell the user so in the
+final report; don't push for them and don't wait for them. A `FAILED` removals run or `total_failed > 0`
+in `cms_sync_runs` for the `CrawlRun` is a **problem** — read its `error_message`/`payload`, try to fix
+the cause, and tell the user if you can't.
+
+Why §9 exists: for an agency whose site blocks the server, the server can't download the photos
+either (a bare `fetch()` hits the same WAF), and the CRM push treats that as success — the listings
+can be created/updated **with zero photos** and no error is shown (the CREATE path's `uploadImages`
+only logs a warning per failed image, `cms_sync_runs` still says `SUCCESS`, `total_failed = 0`).
+Some blocked agencies still get their photos through anyway, so never assume either way — verify. The
+push also produces the translated content itself (§9b).
+
+### 8a. Verify the removals
+
+If the run has `total_removed > 0` (or a "Property removal spike" notification appeared), confirm the
+removed listings really are gone: take the `payload.operations` with `operation = 'REMOVE'`, map them
+to their `source_url`, and open each in the real browser (the §3c watcher with a tiny read-only driver
+that records `document.title`, the listing's own h1/price/gallery and the page text works, and solves
+captchas itself). A genuinely removed listing shows a 404, a "not published" page or a generic search
+page with no gallery. If a removed listing is **still live**, that is a problem: tell the user which
+ones. Otherwise say nothing about removals.
+
+**When the app holds the removals back.** If many listings vanished (a big drop vs the previous crawl), the
+app's removal-spike guard skips marking them removed and raises a `PROPERTY_REMOVAL_SPIKE` notification
+("removals held back"); the listings stay ACTIVE and in the CRM, and no `cms_sync_runs` row appears. This
+is the guard working, not an error. Verify every missing listing against the live site (same browser
+check as above, including the ones the guard skipped: take the agency's ACTIVE `source_properties` whose
+`source_url` is not in the new items). If **all** are gone, the drop is legitimate: ask the user once
+("remove these N listings from the CRM?") and, on a yes, re-run the same ingest with
+`--skip-spike-check` (sets `metadata.skip_spike_check` on the new CrawlRun, same as the admin "Run now"
+option), with auto-update off and restored afterwards as in §2. The REMOVE operations are then pushed
+regardless of auto-update. Never skip the check without having verified each listing.
+
+## 9. Image gate — after the user says they pushed: verify the real CRM, fix missing photos on your own
+
+Run this when the user tells you the push is done (or asks you to check). Wait until the new
+`cms_sync_runs` row(s) after the ingest are `SUCCESS`, then check the **live EstateWeb records** (not the
+cached gallery, and do not ask the user to spot-check) with the read-only script, which calls EstateWeb
+through the agency's own integration; fix any missing photos without asking and tell the user only if
+a problem remains:
+
+```
+cd api
+TS_NODE_TRANSPILE_ONLY=1 npx dotenv -e .env.staging -- node -r tsconfig-paths/register -r ts-node/register scripts/check-estateweb-images.ts --cms-sync-run=<cms-sync-run-id>
+# or every pushed listing of the agency: --agency=<source-agency-id>
+```
+
+It prints one line per listing, then `SUMMARY checked=N missing=M errors=E` and, if `M > 0`,
+`MISSING_IDS=<user_property id>,...`. Run it once per `cms-sync` run created by the user's push (CREATE and
+UPDATE operations are checked; REMOVE are not). Properties with no `integration_property_id` yet
+haven't been pushed — out of scope, not "missing images".
+
+- `missing = 0` and `errors = 0` → nothing to fix and **nothing to tell the user** about photos.
+- `missing > 0` → **fix it yourself, automatically, without asking**: push the photos through a real
+  local Chrome with the existing script, which needs the CRM listing to already exist (that's why this
+  comes after §8). Use `--property-ids` with ONLY the `MISSING_IDS` — the script has no de-dup, so never
+  run it by `--agency` over listings that already have photos, and never re-run it on one that succeeded
+  (duplicate photos in EstateWeb):
 
 ```
 # 1) dry-run: confirm the list and image counts
-TS_NODE_TRANSPILE_ONLY=1 npx dotenv -e .env.production -- node -r tsconfig-paths/register -r ts-node/register scripts/push-images-via-local-chrome.ts --property-ids=<id1,id2,...> --dry-run
-# 2) real run on ONE property first, check it succeeded (and the gallery in EstateWeb)
-# 3) real run on the rest, redirected to a log file (needed for --retry-log if some images fail)
+TS_NODE_TRANSPILE_ONLY=1 npx dotenv -e .env.staging -- node -r tsconfig-paths/register -r ts-node/register scripts/push-images-via-local-chrome.ts --property-ids=<id1,id2,...> --dry-run
+# 2) real run on ONE property first, then re-run check-estateweb-images.ts and confirm it now has images
+# 3) real run on the rest (batches of ≤150 ids), redirected to a log file (needed for --retry-log if some images fail)
 ```
 
-Then re-run the §9 query; only when `missing_images = 0` say it's done. If images fail to download
-even through Chrome, use `--retry-log=<log>` (re-uploads only the failed URLs).
+  Then re-run `check-estateweb-images.ts`; it must end with `missing=0`. If images fail to download
+  even through Chrome, use `--retry-log=<log>` (re-uploads only the failed URLs). Only if listings are
+  still missing photos after that — or the check itself keeps erroring — tell the user, with the count
+  and the listing ids.
+- `errors > 0` (a listing couldn't be read from EstateWeb) → retry once; if it persists, that is a
+  problem to report.
 
 Notes that cost time before:
 - The script (like `mcp-crawl-ingest.ts`) bootstraps the whole Nest app: run it **in the
@@ -537,13 +605,16 @@ Notes that cost time before:
   `REDIS_URL` host doesn't resolve from this machine (internal hostname), you need the publicly
   reachable one — set it in the process environment for that run rather than editing the env file.
 
-## 9b. Produce the localized content (after normalization, before telling the user it is ready)
+## 9b. Localized content — produced by the push; only run it manually when no push happened
 
 A crawl/ingest never creates translated text: `property_localized_contents` rows (TITLE/DESCRIPTION per
 language) only appear when content production runs (the app's "Produce content" action, or a push).
-A property with a non-empty crawled description therefore shows empty translated descriptions in the
-dashboard's Localized content tab until you run it. Do not assume which languages or strategies apply:
-read the tracker's real config first and let the app's own job apply it:
+**The CRM push (§8) runs content production itself** for every property it sends (the orchestrator calls
+`produceForUserProperties` before building the operations), so when the push ran there is nothing to do
+here; the Localized content tab stays empty only until the push. Run the steps below only when no push
+happened (the tracker's original auto-update was `false`) **and** the user wants the translations without
+pushing. Do not assume which languages or strategies apply: read the tracker's real config first and let
+the app's own job apply it:
 
 ```sql
 select co.language, co.title_strategy, co.description_strategy, co.description_content_language

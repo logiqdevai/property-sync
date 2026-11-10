@@ -1,3 +1,5 @@
 /scraper-generator/output/screenshots
 /scripts/scraper-generator/estateweb-storage-state.json
 /app/.env
+# mcp-crawl per-agency working files
+/docs/mcp-crawl-progress/*/
