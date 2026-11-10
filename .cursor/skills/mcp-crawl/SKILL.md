@@ -1,6 +1,6 @@
 ---
 name: mcp-crawl
-description: Crawl one property-sync Scraper via the chrome-devtools MCP browser (a real, visible Chrome) instead of the server's Playwright crawler, when that agency's site blocks the server's datacenter IP (Cloudflare/WAF bot protection). Runs AI normalization and creates UserProperty rows for tracked users; the ingest never pushes creates/updates to the CRM (they are held as pending_crm_update for the user to review and push), removals are verified automatically, and after the user pushes the skill verifies the live CRM photos and fixes missing ones on its own. Use when asked to "crawl <scraper/agency> with chrome mcp", "the crawler is blocked/getting 403s for this agency", or when scraper-generation SKILL.md's diagnosis points at bot-management blocking, not a broken selector.
+description: Crawl one property-sync Scraper via the chrome-devtools MCP browser (a real, visible Chrome) instead of the server's Playwright crawler, when that agency's site blocks the server's datacenter IP (Cloudflare/WAF bot protection). Runs AI normalization and creates UserProperty rows for tracked users; the ingest never pushes creates/updates to the CRM (they are held as pending_crm_update for the user to review and push), removals are verified automatically, and the skill verifies the live CRM photos and fixes missing ones on its own (sweeping every blocked agency on each run, without waiting to be told). Use when asked to "crawl <scraper/agency> with chrome mcp", "the crawler is blocked/getting 403s for this agency", or when scraper-generation SKILL.md's diagnosis points at bot-management blocking, not a broken selector.
 metadata:
   version: "1.0.0"
 ---
@@ -236,8 +236,9 @@ So:
   restore the tracked agency's auto-update flag **to its original value** (it may already have been
   `false`), verify the removals (§8a), and then report in a few lines: how many listings are held at
   `/dashboard/properties?pending_crm_update=true` for review, and any problem. Don't wait for the user
-  to push; §9 runs when they tell you they did. Save progress to the repo (`docs/mcp-crawl-progress/`)
-  only if you have to abandon the run.
+  to push; §9 runs when they tell you they did. Keep all working files (driver, items, logs) in the
+  scratchpad / `%TEMP%`, never in the repo, and delete them when the agency is done (§10). If you have
+  to abandon a run, tell the user where the partial state is instead of committing it.
 - A push notification is skipped while the user's terminal is active, so don't rely on it.
 
 ## 3c. Preferred for big or captcha-heavy agencies: the autonomous watcher (no session involved)
@@ -553,9 +554,20 @@ check as above, including the ones the guard skipped: take the agency's ACTIVE `
 option), with auto-update off and restored afterwards as in §2. The REMOVE operations are then pushed
 regardless of auto-update. Never skip the check without having verified each listing.
 
-## 9. Image gate — after the user says they pushed: verify the real CRM, fix missing photos on your own
+## 9. Image gate — verify the real CRM, fix missing photos on your own (never wait to be told)
 
-Run this when the user tells you the push is done (or asks you to check). Wait until the new
+Missing photos must never reach the client. The user may push at any time without telling you, so do
+**not** depend on being told. Run this gate:
+1. when the user says they pushed or asks about photos;
+2. **at the start of every mcp-crawl invocation**, as a sweep over every blocked-agency scraper
+   (`--agency=<id>` for each one crawled this way, not just the one at hand), and fix whatever is found;
+3. **whenever anyone reports missing images** (e.g. the client says "N listings have no photos"): run the
+   `--agency` check for that agency and fix **every** listing it returns, not only the number reported
+   (the client's count was 5, the check found 6);
+4. in the final report of a crawl, add one line telling the user that photos get verified the next time
+   the skill runs or when they say the push is done.
+
+Run it once the new `cms_sync_runs` rows are `SUCCESS`. Wait until the new
 `cms_sync_runs` row(s) after the ingest are `SUCCESS`, then check the **live EstateWeb records** (not the
 cached gallery, and do not ask the user to spot-check) with the read-only script, which calls EstateWeb
 through the agency's own integration; fix any missing photos without asking and tell the user only if
@@ -635,9 +647,11 @@ description legitimately stay empty.
 
 Before reporting, remove everything you created only to run the crawl. Keep only what is worth keeping.
 
-- In `docs/mcp-crawl-progress/<agency>/` keep `driver.js` and the final `items.json`. Delete the rest:
-  `ingest*.log`, `resolve-*.log`, `stdout*.txt`, `items.json.log`, `items.json.checkpoint.json`, and any
-  backup or seed copy of the items (e.g. `items.v1.json`).
+- Delete **all** of the agency's working files: `driver.js`, `items.json`, `ingest*.log`,
+  `resolve-*.log`, `stdout*.txt`, `items.json.log`, `items.json.checkpoint.json`, and any backup or
+  seed copy of the items (e.g. `items.v1.json`). Nothing is kept: the DB has the data, and the driver is
+  rebuilt from the scraper config next time. Work in the scratchpad / `%TEMP%` from the start so there is
+  nothing in the repo to delete; `docs/mcp-crawl-progress/*/` is gitignored and must stay empty.
 - Delete the throwaway scripts you wrote (`_q*.cjs`, `_tmp*.ts`/`.cjs` in `api/`, `api/scripts/` and
   `scripts/scraper-generator/`) as soon as each has served its purpose, and any scratch files in `%TEMP%`.
 - Delete the per-agency Chrome profile directories you passed to `mcp-autocrawl.ts` via `--profile`
