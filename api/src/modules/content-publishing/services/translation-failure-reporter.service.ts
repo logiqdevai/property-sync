@@ -17,7 +17,17 @@ export const TRANSLATION_JOB_QUEUE = 'content-translation';
 // once per user+code per window; everything in between is only counted and logged.
 const REPORT_COOLDOWN_MS = 30 * 60 * 1000;
 
-const TITLES: Record<AzureTranslateErrorCode, string> = {
+export type GeminiTranslateErrorCode =
+  | 'GEMINI_TRANSLATE_NOT_CONFIGURED'
+  | 'GEMINI_TRANSLATE_API_ERROR';
+
+export type TranslationFailureCode =
+  | AzureTranslateErrorCode
+  | GeminiTranslateErrorCode;
+
+const TITLES: Record<TranslationFailureCode, string> = {
+  GEMINI_TRANSLATE_NOT_CONFIGURED: 'Gemini translation is not configured',
+  GEMINI_TRANSLATE_API_ERROR: 'Gemini translation failed',
   AZURE_TRANSLATE_NOT_CONFIGURED: 'Azure Translate is not configured',
   AZURE_TRANSLATE_BAD_REQUEST: 'Azure Translate rejected a request',
   AZURE_TRANSLATE_UNAUTHORIZED: 'Azure Translate key is invalid',
@@ -31,7 +41,8 @@ const TITLES: Record<AzureTranslateErrorCode, string> = {
   AZURE_TRANSLATE_API_ERROR: 'Azure Translate API error',
 };
 
-const CRITICAL_CODES = new Set<AzureTranslateErrorCode>([
+const CRITICAL_CODES = new Set<TranslationFailureCode>([
+  'GEMINI_TRANSLATE_NOT_CONFIGURED',
   'AZURE_TRANSLATE_NOT_CONFIGURED',
   'AZURE_TRANSLATE_UNAUTHORIZED',
   'AZURE_TRANSLATE_FORBIDDEN',
@@ -39,7 +50,7 @@ const CRITICAL_CODES = new Set<AzureTranslateErrorCode>([
 
 export interface TranslationFailure {
   userId: string;
-  code: AzureTranslateErrorCode;
+  code: TranslationFailureCode;
   message: string;
   httpStatus?: number;
   sourceLanguage?: string;
@@ -76,6 +87,9 @@ export class TranslationFailureReporterService {
       this.reported.set(key, { at: now, suppressed: 0 });
 
       const title = TITLES[failure.code];
+      const source = failure.code.startsWith('GEMINI_')
+        ? 'gemini-translate'
+        : 'azure-translate';
       const suffix =
         suppressed > 0 ? ` (${suppressed} similar failures since the last report)` : '';
       const message = `${failure.message}${suffix}`;
@@ -83,7 +97,7 @@ export class TranslationFailureReporterService {
       const jobLog = await this.prisma.jobLog.create({
         data: {
           queue_name: TRANSLATION_JOB_QUEUE,
-          job_name: 'azure-translate',
+          job_name: source,
           status: JobStatus.FAILED,
           started_at: new Date(now),
           finished_at: new Date(now),
@@ -106,8 +120,8 @@ export class TranslationFailureReporterService {
         action: 'translation.failed',
         category: 'translation',
         method: 'SYSTEM',
-        route: 'azure-translate/translate',
-        path: 'azure-translate/translate',
+        route: `${source}/translate`,
+        path: `${source}/translate`,
         status_code: failure.httpStatus ?? null,
         outcome: ActivityOutcome.FAILURE,
         error_message: `${failure.code}: ${message}`,

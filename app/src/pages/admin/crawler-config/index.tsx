@@ -4,20 +4,26 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { FieldError, Form, Input, Label, ListBox, Select, Switch, Tabs } from "@heroui/react";
 import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
 import { DetailSkeleton } from "@/components/ui/detail-skeleton";
-import { TranslationProviderFormOptions } from "@/config/constants/dropdowns/platform-config/translation-provider-form.options";
+import {
+  GeminiTranslateModelFormOptions,
+  TranslationProviderFormOptions,
+} from "@/config/constants/dropdowns/platform-config/translation-provider-form.options";
 import { usePlatformConfig, useUpdatePlatformConfig } from "@/features/platform-config/hooks/use-platform-config";
 import {
   CRAWLER_CONFIG_FIELDS,
   CRAWLER_CONFIG_GROUP_ORDER,
   CrawlerConfigGroups,
   crawlerConfigFormSchema,
+  DEFAULT_GEMINI_TRANSLATE_MODEL,
   DEFAULT_TRANSLATION_PROVIDER,
   parseOptionalConfigNumber,
   type CrawlerConfigFormValues,
 } from "@/features/platform-config/validation-schemas/crawler-config-fields.schema";
-import type {
-  TranslationProvider,
-  UpdatePlatformConfigPayload,
+import {
+  TranslationProviders,
+  type GeminiTranslateModel,
+  type TranslationProvider,
+  type UpdatePlatformConfigPayload,
 } from "@/features/platform-config/interfaces/platform-config.interfaces";
 import { NotificationSettingsPanel } from "./components/notification-settings-panel";
 
@@ -42,15 +48,18 @@ export default function CrawlerConfigPage() {
     control,
     handleSubmit,
     reset,
+    watch,
     formState: { errors },
   } = useForm<CrawlerConfigFormValues>({
     resolver: zodResolver(crawlerConfigFormSchema),
     defaultValues: {
       ...Object.fromEntries(CRAWLER_CONFIG_FIELDS.map((field) => [field.key, ""])),
       translation_provider: DEFAULT_TRANSLATION_PROVIDER,
+      gemini_translate_model: DEFAULT_GEMINI_TRANSLATE_MODEL,
       estateweb_location_google_enabled: true,
     },
   });
+  const isGeminiTranslation = watch("translation_provider") === TranslationProviders.GEMINI;
 
   useEffect(() => {
     if (!data) return;
@@ -59,6 +68,7 @@ export default function CrawlerConfigPage() {
         CRAWLER_CONFIG_FIELDS.map((field) => [field.key, toFormValue(data[field.key])]),
       ),
       translation_provider: data.translation_provider ?? DEFAULT_TRANSLATION_PROVIDER,
+      gemini_translate_model: data.gemini_translate_model ?? DEFAULT_GEMINI_TRANSLATE_MODEL,
       estateweb_location_google_enabled: data.estateweb_location_google_enabled ?? true,
     });
   }, [data, reset]);
@@ -72,6 +82,7 @@ export default function CrawlerConfigPage() {
         ]),
       ),
       translation_provider: values.translation_provider,
+      gemini_translate_model: values.gemini_translate_model,
       estateweb_location_google_enabled: values.estateweb_location_google_enabled,
     } as UpdatePlatformConfigPayload;
 
@@ -164,7 +175,46 @@ export default function CrawlerConfigPage() {
                             )}
                             <span className="text-xs text-muted">
                               Provider used for content publishing translations and cost logs.
+                              {isGeminiTranslation
+                                ? " Gemini uses each user's own Gemini API key from Integrations and detects the source language itself."
+                                : null}
                             </span>
+                          </div>
+                        ) : null}
+                        {showTranslationProvider && isGeminiTranslation ? (
+                          <div className="flex flex-col gap-1 sm:col-span-2">
+                            <Controller
+                              name="gemini_translate_model"
+                              control={control}
+                              render={({ field }) => (
+                                <Select
+                                  selectedKey={field.value}
+                                  onSelectionChange={(key) => {
+                                    if (key == null) return;
+                                    field.onChange(key as GeminiTranslateModel);
+                                  }}
+                                >
+                                  <Label>Gemini model</Label>
+                                  <Select.Trigger>
+                                    <Select.Value />
+                                    <Select.Indicator />
+                                  </Select.Trigger>
+                                  <Select.Popover>
+                                    <ListBox items={GeminiTranslateModelFormOptions}>
+                                      {(option) => (
+                                        <ListBox.Item id={option.id} textValue={option.label}>
+                                          {option.label}
+                                          <ListBox.ItemIndicator />
+                                        </ListBox.Item>
+                                      )}
+                                    </ListBox>
+                                  </Select.Popover>
+                                </Select>
+                              )}
+                            />
+                            {errors.gemini_translate_model && (
+                              <FieldError>{errors.gemini_translate_model.message}</FieldError>
+                            )}
                           </div>
                         ) : null}
                         {showTranslationProvider ? (

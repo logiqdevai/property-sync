@@ -191,6 +191,7 @@ enum IntegrationType {
 enum TranslationProvider {
   GOOGLE_TRANSLATE
   AZURE
+  GEMINI
 }
 
 // New: unified cost logging -- what kind of billable operation incurred the cost.
@@ -1320,7 +1321,9 @@ model PlatformConfig {
   /// Null/true = the EstateWeb location resolve job calls Google Geocoding for region hints;
   /// false = it resolves from the property's own text only.
   estateweb_location_google_enabled            Boolean?
-  created_at                                   DateTime             @default(now())
+  /// Gemini model used when translation_provider = GEMINI; null = in-code default.
+  gemini_translate_model                       String?
+  created_at                                  DateTime             @default(now())
   updated_at                                   DateTime             @updatedAt
 
   @@map("platform_config")

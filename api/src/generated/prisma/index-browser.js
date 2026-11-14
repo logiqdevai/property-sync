@@ -698,6 +698,7 @@ exports.Prisma.PlatformConfigScalarFieldEnum = {
   azure_translate_max_requests_per_second: 'azure_translate_max_requests_per_second',
   translation_provider: 'translation_provider',
   estateweb_location_google_enabled: 'estateweb_location_google_enabled',
+  gemini_translate_model: 'gemini_translate_model',
   created_at: 'created_at',
   updated_at: 'updated_at'
 };
@@ -1036,7 +1037,8 @@ exports.CostOperationType = exports.$Enums.CostOperationType = {
 
 exports.TranslationProvider = exports.$Enums.TranslationProvider = {
   GOOGLE_TRANSLATE: 'GOOGLE_TRANSLATE',
-  AZURE: 'AZURE'
+  AZURE: 'AZURE',
+  GEMINI: 'GEMINI'
 };
 
 exports.DocumentType = exports.$Enums.DocumentType = {

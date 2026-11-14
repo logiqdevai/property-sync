@@ -477,7 +477,8 @@ export type IntegrationType = (typeof IntegrationType)[keyof typeof IntegrationT
 
 export const TranslationProvider: {
   GOOGLE_TRANSLATE: 'GOOGLE_TRANSLATE',
-  AZURE: 'AZURE'
+  AZURE: 'AZURE',
+  GEMINI: 'GEMINI'
 };
 
 export type TranslationProvider = (typeof TranslationProvider)[keyof typeof TranslationProvider]
@@ -45996,6 +45997,7 @@ export namespace Prisma {
     azure_translate_max_requests_per_second: number | null
     translation_provider: $Enums.TranslationProvider | null
     estateweb_location_google_enabled: boolean | null
+    gemini_translate_model: string | null
     created_at: Date | null
     updated_at: Date | null
   }
@@ -46021,6 +46023,7 @@ export namespace Prisma {
     azure_translate_max_requests_per_second: number | null
     translation_provider: $Enums.TranslationProvider | null
     estateweb_location_google_enabled: boolean | null
+    gemini_translate_model: string | null
     created_at: Date | null
     updated_at: Date | null
   }
@@ -46046,6 +46049,7 @@ export namespace Prisma {
     azure_translate_max_requests_per_second: number
     translation_provider: number
     estateweb_location_google_enabled: number
+    gemini_translate_model: number
     created_at: number
     updated_at: number
     _all: number
@@ -46113,6 +46117,7 @@ export namespace Prisma {
     azure_translate_max_requests_per_second?: true
     translation_provider?: true
     estateweb_location_google_enabled?: true
+    gemini_translate_model?: true
     created_at?: true
     updated_at?: true
   }
@@ -46138,6 +46143,7 @@ export namespace Prisma {
     azure_translate_max_requests_per_second?: true
     translation_provider?: true
     estateweb_location_google_enabled?: true
+    gemini_translate_model?: true
     created_at?: true
     updated_at?: true
   }
@@ -46163,6 +46169,7 @@ export namespace Prisma {
     azure_translate_max_requests_per_second?: true
     translation_provider?: true
     estateweb_location_google_enabled?: true
+    gemini_translate_model?: true
     created_at?: true
     updated_at?: true
     _all?: true
@@ -46275,6 +46282,7 @@ export namespace Prisma {
     azure_translate_max_requests_per_second: number | null
     translation_provider: $Enums.TranslationProvider | null
     estateweb_location_google_enabled: boolean | null
+    gemini_translate_model: string | null
     created_at: Date
     updated_at: Date
     _count: PlatformConfigCountAggregateOutputType | null
@@ -46319,6 +46327,7 @@ export namespace Prisma {
     azure_translate_max_requests_per_second?: boolean
     translation_provider?: boolean
     estateweb_location_google_enabled?: boolean
+    gemini_translate_model?: boolean
     created_at?: boolean
     updated_at?: boolean
   }, ExtArgs["result"]["platformConfig"]>
@@ -46344,6 +46353,7 @@ export namespace Prisma {
     azure_translate_max_requests_per_second?: boolean
     translation_provider?: boolean
     estateweb_location_google_enabled?: boolean
+    gemini_translate_model?: boolean
     created_at?: boolean
     updated_at?: boolean
   }, ExtArgs["result"]["platformConfig"]>
@@ -46369,6 +46379,7 @@ export namespace Prisma {
     azure_translate_max_requests_per_second?: boolean
     translation_provider?: boolean
     estateweb_location_google_enabled?: boolean
+    gemini_translate_model?: boolean
     created_at?: boolean
     updated_at?: boolean
   }, ExtArgs["result"]["platformConfig"]>
@@ -46394,11 +46405,12 @@ export namespace Prisma {
     azure_translate_max_requests_per_second?: boolean
     translation_provider?: boolean
     estateweb_location_google_enabled?: boolean
+    gemini_translate_model?: boolean
     created_at?: boolean
     updated_at?: boolean
   }
 
-  export type PlatformConfigOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "crawler_max_pages" | "crawler_page_timeout_ms" | "crawler_selector_timeout_ms" | "crawler_scroll_pause_ms" | "crawler_detail_concurrency" | "crawler_detail_delay_ms" | "crawler_worker_concurrency" | "crawler_job_timeout_ms" | "crawler_chromium_max_contexts_before_restart" | "crawler_max_concurrent_browser_pages" | "normalization_ai_raw_description_max_chars" | "dewatermark_cost_per_image" | "dewatermark_cost_per_credit" | "google_translate_cost_per_million_chars" | "azure_translate_cost_per_million_chars" | "google_geocoding_cost_per_request" | "azure_translate_max_requests_per_second" | "translation_provider" | "estateweb_location_google_enabled" | "created_at" | "updated_at", ExtArgs["result"]["platformConfig"]>
+  export type PlatformConfigOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "crawler_max_pages" | "crawler_page_timeout_ms" | "crawler_selector_timeout_ms" | "crawler_scroll_pause_ms" | "crawler_detail_concurrency" | "crawler_detail_delay_ms" | "crawler_worker_concurrency" | "crawler_job_timeout_ms" | "crawler_chromium_max_contexts_before_restart" | "crawler_max_concurrent_browser_pages" | "normalization_ai_raw_description_max_chars" | "dewatermark_cost_per_image" | "dewatermark_cost_per_credit" | "google_translate_cost_per_million_chars" | "azure_translate_cost_per_million_chars" | "google_geocoding_cost_per_request" | "azure_translate_max_requests_per_second" | "translation_provider" | "estateweb_location_google_enabled" | "gemini_translate_model" | "created_at" | "updated_at", ExtArgs["result"]["platformConfig"]>
 
   export type $PlatformConfigPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "PlatformConfig"
@@ -46428,6 +46440,10 @@ export namespace Prisma {
        * false = it resolves from the property's own text only.
        */
       estateweb_location_google_enabled: boolean | null
+      /**
+       * Gemini model used when translation_provider = GEMINI; null = in-code default.
+       */
+      gemini_translate_model: string | null
       created_at: Date
       updated_at: Date
     }, ExtArgs["result"]["platformConfig"]>
@@ -46873,6 +46889,7 @@ export namespace Prisma {
     readonly azure_translate_max_requests_per_second: FieldRef<"PlatformConfig", 'Int'>
     readonly translation_provider: FieldRef<"PlatformConfig", 'TranslationProvider'>
     readonly estateweb_location_google_enabled: FieldRef<"PlatformConfig", 'Boolean'>
+    readonly gemini_translate_model: FieldRef<"PlatformConfig", 'String'>
     readonly created_at: FieldRef<"PlatformConfig", 'DateTime'>
     readonly updated_at: FieldRef<"PlatformConfig", 'DateTime'>
   }
@@ -52570,6 +52587,7 @@ export namespace Prisma {
     azure_translate_max_requests_per_second: 'azure_translate_max_requests_per_second',
     translation_provider: 'translation_provider',
     estateweb_location_google_enabled: 'estateweb_location_google_enabled',
+    gemini_translate_model: 'gemini_translate_model',
     created_at: 'created_at',
     updated_at: 'updated_at'
   };
@@ -56780,6 +56798,7 @@ export namespace Prisma {
     azure_translate_max_requests_per_second?: IntNullableFilter<"PlatformConfig"> | number | null
     translation_provider?: EnumTranslationProviderNullableFilter<"PlatformConfig"> | $Enums.TranslationProvider | null
     estateweb_location_google_enabled?: BoolNullableFilter<"PlatformConfig"> | boolean | null
+    gemini_translate_model?: StringNullableFilter<"PlatformConfig"> | string | null
     created_at?: DateTimeFilter<"PlatformConfig"> | Date | string
     updated_at?: DateTimeFilter<"PlatformConfig"> | Date | string
   }
@@ -56805,6 +56824,7 @@ export namespace Prisma {
     azure_translate_max_requests_per_second?: SortOrderInput | SortOrder
     translation_provider?: SortOrderInput | SortOrder
     estateweb_location_google_enabled?: SortOrderInput | SortOrder
+    gemini_translate_model?: SortOrderInput | SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
   }
@@ -56833,6 +56853,7 @@ export namespace Prisma {
     azure_translate_max_requests_per_second?: IntNullableFilter<"PlatformConfig"> | number | null
     translation_provider?: EnumTranslationProviderNullableFilter<"PlatformConfig"> | $Enums.TranslationProvider | null
     estateweb_location_google_enabled?: BoolNullableFilter<"PlatformConfig"> | boolean | null
+    gemini_translate_model?: StringNullableFilter<"PlatformConfig"> | string | null
     created_at?: DateTimeFilter<"PlatformConfig"> | Date | string
     updated_at?: DateTimeFilter<"PlatformConfig"> | Date | string
   }, "id">
@@ -56858,6 +56879,7 @@ export namespace Prisma {
     azure_translate_max_requests_per_second?: SortOrderInput | SortOrder
     translation_provider?: SortOrderInput | SortOrder
     estateweb_location_google_enabled?: SortOrderInput | SortOrder
+    gemini_translate_model?: SortOrderInput | SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
     _count?: PlatformConfigCountOrderByAggregateInput
@@ -56891,6 +56913,7 @@ export namespace Prisma {
     azure_translate_max_requests_per_second?: IntNullableWithAggregatesFilter<"PlatformConfig"> | number | null
     translation_provider?: EnumTranslationProviderNullableWithAggregatesFilter<"PlatformConfig"> | $Enums.TranslationProvider | null
     estateweb_location_google_enabled?: BoolNullableWithAggregatesFilter<"PlatformConfig"> | boolean | null
+    gemini_translate_model?: StringNullableWithAggregatesFilter<"PlatformConfig"> | string | null
     created_at?: DateTimeWithAggregatesFilter<"PlatformConfig"> | Date | string
     updated_at?: DateTimeWithAggregatesFilter<"PlatformConfig"> | Date | string
   }
@@ -61362,6 +61385,7 @@ export namespace Prisma {
     azure_translate_max_requests_per_second?: number | null
     translation_provider?: $Enums.TranslationProvider | null
     estateweb_location_google_enabled?: boolean | null
+    gemini_translate_model?: string | null
     created_at?: Date | string
     updated_at?: Date | string
   }
@@ -61387,6 +61411,7 @@ export namespace Prisma {
     azure_translate_max_requests_per_second?: number | null
     translation_provider?: $Enums.TranslationProvider | null
     estateweb_location_google_enabled?: boolean | null
+    gemini_translate_model?: string | null
     created_at?: Date | string
     updated_at?: Date | string
   }
@@ -61412,6 +61437,7 @@ export namespace Prisma {
     azure_translate_max_requests_per_second?: NullableIntFieldUpdateOperationsInput | number | null
     translation_provider?: NullableEnumTranslationProviderFieldUpdateOperationsInput | $Enums.TranslationProvider | null
     estateweb_location_google_enabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    gemini_translate_model?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -61437,6 +61463,7 @@ export namespace Prisma {
     azure_translate_max_requests_per_second?: NullableIntFieldUpdateOperationsInput | number | null
     translation_provider?: NullableEnumTranslationProviderFieldUpdateOperationsInput | $Enums.TranslationProvider | null
     estateweb_location_google_enabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    gemini_translate_model?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -61462,6 +61489,7 @@ export namespace Prisma {
     azure_translate_max_requests_per_second?: number | null
     translation_provider?: $Enums.TranslationProvider | null
     estateweb_location_google_enabled?: boolean | null
+    gemini_translate_model?: string | null
     created_at?: Date | string
     updated_at?: Date | string
   }
@@ -61487,6 +61515,7 @@ export namespace Prisma {
     azure_translate_max_requests_per_second?: NullableIntFieldUpdateOperationsInput | number | null
     translation_provider?: NullableEnumTranslationProviderFieldUpdateOperationsInput | $Enums.TranslationProvider | null
     estateweb_location_google_enabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    gemini_translate_model?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -61512,6 +61541,7 @@ export namespace Prisma {
     azure_translate_max_requests_per_second?: NullableIntFieldUpdateOperationsInput | number | null
     translation_provider?: NullableEnumTranslationProviderFieldUpdateOperationsInput | $Enums.TranslationProvider | null
     estateweb_location_google_enabled?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    gemini_translate_model?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -65117,6 +65147,7 @@ export namespace Prisma {
     azure_translate_max_requests_per_second?: SortOrder
     translation_provider?: SortOrder
     estateweb_location_google_enabled?: SortOrder
+    gemini_translate_model?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
   }
@@ -65162,6 +65193,7 @@ export namespace Prisma {
     azure_translate_max_requests_per_second?: SortOrder
     translation_provider?: SortOrder
     estateweb_location_google_enabled?: SortOrder
+    gemini_translate_model?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
   }
@@ -65187,6 +65219,7 @@ export namespace Prisma {
     azure_translate_max_requests_per_second?: SortOrder
     translation_provider?: SortOrder
     estateweb_location_google_enabled?: SortOrder
+    gemini_translate_model?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
   }

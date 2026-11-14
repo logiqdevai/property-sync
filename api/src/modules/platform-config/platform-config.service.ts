@@ -21,6 +21,11 @@ import { DEFAULT_GOOGLE_TRANSLATE_COST_PER_MILLION_CHARS } from '@/integrations/
 import { DEFAULT_AI_RAW_DESCRIPTION_MAX_CHARS } from '@/modules/properties/constants/normalization.constants';
 import { UpdatePlatformConfigDto } from './dto/update-platform-config.dto';
 import {
+  DEFAULT_GEMINI_TRANSLATE_MODEL,
+  GEMINI_TRANSLATE_MODELS,
+  GeminiTranslateModel,
+} from './constants/gemini-translate.constants';
+import {
   IntegrationType,
   PlatformConfig,
   TranslationProvider,
@@ -160,10 +165,22 @@ export class PlatformConfigService {
 
   toCostLogProvider(
     provider: TranslationProvider | string,
-  ): typeof IntegrationType.GOOGLE_TRANSLATE | typeof IntegrationType.AZURE {
-    return provider === TranslationProvider.AZURE || provider === 'AZURE'
+  ):
+    | typeof IntegrationType.GOOGLE_TRANSLATE
+    | typeof IntegrationType.AZURE
+    | typeof IntegrationType.GEMINI {
+    if (provider === TranslationProvider.GEMINI) return IntegrationType.GEMINI;
+    return provider === TranslationProvider.AZURE
       ? IntegrationType.AZURE
       : IntegrationType.GOOGLE_TRANSLATE;
+  }
+
+  async getGeminiTranslateModel(): Promise<GeminiTranslateModel> {
+    const row = await this.getCachedRow();
+    const value = row?.gemini_translate_model;
+    return value && (GEMINI_TRANSLATE_MODELS as readonly string[]).includes(value)
+      ? (value as GeminiTranslateModel)
+      : DEFAULT_GEMINI_TRANSLATE_MODEL;
   }
 
   async getRaw(): Promise<PlatformConfig> {

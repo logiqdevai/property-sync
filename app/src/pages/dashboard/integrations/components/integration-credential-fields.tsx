@@ -10,6 +10,7 @@ import {
   type IntegrationType,
 } from "@/features/integration-targets/interfaces/integration-targets.interfaces";
 import type { MaskedCredentialValues } from "@/features/user-integrations/validation-schemas/user-integrations.schema";
+import { CopyIconButton } from "@/components/ui/copy-icon-button";
 import { PasswordInput } from "@/components/ui/password-input";
 import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
 import {
@@ -70,8 +71,11 @@ export function IntegrationCredentialFields({
     mode === "create" &&
     !connectionId &&
     !webhookOnly;
+  // Gemini is only used for synchronous translation calls -- no batch webhooks, so no secret.
   const showWebhookFields =
-    showAiFields && (webhookOnly || !deferWebhookUntilConnectionExists);
+    showAiFields &&
+    integrationType !== IntegrationTypes.GEMINI &&
+    (webhookOnly || !deferWebhookUntilConnectionExists);
   const webhookUrl = connectionId
     ? getIntegrationWebhookUrl(integrationType ?? "", connectionId)
     : null;
@@ -130,6 +134,10 @@ export function IntegrationCredentialFields({
         <div className="flex flex-col gap-1">
           <div className="flex items-center justify-between gap-2">
             <Label htmlFor={id}>{label}</Label>
+            <div className="flex items-center gap-1">
+            {isPasswordField ? (
+              <CopyIconButton value={String(fieldValue)} ariaLabel="Copy password" />
+            ) : null}
             {isPasswordField && showRevealPasswordButton ? (
               <ActionButtonWithPending
                 type="button"
@@ -142,6 +150,7 @@ export function IntegrationCredentialFields({
                 {passwordRevealed ? "Password revealed" : "Reveal password"}
               </ActionButtonWithPending>
             ) : null}
+            </div>
           </div>
           <PasswordInput
             id={id}
@@ -236,7 +245,10 @@ export function IntegrationCredentialFields({
       return (
         <>
           <div className="flex flex-col gap-1">
-            <Label htmlFor="credential-email">Email</Label>
+            <div className="flex items-center justify-between gap-2">
+              <Label htmlFor="credential-email">Email</Label>
+              <CopyIconButton value={String(watch?.("email") ?? "")} ariaLabel="Copy email" />
+            </div>
             <Input
               id="credential-email"
               {...register("email")}

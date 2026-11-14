@@ -18,7 +18,7 @@ export const IntegrationTypeDescriptionOptions: { id: IntegrationType; descripti
   },
   {
     id: IntegrationTypes.GEMINI,
-    description: "Normalize property listings with your Google Gemini API key.",
+    description: "Translate listing content with Gemini AI using your Google Gemini API key.",
   },
   {
     id: IntegrationTypes.DEEPSEEK,

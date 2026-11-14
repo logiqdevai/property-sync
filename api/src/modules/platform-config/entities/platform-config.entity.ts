@@ -120,6 +120,12 @@ export class PlatformConfig {
   })
   estateweb_location_google_enabled: boolean | null;
 
+  @ApiProperty({
+    nullable: true,
+    description: 'Null means the default value (gemini-2.5-flash) is used',
+  })
+  gemini_translate_model: string | null;
+
   @ApiProperty()
   created_at: Date;
 

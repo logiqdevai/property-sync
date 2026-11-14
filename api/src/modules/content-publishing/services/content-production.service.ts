@@ -22,6 +22,7 @@ import {
 } from '../constants/ai-title-prompt';
 import { GoogleTranslationService } from './google-translation.service';
 import { AzureTranslationService } from './azure-translation.service';
+import { GeminiTranslationService } from './gemini-translation.service';
 import { AiTitleFamilyService } from './ai-title-family.service';
 import { AiTitleBatchService } from './ai-title-batch.service';
 
@@ -69,6 +70,7 @@ export class ContentProductionService {
     private readonly prisma: PrismaService,
     private readonly googleTranslationService: GoogleTranslationService,
     private readonly azureTranslationService: AzureTranslationService,
+    private readonly geminiTranslationService: GeminiTranslationService,
     private readonly aiTitleFamilyService: AiTitleFamilyService,
     private readonly aiTitleBatchService: AiTitleBatchService,
     private readonly costLogsService: CostLogsService,
@@ -948,6 +950,46 @@ export class ContentProductionService {
       try {
         const costProvider =
           this.platformConfigService.toCostLogProvider(translationProvider);
+
+        if (costProvider === IntegrationType.GEMINI) {
+          // No source language on purpose: Gemini detects it per text (see
+          // GeminiTranslationService), and is billed per token, not per character.
+          const model = await this.platformConfigService.getGeminiTranslateModel();
+          const result = await this.geminiTranslationService.translate(
+            userId,
+            job.sourceText,
+            job.language,
+            model,
+          );
+          await this.upsertLocalized({
+            userPropertyId: userProperty.id,
+            contentType: job.contentType,
+            language: job.language,
+            production: 'TRANSLATE',
+            text: result.text,
+          });
+          await this.costLogsService.record({
+            userId,
+            operationType: CostOperationType.TRANSLATION,
+            provider: costProvider,
+            model: result.model,
+            inputQuantity: result.inputTokens,
+            outputQuantity: result.outputTokens,
+            inputCost: result.inputCost,
+            outputCost: result.outputCost,
+            totalCost: result.totalCost,
+            userPropertyId: userProperty.id,
+            metadata: {
+              content_type: job.contentType,
+              target_language: job.language,
+              translation_provider: costProvider,
+              source_chars: job.sourceText.length,
+            },
+          });
+          written += 1;
+          continue;
+        }
+
         // Azure reports the characters it actually billed (X-metered-usage); Google reports
         // nothing, so its cost stays source-length x configured rate.
         const azureUsage: { meteredChars?: number } = {};

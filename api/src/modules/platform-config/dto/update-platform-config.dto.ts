@@ -2,6 +2,7 @@ import { ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsBoolean,
   IsEnum,
+  IsIn,
   IsInt,
   IsNumber,
   IsOptional,
@@ -9,6 +10,7 @@ import {
   ValidateIf,
 } from 'class-validator';
 import { TranslationProvider } from 'generated/prisma';
+import { GEMINI_TRANSLATE_MODELS } from '../constants/gemini-translate.constants';
 
 // Every field is nullable: null explicitly resets that setting back to its
 // in-code default (see PlatformConfigService.getCrawlerConfig), omitting
@@ -233,4 +235,16 @@ export class UpdatePlatformConfigDto {
   @ValidateIf((_, value) => value !== null)
   @IsBoolean()
   estateweb_location_google_enabled?: boolean | null;
+
+  @ApiPropertyOptional({
+    nullable: true,
+    enum: GEMINI_TRANSLATE_MODELS,
+    description:
+      'Gemini model used when translation_provider is GEMINI; null resets to the default (gemini-2.5-flash)',
+    example: 'gemini-2.5-flash',
+  })
+  @IsOptional()
+  @ValidateIf((_, value) => value !== null)
+  @IsIn(GEMINI_TRANSLATE_MODELS)
+  gemini_translate_model?: string | null;
 }

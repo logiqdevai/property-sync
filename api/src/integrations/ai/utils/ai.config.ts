@@ -7,6 +7,7 @@ import {
   AiProviders,
 } from '../interfaces/ai.interface';
 import { createOpenAI, openai } from '@ai-sdk/openai';
+import { createGoogleGenerativeAI } from '@ai-sdk/google';
 
 export const AiDefaults = {
   provider: IntegrationType.OPENAI,
@@ -31,6 +32,8 @@ export class AiConfig {
     { provider: AiProviders.gemini, model: AiModels.gemini.geminiPro },
     { provider: AiProviders.gemini, model: AiModels.gemini.geminiProVision },
     { provider: AiProviders.gemini, model: AiModels.gemini.gemini15Pro },
+    { provider: AiProviders.gemini, model: AiModels.gemini.gemini25Flash },
+    { provider: AiProviders.gemini, model: AiModels.gemini.gemini25FlashLite },
   ];
 
   getModelAdapter(
@@ -45,8 +48,13 @@ export class AiConfig {
       }
       case AiProviders.grok:
         throw new Error('Grok provider not yet implemented. SDK required.');
-      case AiProviders.gemini:
-        throw new Error('Gemini provider not yet implemented. SDK required.');
+      case AiProviders.gemini: {
+        // No server-wide Gemini key: always the user's own key from their GEMINI integration.
+        if (!apiKey) {
+          throw new Error('Gemini requires an API key');
+        }
+        return createGoogleGenerativeAI({ apiKey })(model);
+      }
       default: {
         const client = apiKey ? createOpenAI({ apiKey }) : openai;
         return client(model);

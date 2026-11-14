@@ -1,10 +1,19 @@
 export const TranslationProviders = {
   GOOGLE_TRANSLATE: "GOOGLE_TRANSLATE",
   AZURE: "AZURE",
+  GEMINI: "GEMINI",
 } as const;
 
 export type TranslationProvider =
   (typeof TranslationProviders)[keyof typeof TranslationProviders];
+
+export const GeminiTranslateModels = {
+  GEMINI_25_FLASH: "gemini-2.5-flash",
+  GEMINI_25_FLASH_LITE: "gemini-2.5-flash-lite",
+} as const;
+
+export type GeminiTranslateModel =
+  (typeof GeminiTranslateModels)[keyof typeof GeminiTranslateModels];
 
 export interface PlatformConfig {
   id: string;
@@ -26,6 +35,7 @@ export interface PlatformConfig {
   azure_translate_cost_per_million_chars: number | null;
   translation_provider: TranslationProvider | null;
   estateweb_location_google_enabled: boolean | null;
+  gemini_translate_model: GeminiTranslateModel | null;
   created_at: string;
   updated_at: string;
 }
@@ -49,4 +59,5 @@ export interface UpdatePlatformConfigPayload {
   azure_translate_cost_per_million_chars?: number | null;
   translation_provider?: TranslationProvider | null;
   estateweb_location_google_enabled?: boolean | null;
+  gemini_translate_model?: GeminiTranslateModel | null;
 }
