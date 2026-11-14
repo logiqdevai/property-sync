@@ -71,6 +71,17 @@
 //                         every missing listing was verified gone on the live
 //                         site.
 
+// This script bootstraps the full AppModule, which registers every BullMQ
+// processor and @Cron job. Left running, the local process grabs the
+// normalize-crawl-chunk jobs it just enqueued itself, then `app.close()` shuts
+// its Redis connections mid-job (seen 2026-11-14: 50 resolve-location enqueues
+// lost, finalization never ran, normalization_status stuck at 'running').
+// Disable both BEFORE the app is loaded so the deployed server does the work.
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+require('bullmq').Worker.prototype.run = async function () {};
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+require('cron').CronJob.prototype.start = function () {};
+
 import { promises as fsp } from 'fs';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from '../src/app.module';

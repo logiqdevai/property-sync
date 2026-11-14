@@ -1,6 +1,6 @@
 ---
 name: mcp-crawl
-description: Crawl one property-sync Scraper via the chrome-devtools MCP browser (a real, visible Chrome) instead of the server's Playwright crawler, when that agency's site blocks the server's datacenter IP (Cloudflare/WAF bot protection). Runs AI normalization and creates UserProperty rows for tracked users; the ingest never pushes creates/updates to the CRM (they are held as pending_crm_update for the user to review and push), removals are verified automatically, and the skill verifies the live CRM photos and fixes missing ones on its own (sweeping every blocked agency on each run, without waiting to be told). Use when asked to "crawl <scraper/agency> with chrome mcp", "the crawler is blocked/getting 403s for this agency", or when scraper-generation SKILL.md's diagnosis points at bot-management blocking, not a broken selector.
+description: Crawl one property-sync Scraper via the chrome-devtools MCP browser (a real, visible Chrome) instead of the server's Playwright crawler, when that agency's site blocks the server's datacenter IP (Cloudflare/WAF bot protection). Runs AI normalization and creates UserProperty rows for tracked users; the ingest never pushes creates/updates to the CRM (they are held as pending_crm_update for the user to review and push), removals are verified automatically, and the skill verifies the live CRM photos and fixes missing ones on its own (sweeping every blocked agency once an agency to crawl is given, without waiting to be told). Use when asked to "crawl <scraper/agency> with chrome mcp", "the crawler is blocked/getting 403s for this agency", or when scraper-generation SKILL.md's diagnosis points at bot-management blocking, not a broken selector.
 metadata:
   version: "1.0.0"
 ---
@@ -22,6 +22,36 @@ the live CRM photos and fixes missing ones without asking (§9).
 This is the sibling of `scraper-generation` (which *authors* a `Scraper`/`ScraperVersion.config`).
 This skill *runs* an existing one through a different transport when the normal one is blocked. If
 the scraper doesn't have a working config yet, use `scraper-generation` first.
+
+## Start: invoked without an agency → offer two options, run nothing yet
+
+If the user loaded the skill without naming an agency, make **no tool calls** first. Ask with exactly
+these two options and wait for the answer:
+
+1. **Find failed/blocked scrapers** — read the DB (read-only) for scrapers whose latest normal
+   (non-mcp-crawl) crawl failed or came back blocked/empty, show them as a short list (agency, last
+   crawl date, status, `total_found`, error), and let the user pick which to crawl.
+2. **Give an agency to crawl** — the user names it, then continue with §1.
+
+Option 1's query (latest normal crawl per active scraper, flagged ones only):
+
+```sql
+with last as (
+  select distinct on (cr.scraper_id) cr.scraper_id, cr.status, cr.total_found, cr.error_message,
+         (cr.created_at at time zone 'UTC')::text created_utc
+  from crawl_runs cr
+  where coalesce(cr.metadata->>'source', '') <> 'mcp-crawl'
+  order by cr.scraper_id, cr.created_at desc)
+select sa.name, sa.id agency_id, s.id scraper_id, s.use_managed_browser, l.*
+from last l join scrapers s on s.id = l.scraper_id join source_agencies sa on sa.id = s.source_agency_id
+where s.status in ('ACTIVE', 'BROKEN')
+  and (s.status = 'BROKEN' or l.status = 'FAILED' or l.total_found = 0
+       or l.error_message ~* '403|blocked|captcha|challenge|cloudflare|imperva|timeout')
+order by l.created_utc desc;
+```
+
+A failure that isn't bot blocking (broken selector, bad config) belongs to `scraper-generation`, not
+here; mark those in the list. The §9 photo sweep runs only after an agency to crawl has been chosen.
 
 ## 0. Prerequisites
 
@@ -559,8 +589,10 @@ regardless of auto-update. Never skip the check without having verified each lis
 Missing photos must never reach the client. The user may push at any time without telling you, so do
 **not** depend on being told. Run this gate:
 1. when the user says they pushed or asks about photos;
-2. **at the start of every mcp-crawl invocation**, as a sweep over every blocked-agency scraper
-   (`--agency=<id>` for each one crawled this way, not just the one at hand), and fix whatever is found;
+2. **only once the user has named an agency to crawl**, as a sweep over every blocked-agency scraper
+   (`--agency=<id>` for each one crawled this way, not just the one at hand), and fix whatever is found.
+   **Never run it just because the skill was loaded** — with no agency given, offer the two options in
+   "Start" at the top of this file and do nothing else;
 3. **whenever anyone reports missing images** (e.g. the client says "N listings have no photos"): run the
    `--agency` check for that agency and fix **every** listing it returns, not only the number reported
    (the client's count was 5, the check found 6);

@@ -96,6 +96,14 @@
 // run.log`) so you have something to pass to --retry-log if some images
 // fail partway through a large run.
 
+// Bootstrapping AppModule registers every BullMQ processor and @Cron job, so
+// this local process would otherwise consume live queue jobs for the whole run
+// (and drop them mid-flight on exit). Disable both before the app is loaded.
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+require('bullmq').Worker.prototype.run = async function () {};
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+require('cron').CronJob.prototype.start = function () {};
+
 import { promises as fs } from 'fs';
 import { NestFactory } from '@nestjs/core';
 import { chromium, Page } from 'playwright';

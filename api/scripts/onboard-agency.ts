@@ -27,7 +27,7 @@
 //         "name": "ΣΤΑΘΟΠΟΥΛΟΣ - ΠΑΤΡΑ",
 //         "base_url": "https://stathopoulosmesitiko.gr",
 //         "estateweb": { "email": "...", "password": "..." },             // or { "username", "password" }
-//         "city": "Πάτρα", "country": "GR", "content_language": "EL",    // all optional
+//         "city": "Πάτρα", "content_language": "EL",    // all optional
 //         "crawl_interval": "0 9 * * *",                                  // optional, default 09:00 daily
 //         "crm_client_id": 12345                                          // optional
 //       }
@@ -57,7 +57,6 @@ interface AgencyInput {
   base_url: string;
   estateweb: { email?: string; username?: string; password: string };
   city?: string;
-  country?: string;
   content_language?: ContentLanguage;
   crawl_interval?: string;
   crm_client_id?: number;
@@ -203,7 +202,6 @@ async function main() {
               name: item.name.trim(),
               base_url: baseUrl,
               ...(item.city && { city: item.city }),
-              country: item.country ?? 'GR',
               crawl_interval:
                 item.crawl_interval ?? DEFAULT_ONBOARD_CRAWL_INTERVAL,
               ...(item.content_language && {

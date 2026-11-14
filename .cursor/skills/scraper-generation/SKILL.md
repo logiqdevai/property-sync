@@ -56,7 +56,8 @@ to exactly one tracker.
 1. Write the input as JSON to the **scratchpad** directory (never into the repo - it holds
    passwords). The shape is documented at the top of the script:
    `{ "users": [...], "copy_publishing_from": "...", "agencies": [{ "name", "base_url",
-   "estateweb": { "email", "password" }, "city?", "country?", "content_language?", "crawl_interval?", "crm_client_id?" }] }`
+   "estateweb": { "email", "password" }, "city?", "content_language?", "crawl_interval?", "crm_client_id?" }] }`
+   Never set a country (the agency keeps only a city; `country` stays empty).
    Do not set `crawl_interval` unless the user asks: the script gives every **newly created** agency
    `0 9 * * *` (once a day at 09:00, scheduler timezone Europe/Athens) instead of the schema default
    `0 */6 * * *`. An agency that already exists keeps its current interval.
