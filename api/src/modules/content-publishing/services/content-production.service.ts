@@ -23,6 +23,7 @@ import {
 import { GoogleTranslationService } from './google-translation.service';
 import { AzureTranslationService } from './azure-translation.service';
 import { GeminiTranslationService } from './gemini-translation.service';
+import { OpenAiTranslationService } from './openai-translation.service';
 import { AiTitleFamilyService } from './ai-title-family.service';
 import { AiTitleBatchService } from './ai-title-batch.service';
 
@@ -71,6 +72,7 @@ export class ContentProductionService {
     private readonly googleTranslationService: GoogleTranslationService,
     private readonly azureTranslationService: AzureTranslationService,
     private readonly geminiTranslationService: GeminiTranslationService,
+    private readonly openAiTranslationService: OpenAiTranslationService,
     private readonly aiTitleFamilyService: AiTitleFamilyService,
     private readonly aiTitleBatchService: AiTitleBatchService,
     private readonly costLogsService: CostLogsService,
@@ -951,16 +953,28 @@ export class ContentProductionService {
         const costProvider =
           this.platformConfigService.toCostLogProvider(translationProvider);
 
-        if (costProvider === IntegrationType.GEMINI) {
-          // No source language on purpose: Gemini detects it per text (see
-          // GeminiTranslationService), and is billed per token, not per character.
-          const model = await this.platformConfigService.getGeminiTranslateModel();
-          const result = await this.geminiTranslationService.translate(
-            userId,
-            job.sourceText,
-            job.language,
-            model,
-          );
+        if (
+          costProvider === IntegrationType.GEMINI ||
+          costProvider === IntegrationType.OPENAI
+        ) {
+          // No source language on purpose: the AI providers detect it per text (see
+          // buildAiTranslationSystemPrompt), and are billed per token, not per character.
+          const result =
+            costProvider === IntegrationType.GEMINI
+              ? await this.geminiTranslationService.translate(
+                  userId,
+                  job.sourceText,
+                  job.language,
+                  await this.platformConfigService.getGeminiTranslateModel(),
+                )
+              : await this.openAiTranslationService.translate(
+                  userId,
+                  job.sourceText,
+                  job.language,
+                  await this.platformConfigService.getOpenAiTranslateModel(),
+                );
+          const reasoningTokens =
+            'thinkingTokens' in result ? result.thinkingTokens : result.reasoningTokens;
           await this.upsertLocalized({
             userPropertyId: userProperty.id,
             contentType: job.contentType,
@@ -984,6 +998,7 @@ export class ContentProductionService {
               target_language: job.language,
               translation_provider: costProvider,
               source_chars: job.sourceText.length,
+              thinking_tokens: reasoningTokens,
             },
           });
           written += 1;

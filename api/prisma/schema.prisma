@@ -192,6 +192,7 @@ enum TranslationProvider {
   GOOGLE_TRANSLATE
   AZURE
   GEMINI
+  OPENAI
 }
 
 // New: unified cost logging -- what kind of billable operation incurred the cost.
@@ -1323,6 +1324,8 @@ model PlatformConfig {
   estateweb_location_google_enabled            Boolean?
   /// Gemini model used when translation_provider = GEMINI; null = in-code default.
   gemini_translate_model                       String?
+  /// OpenAI model used when translation_provider = OPENAI; null = in-code default.
+  openai_translate_model                       String?
   created_at                                  DateTime             @default(now())
   updated_at                                   DateTime             @updatedAt
 

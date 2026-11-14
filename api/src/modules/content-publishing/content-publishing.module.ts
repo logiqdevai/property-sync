@@ -15,6 +15,7 @@ import { ContentResolutionService } from './services/content-resolution.service'
 import { GoogleTranslationService } from './services/google-translation.service';
 import { AzureTranslationService } from './services/azure-translation.service';
 import { GeminiTranslationService } from './services/gemini-translation.service';
+import { OpenAiTranslationService } from './services/openai-translation.service';
 import { TranslationFailureReporterService } from './services/translation-failure-reporter.service';
 import { AiTitleFamilyService } from './services/ai-title-family.service';
 import { AiTitleBatchService } from './services/ai-title-batch.service';
@@ -39,6 +40,7 @@ import { AiBatchWatchdogCron } from '@/background/ai-batch-watchdog.cron';
     GoogleTranslationService,
     AzureTranslationService,
     GeminiTranslationService,
+    OpenAiTranslationService,
     TranslationFailureReporterService,
     AiTitleFamilyService,
     AiTitleBatchService,

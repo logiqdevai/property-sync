@@ -11,6 +11,7 @@ import {
 } from 'class-validator';
 import { TranslationProvider } from 'generated/prisma';
 import { GEMINI_TRANSLATE_MODELS } from '../constants/gemini-translate.constants';
+import { OPENAI_TRANSLATE_MODELS } from '../constants/openai-translate.constants';
 
 // Every field is nullable: null explicitly resets that setting back to its
 // in-code default (see PlatformConfigService.getCrawlerConfig), omitting
@@ -240,11 +241,23 @@ export class UpdatePlatformConfigDto {
     nullable: true,
     enum: GEMINI_TRANSLATE_MODELS,
     description:
-      'Gemini model used when translation_provider is GEMINI; null resets to the default (gemini-2.5-flash)',
-    example: 'gemini-2.5-flash',
+      'Gemini model used when translation_provider is GEMINI; null resets to the default (gemini-3.5-flash-lite)',
+    example: 'gemini-3.5-flash-lite',
   })
   @IsOptional()
   @ValidateIf((_, value) => value !== null)
   @IsIn(GEMINI_TRANSLATE_MODELS)
   gemini_translate_model?: string | null;
+
+  @ApiPropertyOptional({
+    nullable: true,
+    enum: OPENAI_TRANSLATE_MODELS,
+    description:
+      'OpenAI model used when translation_provider is OPENAI; null resets to the default (gpt-6-luna)',
+    example: 'gpt-6-luna',
+  })
+  @IsOptional()
+  @ValidateIf((_, value) => value !== null)
+  @IsIn(OPENAI_TRANSLATE_MODELS)
+  openai_translate_model?: string | null;
 }

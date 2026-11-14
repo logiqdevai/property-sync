@@ -38,7 +38,6 @@ export class AiService {
         topP: options.topP,
         frequencyPenalty: options.frequencyPenalty,
         presencePenalty: options.presencePenalty,
-        providerOptions: options.providerOptions,
         abortSignal: AbortSignal.timeout(
           options.timeoutMs ?? DEFAULT_AI_REQUEST_TIMEOUT_MS,
         ),

@@ -21,11 +21,18 @@ export type GeminiTranslateErrorCode =
   | 'GEMINI_TRANSLATE_NOT_CONFIGURED'
   | 'GEMINI_TRANSLATE_API_ERROR';
 
+export type OpenAiTranslateErrorCode =
+  | 'OPENAI_TRANSLATE_NOT_CONFIGURED'
+  | 'OPENAI_TRANSLATE_API_ERROR';
+
 export type TranslationFailureCode =
   | AzureTranslateErrorCode
-  | GeminiTranslateErrorCode;
+  | GeminiTranslateErrorCode
+  | OpenAiTranslateErrorCode;
 
 const TITLES: Record<TranslationFailureCode, string> = {
+  OPENAI_TRANSLATE_NOT_CONFIGURED: 'OpenAI translation is not configured',
+  OPENAI_TRANSLATE_API_ERROR: 'OpenAI translation failed',
   GEMINI_TRANSLATE_NOT_CONFIGURED: 'Gemini translation is not configured',
   GEMINI_TRANSLATE_API_ERROR: 'Gemini translation failed',
   AZURE_TRANSLATE_NOT_CONFIGURED: 'Azure Translate is not configured',
@@ -43,6 +50,7 @@ const TITLES: Record<TranslationFailureCode, string> = {
 
 const CRITICAL_CODES = new Set<TranslationFailureCode>([
   'GEMINI_TRANSLATE_NOT_CONFIGURED',
+  'OPENAI_TRANSLATE_NOT_CONFIGURED',
   'AZURE_TRANSLATE_NOT_CONFIGURED',
   'AZURE_TRANSLATE_UNAUTHORIZED',
   'AZURE_TRANSLATE_FORBIDDEN',
@@ -89,7 +97,9 @@ export class TranslationFailureReporterService {
       const title = TITLES[failure.code];
       const source = failure.code.startsWith('GEMINI_')
         ? 'gemini-translate'
-        : 'azure-translate';
+        : failure.code.startsWith('OPENAI_')
+          ? 'openai-translate'
+          : 'azure-translate';
       const suffix =
         suppressed > 0 ? ` (${suppressed} similar failures since the last report)` : '';
       const message = `${failure.message}${suffix}`;

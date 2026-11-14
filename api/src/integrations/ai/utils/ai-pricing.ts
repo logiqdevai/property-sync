@@ -22,9 +22,5 @@ export const AiPricing = {
     [AiModels.gemini.gemini15Pro]: { input: 0.00000125, output: 0.000005 },
     [AiModels.gemini.gemini15Flash]: { input: 0.000000075, output: 0.0000003 },
     [AiModels.gemini.geminiPro]: { input: 0.0000005, output: 0.0000015 },
-    [AiModels.gemini.geminiProVision]: { input: 0.0000005, output: 0.0000015 },
-    // Gemini API paid-tier text rates (USD per token).
-    [AiModels.gemini.gemini25Flash]: { input: 0.0000003, output: 0.0000025 },
-    [AiModels.gemini.gemini25FlashLite]: { input: 0.0000001, output: 0.0000004 },
-  },
+    [AiModels.gemini.geminiProVision]: { input: 0.0000005, output: 0.0000015 },  },
 } as const;

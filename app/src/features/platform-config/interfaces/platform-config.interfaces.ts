@@ -2,18 +2,28 @@ export const TranslationProviders = {
   GOOGLE_TRANSLATE: "GOOGLE_TRANSLATE",
   AZURE: "AZURE",
   GEMINI: "GEMINI",
+  OPENAI: "OPENAI",
 } as const;
 
 export type TranslationProvider =
   (typeof TranslationProviders)[keyof typeof TranslationProviders];
 
 export const GeminiTranslateModels = {
-  GEMINI_25_FLASH: "gemini-2.5-flash",
-  GEMINI_25_FLASH_LITE: "gemini-2.5-flash-lite",
+  GEMINI_35_FLASH_LITE: "gemini-3.5-flash-lite",
+  GEMINI_36_FLASH: "gemini-3.6-flash",
 } as const;
 
 export type GeminiTranslateModel =
   (typeof GeminiTranslateModels)[keyof typeof GeminiTranslateModels];
+
+export const OpenAiTranslateModels = {
+  GPT_6_LUNA: "gpt-6-luna",
+  GPT_56_LUNA: "gpt-5.6-luna",
+  GPT_54_MINI: "gpt-5.4-mini",
+} as const;
+
+export type OpenAiTranslateModel =
+  (typeof OpenAiTranslateModels)[keyof typeof OpenAiTranslateModels];
 
 export interface PlatformConfig {
   id: string;
@@ -36,6 +46,7 @@ export interface PlatformConfig {
   translation_provider: TranslationProvider | null;
   estateweb_location_google_enabled: boolean | null;
   gemini_translate_model: GeminiTranslateModel | null;
+  openai_translate_model: OpenAiTranslateModel | null;
   created_at: string;
   updated_at: string;
 }
@@ -60,4 +71,5 @@ export interface UpdatePlatformConfigPayload {
   translation_provider?: TranslationProvider | null;
   estateweb_location_google_enabled?: boolean | null;
   gemini_translate_model?: GeminiTranslateModel | null;
+  openai_translate_model?: OpenAiTranslateModel | null;
 }

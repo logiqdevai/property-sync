@@ -1,26 +1,23 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ContentLanguage, IntegrationType } from 'generated/prisma';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
-import { AiService } from '@/integrations/ai/services/ai.service';
-import { AiProviders } from '@/integrations/ai/interfaces/ai.interface';
+import {
+  GeminiTranslateModel,
+  getGeminiTranslateRates,
+} from '@/modules/platform-config/constants/gemini-translate.constants';
+import { buildAiTranslationSystemPrompt } from '../utils/ai-translation-prompt.util';
 import { TranslationFailureReporterService } from './translation-failure-reporter.service';
 
-const TARGET_LANGUAGE_NAMES: Record<ContentLanguage, string> = {
-  EL: 'Greek',
-  EN: 'English',
-  DE: 'German',
-  FR: 'French',
-  IT: 'Italian',
-  RU: 'Russian',
-};
-
+const GEMINI_API_BASE = 'https://generativelanguage.googleapis.com/v1beta';
 const GEMINI_TRANSLATE_TIMEOUT_MS = 120_000;
 
 export interface GeminiTranslationResult {
   text: string;
-  model: string;
+  model: GeminiTranslateModel;
   inputTokens: number;
+  /** Visible output + thinking tokens (Google bills both as output). */
   outputTokens: number;
+  thinkingTokens: number;
   inputCost: number;
   outputCost: number;
   totalCost: number;
@@ -28,17 +25,18 @@ export interface GeminiTranslationResult {
 
 export class GeminiTranslationError extends Error {}
 
-function buildSystemPrompt(target: ContentLanguage): string {
-  const language = TARGET_LANGUAGE_NAMES[target];
-  return [
-    `You are a professional real-estate translator. Translate the text the user sends into ${language}.`,
-    'The source language is not given: detect it yourself. The text may be in any language, or mix several languages; translate every part into ' +
-      `${language}. If the text is already entirely in ${language}, return it unchanged.`,
-    'Keep the exact meaning and tone. Keep line breaks, paragraph structure, lists, numbers, prices, measurements, units, phone numbers, emails and URLs exactly as they are.',
-    'Write place names, street names and proper nouns the way they are normally written in ' +
-      `${language}.`,
-    'Reply with the translated text only: no introduction, no notes, no quotation marks, no markdown that was not in the original.',
-  ].join('\n');
+interface GeminiGenerateContentResponse {
+  candidates?: Array<{
+    content?: { parts?: Array<{ text?: string; thought?: boolean }> };
+    finishReason?: string;
+  }>;
+  promptFeedback?: { blockReason?: string };
+  usageMetadata?: {
+    promptTokenCount?: number;
+    candidatesTokenCount?: number;
+    thoughtsTokenCount?: number;
+  };
+  error?: { code?: number; message?: string; status?: string };
 }
 
 /**
@@ -46,6 +44,10 @@ function buildSystemPrompt(target: ContentLanguage): string {
  * Unlike the Google/Azure services this never passes a source language: agencies sometimes
  * publish individual listings in a different language than their configured content language,
  * and forcing the wrong source language makes those translations come back broken.
+ *
+ * Calls the Gemini REST API directly (not the Vercel AI SDK v1 used elsewhere): Gemini 3 models
+ * control thinking via `thinkingLevel` and bill thinking tokens as output, and the SDK v1 can
+ * neither send that option nor report thinking tokens, so cost logs would undercount.
  */
 @Injectable()
 export class GeminiTranslationService {
@@ -53,7 +55,6 @@ export class GeminiTranslationService {
 
   constructor(
     private readonly prisma: PrismaService,
-    private readonly aiService: AiService,
     private readonly failureReporter: TranslationFailureReporterService,
   ) {}
 
@@ -75,7 +76,7 @@ export class GeminiTranslationService {
     userId: string,
     text: string,
     target: ContentLanguage,
-    model: string,
+    model: GeminiTranslateModel,
   ): Promise<GeminiTranslationResult> {
     const apiKey = await this.findApiKeyForUser(userId);
     if (!apiKey) {
@@ -93,32 +94,68 @@ export class GeminiTranslationService {
     }
 
     try {
-      const { response, usage } = await this.aiService.generateText({
-        provider: AiProviders.gemini,
-        model,
-        apiKey,
-        system: buildSystemPrompt(target),
-        prompt: text,
-        temperature: 0,
-        timeoutMs: GEMINI_TRANSLATE_TIMEOUT_MS,
-        // 2.5 Flash/Flash-Lite "think" by default; translation doesn't need it, and thinking
-        // tokens are billed but not reported in usage, so cost logs would undercount.
-        providerOptions: { google: { thinkingConfig: { thinkingBudget: 0 } } },
-      });
+      const response = await fetch(
+        `${GEMINI_API_BASE}/models/${model}:generateContent`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-goog-api-key': apiKey,
+          },
+          body: JSON.stringify({
+            systemInstruction: {
+              parts: [{ text: buildAiTranslationSystemPrompt(target) }],
+            },
+            contents: [{ role: 'user', parts: [{ text }] }],
+            generationConfig: {
+              temperature: 0,
+              // Translation needs no reasoning; "minimal" is the lowest level both offered
+              // models support (thinking can't be fully switched off on Gemini 3).
+              thinkingConfig: { thinkingLevel: 'minimal' },
+            },
+          }),
+          signal: AbortSignal.timeout(GEMINI_TRANSLATE_TIMEOUT_MS),
+        },
+      );
 
-      const translated = response?.trim();
-      if (!translated) {
-        throw new GeminiTranslationError('Gemini returned an empty translation');
+      const body = (await response
+        .json()
+        .catch(() => ({}))) as GeminiGenerateContentResponse;
+      if (!response.ok) {
+        throw new GeminiTranslationError(
+          `Gemini API ${response.status}: ${body.error?.message ?? response.statusText}`,
+        );
       }
+
+      const candidate = body.candidates?.[0];
+      const translated = (candidate?.content?.parts ?? [])
+        .filter((part) => !part.thought && part.text)
+        .map((part) => part.text)
+        .join('')
+        .trim();
+      if (!translated) {
+        const reason =
+          body.promptFeedback?.blockReason ?? candidate?.finishReason ?? 'empty response';
+        throw new GeminiTranslationError(`Gemini returned no translation (${reason})`);
+      }
+
+      const usage = body.usageMetadata ?? {};
+      const inputTokens = usage.promptTokenCount ?? 0;
+      const thinkingTokens = usage.thoughtsTokenCount ?? 0;
+      const outputTokens = (usage.candidatesTokenCount ?? 0) + thinkingTokens;
+      const rates = getGeminiTranslateRates(model);
+      const inputCost = inputTokens * rates.input;
+      const outputCost = outputTokens * rates.output;
 
       return {
         text: translated,
         model,
-        inputTokens: usage?.inputTokens ?? 0,
-        outputTokens: usage?.outputTokens ?? 0,
-        inputCost: usage?.inputCost ?? 0,
-        outputCost: usage?.outputCost ?? 0,
-        totalCost: usage?.totalCost ?? 0,
+        inputTokens,
+        outputTokens,
+        thinkingTokens,
+        inputCost,
+        outputCost,
+        totalCost: inputCost + outputCost,
       };
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);

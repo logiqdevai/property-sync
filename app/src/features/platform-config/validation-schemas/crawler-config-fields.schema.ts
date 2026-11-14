@@ -1,8 +1,10 @@
 import { z } from "zod";
 import {
   GeminiTranslateModels,
+  OpenAiTranslateModels,
   TranslationProviders,
   type GeminiTranslateModel,
+  type OpenAiTranslateModel,
   type TranslationProvider,
 } from "@/features/platform-config/interfaces/platform-config.interfaces";
 
@@ -249,16 +251,25 @@ export const crawlerConfigFormSchema = z.object({
     TranslationProviders.GOOGLE_TRANSLATE,
     TranslationProviders.AZURE,
     TranslationProviders.GEMINI,
+    TranslationProviders.OPENAI,
   ]),
   gemini_translate_model: z.enum([
-    GeminiTranslateModels.GEMINI_25_FLASH,
-    GeminiTranslateModels.GEMINI_25_FLASH_LITE,
+    GeminiTranslateModels.GEMINI_35_FLASH_LITE,
+    GeminiTranslateModels.GEMINI_36_FLASH,
+  ]),
+  openai_translate_model: z.enum([
+    OpenAiTranslateModels.GPT_6_LUNA,
+    OpenAiTranslateModels.GPT_56_LUNA,
+    OpenAiTranslateModels.GPT_54_MINI,
   ]),
   estateweb_location_google_enabled: z.boolean(),
 });
 
 export const DEFAULT_GEMINI_TRANSLATE_MODEL: GeminiTranslateModel =
-  GeminiTranslateModels.GEMINI_25_FLASH;
+  GeminiTranslateModels.GEMINI_35_FLASH_LITE;
+
+export const DEFAULT_OPENAI_TRANSLATE_MODEL: OpenAiTranslateModel =
+  OpenAiTranslateModels.GPT_6_LUNA;
 
 export type CrawlerConfigFormValues = z.infer<typeof crawlerConfigFormSchema>;
 

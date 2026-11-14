@@ -14,8 +14,6 @@ export interface AIGenerateOptions {
   frequencyPenalty?: number;
   presencePenalty?: number;
   timeoutMs?: number;
-  /** Provider-specific options passed through to the AI SDK (e.g. `{ google: { thinkingConfig } }`). */
-  providerOptions?: Record<string, Record<string, any>>;
 }
 
 export interface AIGenerateTextResponse {
@@ -82,8 +80,6 @@ export const AiModels = {
     geminiProVision: 'gemini-pro-vision',
     gemini15Pro: 'gemini-1.5-pro',
     gemini15Flash: 'gemini-1.5-flash',
-    gemini25Flash: 'gemini-2.5-flash',
-    gemini25FlashLite: 'gemini-2.5-flash-lite',
   },
 };
 

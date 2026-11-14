@@ -26,6 +26,11 @@ import {
   GeminiTranslateModel,
 } from './constants/gemini-translate.constants';
 import {
+  DEFAULT_OPENAI_TRANSLATE_MODEL,
+  OPENAI_TRANSLATE_MODELS,
+  OpenAiTranslateModel,
+} from './constants/openai-translate.constants';
+import {
   IntegrationType,
   PlatformConfig,
   TranslationProvider,
@@ -168,8 +173,10 @@ export class PlatformConfigService {
   ):
     | typeof IntegrationType.GOOGLE_TRANSLATE
     | typeof IntegrationType.AZURE
-    | typeof IntegrationType.GEMINI {
+    | typeof IntegrationType.GEMINI
+    | typeof IntegrationType.OPENAI {
     if (provider === TranslationProvider.GEMINI) return IntegrationType.GEMINI;
+    if (provider === TranslationProvider.OPENAI) return IntegrationType.OPENAI;
     return provider === TranslationProvider.AZURE
       ? IntegrationType.AZURE
       : IntegrationType.GOOGLE_TRANSLATE;
@@ -181,6 +188,14 @@ export class PlatformConfigService {
     return value && (GEMINI_TRANSLATE_MODELS as readonly string[]).includes(value)
       ? (value as GeminiTranslateModel)
       : DEFAULT_GEMINI_TRANSLATE_MODEL;
+  }
+
+  async getOpenAiTranslateModel(): Promise<OpenAiTranslateModel> {
+    const row = await this.getCachedRow();
+    const value = row?.openai_translate_model;
+    return value && (OPENAI_TRANSLATE_MODELS as readonly string[]).includes(value)
+      ? (value as OpenAiTranslateModel)
+      : DEFAULT_OPENAI_TRANSLATE_MODEL;
   }
 
   async getRaw(): Promise<PlatformConfig> {

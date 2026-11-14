@@ -122,9 +122,15 @@ export class PlatformConfig {
 
   @ApiProperty({
     nullable: true,
-    description: 'Null means the default value (gemini-2.5-flash) is used',
+    description: 'Null means the default value (gemini-3.5-flash-lite) is used',
   })
   gemini_translate_model: string | null;
+
+  @ApiProperty({
+    nullable: true,
+    description: 'Null means the default value (gpt-6-luna) is used',
+  })
+  openai_translate_model: string | null;
 
   @ApiProperty()
   created_at: Date;
