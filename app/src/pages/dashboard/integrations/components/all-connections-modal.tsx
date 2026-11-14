@@ -1,12 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
-import { Modal, Pagination, useOverlayState } from "@heroui/react";
+import { Input, Modal, useOverlayState } from "@heroui/react";
+import { Search } from "lucide-react";
 import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
 import { getIntegrationTypeLabel } from "@/config/constants/dropdowns/integrations/integration-type-form.options";
 import type { AvailableIntegrationTarget } from "@/features/user-integrations/interfaces/user-integrations.interfaces";
 import type { MaskedUserIntegrationConnection } from "@/features/user-integrations/interfaces/user-integrations.interfaces";
 import { IntegrationConnectionItem } from "./integration-connection-item";
-
-const PAGE_SIZE = 5;
 
 type AllConnectionsModalProps = {
   state: ReturnType<typeof useOverlayState>;
@@ -31,25 +30,20 @@ export function AllConnectionsModal({
   onSetDefault,
   isAdmin,
 }: AllConnectionsModalProps) {
-  const [page, setPage] = useState(1);
+  const [search, setSearch] = useState("");
   const isReadOnly = target ? !target.is_enabled && !isAdmin : !isAdmin;
 
-  const totalPages = Math.max(1, Math.ceil(connections.length / PAGE_SIZE));
-
-  const paginatedConnections = useMemo(() => {
-    const start = (page - 1) * PAGE_SIZE;
-    return connections.slice(start, start + PAGE_SIZE);
-  }, [connections, page]);
-
-  useEffect(() => {
-    setPage(1);
-  }, [target?.id, connections.length]);
+  const filteredConnections = useMemo(() => {
+    const term = search.trim().toLowerCase();
+    if (!term) return connections;
+    return connections.filter((connection) =>
+      [connection.email, connection.username].some((value) => value?.toLowerCase().includes(term)),
+    );
+  }, [connections, search]);
 
   useEffect(() => {
-    if (page > totalPages) {
-      setPage(totalPages);
-    }
-  }, [page, totalPages]);
+    setSearch("");
+  }, [target?.id, state.isOpen]);
 
   return (
     <Modal state={state}>
@@ -67,10 +61,22 @@ export function AllConnectionsModal({
               {target ? (
                 <div className="flex flex-col gap-4">
                   <p className="text-sm text-muted">
-                    {connections.length} connected account{connections.length === 1 ? "" : "s"}
+                    {search.trim()
+                      ? `${filteredConnections.length} of ${connections.length} accounts`
+                      : `${connections.length} connected account${connections.length === 1 ? "" : "s"}`}
                   </p>
-                  <div className="flex flex-col gap-3">
-                    {paginatedConnections.map((connection) => (
+                  <div className="relative w-full">
+                    <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
+                    <Input
+                      value={search}
+                      onChange={(e) => setSearch(e.target.value)}
+                      placeholder="Search by email or username"
+                      className="pl-9"
+                      fullWidth
+                    />
+                  </div>
+                  <div className="flex max-h-[50vh] flex-col gap-3 overflow-y-auto pr-1">
+                    {filteredConnections.map((connection) => (
                       <IntegrationConnectionItem
                         key={connection.id}
                         connection={connection}
@@ -83,34 +89,10 @@ export function AllConnectionsModal({
                         onSetDefault={onSetDefault}
                       />
                     ))}
+                    {filteredConnections.length === 0 ? (
+                      <p className="py-6 text-center text-sm text-muted">No accounts match your search.</p>
+                    ) : null}
                   </div>
-                  {connections.length > PAGE_SIZE ? (
-                    <Pagination>
-                      <Pagination.Content>
-                        <Pagination.Item>
-                          <Pagination.Previous
-                            isDisabled={page <= 1}
-                            onPress={() => setPage((current) => Math.max(1, current - 1))}
-                          >
-                            Previous
-                          </Pagination.Previous>
-                        </Pagination.Item>
-                        <Pagination.Item>
-                          <Pagination.Summary>
-                            Page {page} of {totalPages}
-                          </Pagination.Summary>
-                        </Pagination.Item>
-                        <Pagination.Item>
-                          <Pagination.Next
-                            isDisabled={page >= totalPages}
-                            onPress={() => setPage((current) => Math.min(totalPages, current + 1))}
-                          >
-                            Next
-                          </Pagination.Next>
-                        </Pagination.Item>
-                      </Pagination.Content>
-                    </Pagination>
-                  ) : null}
                 </div>
               ) : null}
             </Modal.Body>
