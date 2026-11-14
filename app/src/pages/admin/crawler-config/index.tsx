@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { FieldError, Form, Input, Label, ListBox, Select, Tabs } from "@heroui/react";
+import { FieldError, Form, Input, Label, ListBox, Select, Switch, Tabs } from "@heroui/react";
 import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
 import { DetailSkeleton } from "@/components/ui/detail-skeleton";
 import { TranslationProviderFormOptions } from "@/config/constants/dropdowns/platform-config/translation-provider-form.options";
@@ -48,6 +48,7 @@ export default function CrawlerConfigPage() {
     defaultValues: {
       ...Object.fromEntries(CRAWLER_CONFIG_FIELDS.map((field) => [field.key, ""])),
       translation_provider: DEFAULT_TRANSLATION_PROVIDER,
+      estateweb_location_google_enabled: true,
     },
   });
 
@@ -58,6 +59,7 @@ export default function CrawlerConfigPage() {
         CRAWLER_CONFIG_FIELDS.map((field) => [field.key, toFormValue(data[field.key])]),
       ),
       translation_provider: data.translation_provider ?? DEFAULT_TRANSLATION_PROVIDER,
+      estateweb_location_google_enabled: data.estateweb_location_google_enabled ?? true,
     });
   }, [data, reset]);
 
@@ -70,6 +72,7 @@ export default function CrawlerConfigPage() {
         ]),
       ),
       translation_provider: values.translation_provider,
+      estateweb_location_google_enabled: values.estateweb_location_google_enabled,
     } as UpdatePlatformConfigPayload;
 
     updateConfig.mutate(payload);
@@ -161,6 +164,36 @@ export default function CrawlerConfigPage() {
                             )}
                             <span className="text-xs text-muted">
                               Provider used for content publishing translations and cost logs.
+                            </span>
+                          </div>
+                        ) : null}
+                        {showTranslationProvider ? (
+                          <div className="flex flex-col gap-1 sm:col-span-2">
+                            <Controller
+                              name="estateweb_location_google_enabled"
+                              control={control}
+                              render={({ field }) => (
+                                <div className="flex items-center justify-between gap-4">
+                                  <Label htmlFor="estateweb-location-google-enabled">
+                                    Use Google for EstateWeb location
+                                  </Label>
+                                  <Switch
+                                    id="estateweb-location-google-enabled"
+                                    isSelected={field.value}
+                                    onChange={field.onChange}
+                                    aria-label="Use Google for EstateWeb location"
+                                  >
+                                    <Switch.Control>
+                                      <Switch.Thumb />
+                                    </Switch.Control>
+                                  </Switch>
+                                </div>
+                              )}
+                            />
+                            <span className="text-xs text-muted">
+                              Geocodes each property for region hints when resolving its EstateWeb
+                              location. Off = resolve from the listing text only (no Google cost,
+                              less accurate for same-named places).
                             </span>
                           </div>
                         ) : null}

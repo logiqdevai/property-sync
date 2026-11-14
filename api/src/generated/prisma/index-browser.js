@@ -697,6 +697,7 @@ exports.Prisma.PlatformConfigScalarFieldEnum = {
   google_geocoding_cost_per_request: 'google_geocoding_cost_per_request',
   azure_translate_max_requests_per_second: 'azure_translate_max_requests_per_second',
   translation_provider: 'translation_provider',
+  estateweb_location_google_enabled: 'estateweb_location_google_enabled',
   created_at: 'created_at',
   updated_at: 'updated_at'
 };

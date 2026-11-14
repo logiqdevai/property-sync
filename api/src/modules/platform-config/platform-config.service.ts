@@ -139,6 +139,12 @@ export class PlatformConfigService {
     return row?.translation_provider ?? DEFAULT_TRANSLATION_PROVIDER;
   }
 
+  // Defaults to true: Google hints stay on unless an admin explicitly turns them off.
+  async isEstateWebLocationGoogleEnabled(): Promise<boolean> {
+    const row = await this.getCachedRow();
+    return row?.estateweb_location_google_enabled ?? true;
+  }
+
   async getTranslateCost(
     provider:
       | typeof IntegrationType.GOOGLE_TRANSLATE

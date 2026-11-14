@@ -247,6 +247,7 @@ export const crawlerConfigFormSchema = z.object({
     TranslationProviders.GOOGLE_TRANSLATE,
     TranslationProviders.AZURE,
   ]),
+  estateweb_location_google_enabled: z.boolean(),
 });
 
 export type CrawlerConfigFormValues = z.infer<typeof crawlerConfigFormSchema>;

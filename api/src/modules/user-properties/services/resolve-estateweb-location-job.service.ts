@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
+import { PlatformConfigService } from '@/modules/platform-config/platform-config.service';
 import {
   GoogleCallContext,
   GoogleMapsService,
@@ -48,6 +49,7 @@ export class ResolveEstateWebLocationJobService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly googleMapsService: GoogleMapsService,
+    private readonly platformConfigService: PlatformConfigService,
   ) {}
 
   // Reverse-geocodes existing coordinates when present (cheaper/more reliable
@@ -87,6 +89,11 @@ export class ResolveEstateWebLocationJobService {
     postal_code: string | null;
     country: string | null;
   }, ctx: GoogleCallContext): Promise<{ segments: string[]; coordinatePrefectures: string[] }> {
+    // Admin toggle (App Config): with Google off, resolve from the property's own text only.
+    if (!(await this.platformConfigService.isEstateWebLocationGoogleEnabled())) {
+      return { segments: [], coordinatePrefectures: [] };
+    }
+
     if (fields.latitude != null && fields.longitude != null) {
       const details = await this.googleMapsService.reverseGeocode(
         Number(fields.latitude),

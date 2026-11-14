@@ -1,5 +1,6 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import {
+  IsBoolean,
   IsEnum,
   IsInt,
   IsNumber,
@@ -221,4 +222,15 @@ export class UpdatePlatformConfigDto {
   @ValidateIf((_, value) => value !== null)
   @IsEnum(TranslationProvider)
   translation_provider?: TranslationProvider | null;
+
+  @ApiPropertyOptional({
+    nullable: true,
+    description:
+      'Whether EstateWeb location resolution calls Google Geocoding for region hints; null resets to the default (true)',
+    example: true,
+  })
+  @IsOptional()
+  @ValidateIf((_, value) => value !== null)
+  @IsBoolean()
+  estateweb_location_google_enabled?: boolean | null;
 }

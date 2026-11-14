@@ -25,6 +25,7 @@ export interface PlatformConfig {
   dewatermark_cost_per_credit: number | null;
   azure_translate_cost_per_million_chars: number | null;
   translation_provider: TranslationProvider | null;
+  estateweb_location_google_enabled: boolean | null;
   created_at: string;
   updated_at: string;
 }
@@ -47,4 +48,5 @@ export interface UpdatePlatformConfigPayload {
   dewatermark_cost_per_credit?: number | null;
   azure_translate_cost_per_million_chars?: number | null;
   translation_provider?: TranslationProvider | null;
+  estateweb_location_google_enabled?: boolean | null;
 }

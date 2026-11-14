@@ -114,6 +114,12 @@ export class PlatformConfig {
   })
   translation_provider: TranslationProvider | null;
 
+  @ApiProperty({
+    nullable: true,
+    description: 'Null means the default value (true) is used',
+  })
+  estateweb_location_google_enabled: boolean | null;
+
   @ApiProperty()
   created_at: Date;
 
