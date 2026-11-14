@@ -27,9 +27,9 @@ in the app, and every step is idempotent, so a re-run skips what already exists)
 
 Ask only for what is missing, in one message:
 
-- **User email(s)** - the property-sync user(s) who should track the agencies. One or several. Each
-  must already exist and have their default AI (OpenAI) integration connected, otherwise tracking
-  fails for that user (the script reports it per user).
+- **User email** - always `akinitakritis@gmail.com`. Never ask for it; use it as the only entry in
+  `users` unless the user explicitly names a different one in that request. The user must already
+  have their default AI (OpenAI) integration connected, otherwise tracking fails (the script reports it).
 - **Agency lines**, one per agency, in this shape (whitespace separated):
   `<website url>  <EstateWeb login email>  <EstateWeb password>  [<name>]`
   The trailing `<name>` is **not** the agency name (see below). It is the CRM last name used to find
@@ -94,9 +94,10 @@ reason; the common ones:
   than reusing someone else's account.
 - A duplicate `base_url` is not an error: the existing agency is reused.
 
-Finish by offering the city step (§7, "Set the agency's main city") for the new agencies: the name
-often ends with a town, but City stays empty unless the input had `city`. Don't set a city without
-checking it against the site.
+Always finish with the city step (§7, "Set the agency's main city") for the new agencies, without
+asking or offering: find each city from the agency's own site (the typed name's trailing town is only
+a hint, never the source) and set it, then report `agency -> city (where found)`. City stays empty
+unless the input had `city` or you set it here.
 
 ## Option 2 - Create or fix a scraper
 
@@ -380,14 +381,18 @@ far more than a generic "scraper for X" note.
 without being asked or asking whether to look: do the site lookup below during investigation, report
 the city and where you found it, and set it (when blank) as part of creating the scraper.
 
-1. Find the main city from the agency's own site, in this order: the contact or about page address,
-   or the footer (an `<address>` block, or schema.org `PostalAddress`/`addressLocality` in JSON-LD);
-   then the office or location text in the header or footer. Only if the site shows no office address,
-   use the most common city named in the listing titles or descriptions, and say in `notes` that it
-   came from listings, since listings can be in other cities than the office.
-2. Write the city name in the agency's `content_language` (for `EL` agencies, the Greek name), matching
-   how existing rows are written. Use the city name, not the region. If the site only documents the
-   region, use the region and say so in `notes`.
+1. The city is the **wider area the agency's listings cover**, not the suburb or village its office
+   is in (an office in Καματερό or Χαλάνδρι with listings across western / northern Athens gets
+   `Αθήνα`). Work it out in two steps: (a) find the office from the contact or about page, the footer
+   (`<address>`, schema.org `PostalAddress` in JSON-LD) or the header; (b) sample the listing
+   titles, descriptions or the site's area filter and find where the listings actually are. If they
+   spread over several neighbourhoods or municipalities of one metro area or island, use that
+   wider area's name. If they sit in one town, use the town. If the office is in the middle of that
+   spread, the office town can still be the answer. Say in `notes` what the listings showed.
+2. Write the name in the agency's `content_language` (for `EL` agencies, the Greek name), nominative,
+   matching how existing rows are written (`--list-cities`: reuse an existing spelling such as
+   `Αθήνα`, `Θεσσαλονίκη`, `Λασίθι`, `Χανιά` instead of adding a variant). Regions and
+   prefectures are fine when that is how the listings spread.
 3. Don't overwrite a value that is already set. If `city` is non-empty and differs from what you found,
    report both values and ask before changing it. Set it only when it is null or blank:
    ```sql
