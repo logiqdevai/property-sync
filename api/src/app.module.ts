@@ -70,6 +70,7 @@ import { DesktopCrawlModule } from './modules/desktop-crawl/desktop-crawl.module
     ContentPublishingModule,
     CostLogsModule,
     ActivityLogsModule,
+    DesktopCrawlModule,
   ],
   controllers: [AppController],
   providers: [AppService],
