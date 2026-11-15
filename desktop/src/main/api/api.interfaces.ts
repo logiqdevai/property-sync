@@ -87,6 +87,10 @@ export interface PhotoCheckTarget {
 
 export interface PhotoCheckResult {
   user_property_id: string;
+  title: string | null;
+  source_url: string | null;
+  integration_property_id: string | null;
+  crm_account_email: string | null;
   crm_images: number | null;
   missing: boolean;
   error: string | null;

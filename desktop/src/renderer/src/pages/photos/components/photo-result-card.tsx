@@ -3,6 +3,7 @@ import { ArrowLeft, RotateCcw } from "lucide-react";
 import { PhotoPhases, type PhotoState } from "@shared/ipc";
 import { Notice } from "@/components/ui/notice";
 import { StatTile } from "@/components/ui/stat-tile";
+import { StillMissingListings } from "./still-missing-listings";
 
 interface PhotoResultCardProps {
   state: PhotoState;
@@ -33,7 +34,7 @@ function Summary({ state }: { state: PhotoState }) {
     <Notice
       status="warning"
       title={`${state.still_missing.length} listings still have no photos`}
-      description="Their photos could not be copied from the website (often the website has none). Tell a developer if they should have photos."
+      description="Their photos could not be copied from the website (often the website has none). Check them below: open each on the website and in EstateWeb, and add the photos by hand if they exist. Tell a developer if many should have photos."
     />
   );
 }
@@ -54,6 +55,7 @@ export function PhotoResultCard({ state, onAgain, onBack }: PhotoResultCardProps
         <StatTile label="Without photos" value={state.missing} tone={state.missing ? "warning" : "default"} />
         <StatTile label="Fixed" value={state.fixed} tone="success" />
       </div>
+      {state.still_missing.length > 0 ? <StillMissingListings listings={state.still_missing} /> : null}
       <div className="flex flex-wrap gap-2">
         <Button variant="secondary" size="sm" onPress={onAgain}>
           <RotateCcw className="size-4" />

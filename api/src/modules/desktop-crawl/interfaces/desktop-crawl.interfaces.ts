@@ -105,6 +105,13 @@ export interface PhotoCheckTarget {
 
 export interface PhotoCheckResult {
   user_property_id: string;
+  title: string | null;
+  /** The listing's page on the agency's website. */
+  source_url: string | null;
+  /** The listing's id in EstateWeb (its page is https://app.estateweb.gr/app/property/<id>). */
+  integration_property_id: string | null;
+  /** Login email of the EstateWeb account the listing is in (never the password). */
+  crm_account_email: string | null;
   crm_images: number | null;
   missing: boolean;
   error: string | null;

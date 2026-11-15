@@ -2,10 +2,14 @@ import { readFile } from "fs/promises";
 import type { Page } from "playwright-core";
 import {
   BlockStates,
+  ESTATEWEB_PROPERTY_URL,
   IpcChannels,
   PhotoPhases,
+  StillMissingReasons,
   type PhotoState,
   type StartPhotosRequest,
+  type StillMissingListing,
+  type StillMissingReason,
 } from "@shared/ipc";
 import { api, ApiError } from "../api/api-client";
 import type { PhotoCheckResult } from "../api/api.interfaces";
@@ -111,14 +115,14 @@ class PhotoRepairSessionManager {
       this.state.patch({ phase: PhotoPhases.FIXING });
       browser = await openCrawlerPage();
       const warmed = new Set<string>();
-      const stillMissing: string[] = [];
+      const stillMissing: StillMissingListing[] = [];
       let fixed = 0;
 
       for (const listing of missing) {
         this.throwIfStopped();
-        const ok = await this.fixListing(browser.page, listing, warmed);
-        if (ok) fixed++;
-        else stillMissing.push(listing.user_property_id);
+        const failure = await this.fixListing(browser.page, listing, warmed);
+        if (!failure) fixed++;
+        else stillMissing.push(toStillMissing(listing, failure));
         this.state.patch({ fixed, still_missing: stillMissing });
       }
 
@@ -148,11 +152,18 @@ class PhotoRepairSessionManager {
     }
   }
 
-  /** Downloads the listing's photos in the browser, uploads them, then re-checks the CRM. */
-  private async fixListing(page: Page, listing: PhotoCheckResult, warmed: Set<string>): Promise<boolean> {
+  /**
+   * Downloads the listing's photos in the browser, uploads them, then re-checks the CRM.
+   * Returns null when the listing has photos in the CRM now, else why it still has none.
+   */
+  private async fixListing(
+    page: Page,
+    listing: PhotoCheckResult,
+    warmed: Set<string>,
+  ): Promise<StillMissingReason | null> {
     if (listing.source_image_urls.length === 0) {
       this.state.log(`${listing.user_property_id}: the website has no photos for this listing`);
-      return false;
+      return StillMissingReasons.NO_SOURCE_PHOTOS;
     }
 
     const photos: Array<{ url: string; bytes: Buffer }> = [];
@@ -163,7 +174,7 @@ class PhotoRepairSessionManager {
     }
     if (photos.length === 0) {
       this.state.log(`${listing.user_property_id}: no photo could be downloaded`);
-      return false;
+      return StillMissingReasons.DOWNLOAD_FAILED;
     }
 
     try {
@@ -173,10 +184,10 @@ class PhotoRepairSessionManager {
       const [after] = await api.checkPhotos(this.state.get().agency_id!, [listing.user_property_id]);
       const ok = !!after && (after.crm_images ?? 0) > 0;
       this.state.log(`${listing.user_property_id}: ${ok ? `${photos.length} photos added` : "still no photos"}`);
-      return ok;
+      return ok ? null : StillMissingReasons.UPLOAD_FAILED;
     } catch (error) {
       this.state.log(`${listing.user_property_id}: upload failed: ${errorMessage(error)}`);
-      return false;
+      return StillMissingReasons.UPLOAD_FAILED;
     }
   }
 
@@ -230,6 +241,19 @@ class PhotoRepairSessionManager {
       onSolved: () => undefined,
     };
   }
+}
+
+function toStillMissing(listing: PhotoCheckResult, reason: StillMissingReason): StillMissingListing {
+  return {
+    user_property_id: listing.user_property_id,
+    title: listing.title,
+    source_url: listing.source_url,
+    crm_url: listing.integration_property_id
+      ? `${ESTATEWEB_PROPERTY_URL}/${listing.integration_property_id}`
+      : null,
+    crm_account_email: listing.crm_account_email,
+    reason,
+  };
 }
 
 function chunkBySize<T extends { bytes: Buffer }>(items: T[]): T[][] {

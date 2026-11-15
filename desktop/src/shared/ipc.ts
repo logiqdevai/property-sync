@@ -123,6 +123,32 @@ export const PhotoPhases = {
 } as const;
 export type PhotoPhase = (typeof PhotoPhases)[keyof typeof PhotoPhases];
 
+/** EstateWeb's page for a listing: `${ESTATEWEB_PROPERTY_URL}/<integration_property_id>`. */
+export const ESTATEWEB_PROPERTY_URL = "https://app.estateweb.gr/app/property";
+
+export const StillMissingReasons = {
+  /** The listing has no photos in Property Sync either (often the website has none). */
+  NO_SOURCE_PHOTOS: "NO_SOURCE_PHOTOS",
+  /** None of its photos could be downloaded from the website. */
+  DOWNLOAD_FAILED: "DOWNLOAD_FAILED",
+  /** Downloaded, but uploading to EstateWeb failed or EstateWeb still shows none. */
+  UPLOAD_FAILED: "UPLOAD_FAILED",
+} as const;
+export type StillMissingReason = (typeof StillMissingReasons)[keyof typeof StillMissingReasons];
+
+/** A listing whose photos could not be fixed, with what's needed to check it by hand. */
+export interface StillMissingListing {
+  user_property_id: string;
+  title: string | null;
+  /** The listing's page on the agency's website. */
+  source_url: string | null;
+  /** The listing in EstateWeb. */
+  crm_url: string | null;
+  /** Login email of the EstateWeb account it is in. */
+  crm_account_email: string | null;
+  reason: StillMissingReason;
+}
+
 export interface PhotoState {
   agency_id: string | null;
   agency_name: string | null;
@@ -134,8 +160,8 @@ export interface PhotoState {
   /** Listings found with no photos in the CRM. */
   missing: number;
   fixed: number;
-  /** Listings whose photos could not be fixed (ids, for support). */
-  still_missing: string[];
+  /** Listings whose photos could not be fixed. */
+  still_missing: StillMissingListing[];
   check_errors: number;
   error: string | null;
   log: string[];

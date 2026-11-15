@@ -67,7 +67,11 @@ export class DesktopCrawlPhotosService {
     return rows.map((r) => ({ user_property_id: r.id, title: r.title }));
   }
 
-  /** Reads each listing live from EstateWeb and reports the ones with no photos there. */
+  /**
+   * Reads each listing live from EstateWeb and reports the ones with no photos there, with what a
+   * person needs to check one by hand: its page on the agency's website, its EstateWeb id and the
+   * EstateWeb account (login email only) it lives in.
+   */
   async check(
     sourceAgencyId: string,
     userPropertyIds: string[],
@@ -77,52 +81,75 @@ export class DesktopCrawlPhotosService {
       select: {
         id: true,
         user_id: true,
+        title: true,
+        canonical_property_id: true,
         integration_property_id: true,
         images: true,
       },
     });
 
+    const links = await this.prisma.propertySourceLink.findMany({
+      where: {
+        property_id: { in: rows.map((r) => r.canonical_property_id) },
+        source_property: { source_agency_id: sourceAgencyId },
+      },
+      select: {
+        property_id: true,
+        source_property: { select: { source_url: true } },
+      },
+    });
+    const sourceUrlByProperty = new Map(
+      links.map((l) => [l.property_id, l.source_property.source_url]),
+    );
+    const emailByUser = new Map<string, string | null>();
+
     const results: PhotoCheckResult[] = [];
     for (const row of rows) {
-      const source_image_urls = this.imageUrls(row.images);
+      const base = {
+        user_property_id: row.id,
+        title: row.title,
+        source_url: sourceUrlByProperty.get(row.canonical_property_id) ?? null,
+        integration_property_id: row.integration_property_id,
+        source_image_urls: this.imageUrls(row.images),
+      };
       if (!row.integration_property_id) {
         results.push({
-          user_property_id: row.id,
+          ...base,
+          crm_account_email: null,
           crm_images: null,
           missing: false,
           error: 'not pushed yet',
-          source_image_urls,
         });
         continue;
       }
       try {
-        const { userIntegrationId } =
-          await this.resolver.resolveForTrackedAgency(
-            row.user_id,
-            sourceAgencyId,
-          );
+        const integration = await this.resolver.resolveForTrackedAgency(
+          row.user_id,
+          sourceAgencyId,
+        );
+        emailByUser.set(row.user_id, integration.email);
         const remote = (await this.estateWebPropertyService.getProperty(
-          userIntegrationId,
+          integration.userIntegrationId,
           row.integration_property_id,
         )) as { images?: unknown[] };
         const count = (remote.images ?? []).length;
         results.push({
-          user_property_id: row.id,
+          ...base,
+          crm_account_email: integration.email,
           crm_images: count,
           missing: count === 0,
           error: null,
-          source_image_urls,
         });
       } catch (error) {
         results.push({
-          user_property_id: row.id,
+          ...base,
+          crm_account_email: emailByUser.get(row.user_id) ?? null,
           crm_images: null,
           missing: false,
           error: (error instanceof Error ? error.message : String(error)).slice(
             0,
             300,
           ),
-          source_image_urls,
         });
       }
       await sleep(PHOTO_CHECK_DELAY_MS);
