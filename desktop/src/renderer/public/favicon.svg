@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <style>
+    .building {
+      stroke: #4349b8;
+      stroke-width: 2.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      fill: none;
+    }
+    @media (prefers-color-scheme: dark) {
+      .building { stroke: #9ba3f0; }
+    }
+    @media (prefers-color-scheme: light) {
+      .building { stroke: #4349b8; }
+    }
+  </style>
+  <g class="building" transform="translate(16 16) scale(1.45) translate(-12 -12)">
+    <path d="M10 12h4" />
+    <path d="M10 8h4" />
+    <path d="M10 16h4" />
+    <path d="M6 20V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v16" />
+    <path d="M6 20h12" />
+    <path d="M14 20V10a2 2 0 0 0-4 0v10" />
+  </g>
+</svg>

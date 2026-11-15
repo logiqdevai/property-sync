@@ -29,6 +29,7 @@ import {
   type UpdatePlatformConfigPayload,
 } from "@/features/platform-config/interfaces/platform-config.interfaces";
 import { NotificationSettingsPanel } from "./components/notification-settings-panel";
+import { DesktopCrawlerDownloadPanel } from "./components/desktop-crawler-download-panel";
 
 function toFormValue(value: number | null): string {
   return value === null ? "" : String(value);
@@ -106,6 +107,8 @@ export default function CrawlerConfigPage() {
           alerting.
         </p>
       </div>
+
+      <DesktopCrawlerDownloadPanel />
 
       <Tabs
         className="relative w-full"

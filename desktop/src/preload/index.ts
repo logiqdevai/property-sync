@@ -1,0 +1,36 @@
+import { contextBridge, ipcRenderer, type IpcRendererEvent } from "electron";
+import { IpcChannels, type DesktopBridge } from "@shared/ipc";
+
+function subscribe<T>(channel: string, listener: (payload: T) => void): () => void {
+  const handler = (_event: IpcRendererEvent, payload: T) => listener(payload);
+  ipcRenderer.on(channel, handler);
+  return () => ipcRenderer.removeListener(channel, handler);
+}
+
+const bridge: DesktopBridge = {
+  auth: {
+    setSession: (session) => ipcRenderer.invoke(IpcChannels.SET_SESSION, session),
+  },
+  app: {
+    info: () => ipcRenderer.invoke(IpcChannels.APP_INFO),
+    openExternal: (url) => ipcRenderer.invoke(IpcChannels.OPEN_EXTERNAL, url),
+    checkBrowser: () => ipcRenderer.invoke(IpcChannels.BROWSER_CHECK),
+  },
+  crawl: {
+    start: (request) => ipcRenderer.invoke(IpcChannels.CRAWL_START, request),
+    stop: () => ipcRenderer.invoke(IpcChannels.CRAWL_STOP),
+    dismiss: () => ipcRenderer.invoke(IpcChannels.CRAWL_DISMISS),
+    getState: () => ipcRenderer.invoke(IpcChannels.CRAWL_STATE),
+    onState: (listener) => subscribe(IpcChannels.CRAWL_STATE, listener),
+    getCheckpoint: (scraperId) => ipcRenderer.invoke(IpcChannels.CRAWL_CHECKPOINT, scraperId),
+  },
+  photos: {
+    start: (request) => ipcRenderer.invoke(IpcChannels.PHOTOS_START, request),
+    stop: () => ipcRenderer.invoke(IpcChannels.PHOTOS_STOP),
+    dismiss: () => ipcRenderer.invoke(IpcChannels.PHOTOS_DISMISS),
+    getState: () => ipcRenderer.invoke(IpcChannels.PHOTOS_STATE),
+    onState: (listener) => subscribe(IpcChannels.PHOTOS_STATE, listener),
+  },
+};
+
+contextBridge.exposeInMainWorld("desktop", bridge);

@@ -178,6 +178,9 @@ export const ApiRoutes = {
         platformConfig: {
             root: "/admin/platform-config",
         },
+        desktopCrawler: {
+            latest: "/desktop-crawl/app/latest",
+        },
         notificationSettings: {
             list: "/admin/notification-settings",
             detail: (type: string) => `/admin/notification-settings/${type}`,

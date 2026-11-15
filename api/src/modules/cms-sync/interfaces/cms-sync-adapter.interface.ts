@@ -16,6 +16,11 @@ export interface CmsSyncCreateImagesParams {
   crmPropertyId: string;
   userPropertyId: string;
   sourceImageUrls: string[];
+  /**
+   * Image bytes already downloaded elsewhere, keyed by source url (e.g. by the desktop crawler app
+   * through a real Chrome when the agency site blocks the server). Urls found here are not fetched.
+   */
+  preloadedImages?: Map<string, Buffer>;
 }
 
 export interface CmsSyncUpdateImagesParams {

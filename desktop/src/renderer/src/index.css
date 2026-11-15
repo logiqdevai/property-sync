@@ -1,0 +1,364 @@
+@import "tailwindcss";
+@import "@heroui/styles";
+
+html,
+body {
+  height: 100%;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+  position: fixed;
+  inset: 0;
+}
+
+#root {
+  height: 100%;
+  width: 100%;
+  max-width: 100%;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+}
+
+:root {
+  /* HeroUI's Modal/AlertDialog/Drawer backdrop and centering container size
+     themselves off this custom property (h-(--visual-viewport-height) in
+     their own CSS) but never define it -- it was undefined everywhere in
+     this project and in @heroui itself, so that height declaration was
+     silently invalid and fell back to height: auto, letting a centered
+     dialog's position visibly shift when content inside it changed.
+     This static 100dvh is only the pre-JS fallback for first paint --
+     main.tsx overrides it with a live value kept in sync with the real
+     viewport. Confirmed via live measurement that a static value is NOT
+     reliable on its own: dvh read through a custom property can go stale
+     after a real viewport change (e.g. a backdrop stuck at an old height
+     while Modal.Dialog's own max-h-[85vh], a plain vh unit, correctly
+     recomputed) -- the mismatch misplaces the centered dialog relative to
+     the true viewport. See main.tsx's syncVisualViewportHeight.
+  */
+  --visual-viewport-height: 100dvh;
+
+  --sans: "Roboto Flex", system-ui, sans-serif;
+  --mono: "Roboto Mono", ui-monospace, monospace;
+
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 28px;
+
+  --primary-h: 252;
+  --secondary-h: 158;
+  --tertiary-h: 62;
+  --neutral-h: 85;
+
+  font: 14px/145% var(--sans);
+  letter-spacing: 0.01em;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --background: oklch(0.138 0.012 var(--neutral-h));
+  --bg: var(--background);
+
+  --surface:            oklch(0.178 0.014 var(--neutral-h));
+  --surface-foreground: oklch(0.94 0.008 var(--neutral-h));
+  --surface-secondary:  oklch(0.215 0.015 var(--neutral-h));
+  --surface-tertiary:   oklch(0.255 0.016 var(--neutral-h));
+
+  --overlay:            oklch(0.195 0.014 var(--neutral-h));
+  --overlay-foreground: oklch(0.94 0.008 var(--neutral-h));
+
+  --foreground: oklch(0.94 0.008 var(--neutral-h));
+  --text-h: var(--foreground);
+  --text:   oklch(0.66 0.012 var(--neutral-h));
+  --muted:  oklch(0.58 0.012 var(--neutral-h));
+
+  --border:    oklch(0.305 0.014 var(--neutral-h));
+  --separator: oklch(0.265 0.013 var(--neutral-h));
+
+  --accent:            oklch(0.74 0.14 var(--primary-h));
+  --accent-foreground: oklch(0.98 0.004 var(--primary-h));
+  --accent-bg:         oklch(0.74 0.14 var(--primary-h) / 0.14);
+  --accent-border:     oklch(0.74 0.14 var(--primary-h) / 0.42);
+
+  --secondary:            oklch(0.72 0.12 var(--secondary-h));
+  --secondary-foreground: oklch(0.16 0.03 var(--secondary-h));
+  --secondary-bg:         oklch(0.72 0.12 var(--secondary-h) / 0.14);
+
+  --tertiary:            oklch(0.80 0.11 var(--tertiary-h));
+  --tertiary-foreground: oklch(0.18 0.04 var(--tertiary-h));
+  --tertiary-bg:         oklch(0.80 0.11 var(--tertiary-h) / 0.14);
+
+  --default:            oklch(0.255 0.016 var(--neutral-h));
+  --default-foreground: oklch(0.94 0.008 var(--neutral-h));
+
+  --segment:            oklch(0.305 0.014 var(--neutral-h));
+  --segment-foreground: oklch(0.94 0.008 var(--neutral-h));
+
+  --field-background:  oklch(0.188 0.013 var(--neutral-h));
+  --field-foreground:  oklch(0.94 0.008 var(--neutral-h));
+  --field-border:      oklch(0.295 0.014 var(--neutral-h));
+  --field-border-width: 1px;
+  --field-placeholder: oklch(0.48 0.01 var(--neutral-h));
+  --field-shadow: 0 0 0 0 transparent inset;
+
+  --overlay-shadow: 0 0 1px 0 oklch(1 0 0 / 0.3) inset;
+
+  --focus: var(--accent);
+  --link:  oklch(0.80 0.11 var(--primary-h));
+
+  --social-bg: oklch(0.205 0.012 var(--neutral-h) / 0.55);
+
+  --status-excellent:    oklch(0.76 0.14 var(--secondary-h));
+  --status-excellent-bg: oklch(0.76 0.14 var(--secondary-h) / 0.16);
+  --status-good:         oklch(0.70 0.11 var(--secondary-h));
+  --status-good-bg:      oklch(0.70 0.11 var(--secondary-h) / 0.14);
+  --status-warning:      oklch(0.82 0.13 78);
+  --status-warning-bg:   oklch(0.82 0.13 78 / 0.16);
+  --status-critical:     oklch(0.72 0.17 48);
+  --status-critical-bg:  oklch(0.72 0.17 48 / 0.16);
+  --status-broken:       oklch(0.68 0.20 25);
+  --status-broken-bg:    oklch(0.68 0.20 25 / 0.16);
+
+  --status-success: oklch(0.76 0.14 var(--secondary-h));
+  --status-info:    oklch(0.74 0.14 var(--primary-h));
+  --status-error:   oklch(0.68 0.20 25);
+
+  --history-created:    oklch(0.76 0.14 var(--secondary-h));
+  --history-updated:    oklch(0.80 0.11 var(--tertiary-h));
+  --history-removed:    oklch(0.68 0.20 25);
+  --history-reappeared: oklch(0.74 0.14 var(--primary-h));
+
+  --severity-info:    oklch(0.74 0.14 var(--primary-h));
+  --severity-warning: oklch(0.82 0.13 78);
+  --severity-error:   oklch(0.68 0.20 25);
+
+  --shadow-1:
+    0 0 0 1px color-mix(in oklch, var(--accent) 7%, transparent),
+    0 8px 20px -8px color-mix(in oklch, black 18%, transparent),
+    0 2px 6px -2px color-mix(in oklch, black 10%, transparent);
+  --shadow-2:
+    0 0 0 1px color-mix(in oklch, var(--accent) 8%, transparent),
+    0 20px 40px -12px color-mix(in oklch, black 24%, transparent),
+    0 6px 16px -6px color-mix(in oklch, black 14%, transparent);
+  --shadow-3:
+    0 0 0 1px color-mix(in oklch, var(--accent) 10%, transparent),
+    0 28px 56px -16px color-mix(in oklch, black 32%, transparent),
+    0 12px 24px -8px color-mix(in oklch, black 18%, transparent);
+  --shadow: var(--shadow-2);
+
+  --canvas-glow:
+    radial-gradient(
+      ellipse 80% 60% at 0% 0%,
+      color-mix(in oklch, var(--tertiary) 5%, transparent),
+      transparent 55%
+    ),
+    radial-gradient(
+      ellipse 60% 50% at 100% 100%,
+      color-mix(in oklch, var(--accent) 4%, transparent),
+      transparent 50%
+    );
+  --canvas-grid:
+    linear-gradient(
+      color-mix(in oklch, var(--border) 35%, transparent) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      90deg,
+      color-mix(in oklch, var(--border) 35%, transparent) 1px,
+      transparent 1px
+    );
+
+  color: var(--text);
+  background-color: var(--bg);
+  background-image: var(--canvas-glow), var(--canvas-grid);
+  background-size: 100% 100%, 24px 24px;
+}
+
+[data-theme="light"] {
+  color-scheme: light;
+
+  --background: oklch(0.982 0.006 95);
+  --bg: var(--background);
+
+  --surface:            oklch(1 0.002 95);
+  --surface-foreground: oklch(0.20 0.022 var(--neutral-h));
+  --surface-secondary:  oklch(0.965 0.006 95);
+  --surface-tertiary:   oklch(0.945 0.008 95);
+
+  --overlay:            oklch(0.975 0.005 95);
+  --overlay-foreground: oklch(0.20 0.022 var(--neutral-h));
+
+  --foreground: oklch(0.20 0.022 var(--neutral-h));
+  --text-h: var(--foreground);
+  --text:   oklch(0.44 0.014 var(--neutral-h));
+  --muted:  oklch(0.52 0.012 var(--neutral-h));
+
+  --border:    oklch(0.885 0.008 95);
+  --separator: oklch(0.905 0.006 95);
+
+  --accent:            oklch(0.50 0.16 var(--primary-h));
+  --accent-foreground: oklch(0.99 0.002 var(--primary-h));
+  --accent-bg:         oklch(0.50 0.16 var(--primary-h) / 0.10);
+  --accent-border:     oklch(0.50 0.16 var(--primary-h) / 0.35);
+
+  --secondary:            oklch(0.48 0.12 var(--secondary-h));
+  --secondary-foreground: oklch(0.99 0.002 var(--secondary-h));
+  --secondary-bg:         oklch(0.48 0.12 var(--secondary-h) / 0.10);
+
+  --tertiary:            oklch(0.58 0.13 var(--tertiary-h));
+  --tertiary-foreground: oklch(0.99 0.002 var(--tertiary-h));
+  --tertiary-bg:         oklch(0.58 0.13 var(--tertiary-h) / 0.12);
+
+  --default:            oklch(0.945 0.008 95);
+  --default-foreground: oklch(0.20 0.022 var(--neutral-h));
+
+  --segment:            oklch(1 0.002 95);
+  --segment-foreground: oklch(0.20 0.022 var(--neutral-h));
+
+  --field-background:  oklch(0.99 0.002 95);
+  --field-foreground:  oklch(0.20 0.022 var(--neutral-h));
+  --field-border:      oklch(0.855 0.008 95);
+  --field-border-width: 1px;
+  --field-placeholder: oklch(0.62 0.01 var(--neutral-h));
+  --field-shadow:
+    0 2px 4px 0 oklch(0 0 0 / 0.04),
+    0 1px 2px 0 oklch(0 0 0 / 0.06),
+    0 0 1px 0 oklch(0 0 0 / 0.06);
+
+  --overlay-shadow:
+    0 2px 8px 0 oklch(0 0 0 / 0.06),
+    0 -6px 12px 0 oklch(0 0 0 / 0.03),
+    0 14px 28px 0 oklch(0 0 0 / 0.08);
+
+  --focus: var(--accent);
+  --link:  oklch(0.46 0.16 var(--primary-h));
+
+  --social-bg: oklch(0.96 0.005 95 / 0.85);
+
+  --status-excellent:    oklch(0.48 0.12 var(--secondary-h));
+  --status-excellent-bg: oklch(0.48 0.12 var(--secondary-h) / 0.12);
+  --status-good:         oklch(0.52 0.10 var(--secondary-h));
+  --status-good-bg:      oklch(0.52 0.10 var(--secondary-h) / 0.10);
+  --status-warning:      oklch(0.58 0.14 72);
+  --status-warning-bg:   oklch(0.58 0.14 72 / 0.12);
+  --status-critical:     oklch(0.55 0.16 45);
+  --status-critical-bg:  oklch(0.55 0.16 45 / 0.12);
+  --status-broken:       oklch(0.52 0.18 25);
+  --status-broken-bg:    oklch(0.52 0.18 25 / 0.12);
+
+  --status-success: oklch(0.48 0.12 var(--secondary-h));
+  --status-info:    oklch(0.50 0.16 var(--primary-h));
+  --status-error:   oklch(0.52 0.18 25);
+
+  --history-created:    oklch(0.48 0.12 var(--secondary-h));
+  --history-updated:    oklch(0.58 0.13 var(--tertiary-h));
+  --history-removed:    oklch(0.52 0.18 25);
+  --history-reappeared: oklch(0.50 0.16 var(--primary-h));
+
+  --severity-info:    oklch(0.50 0.16 var(--primary-h));
+  --severity-warning: oklch(0.58 0.14 72);
+  --severity-error:   oklch(0.52 0.18 25);
+
+  --shadow-1:
+    0 0 0 1px color-mix(in oklch, var(--accent) 5%, transparent),
+    0 4px 12px -4px color-mix(in oklch, black 8%, transparent),
+    0 1px 3px -1px color-mix(in oklch, black 5%, transparent);
+  --shadow-2:
+    0 0 0 1px color-mix(in oklch, var(--accent) 6%, transparent),
+    0 10px 24px -8px color-mix(in oklch, black 10%, transparent),
+    0 4px 8px -4px color-mix(in oklch, black 6%, transparent);
+  --shadow-3:
+    0 0 0 1px color-mix(in oklch, var(--accent) 8%, transparent),
+    0 20px 40px -12px color-mix(in oklch, black 14%, transparent),
+    0 8px 16px -6px color-mix(in oklch, black 8%, transparent);
+  --shadow: var(--shadow-2);
+
+  --canvas-glow:
+    radial-gradient(
+      ellipse 70% 50% at 100% 0%,
+      color-mix(in oklch, var(--tertiary) 6%, transparent),
+      transparent 50%
+    );
+  --canvas-grid:
+    linear-gradient(
+      color-mix(in oklch, var(--border) 50%, transparent) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      90deg,
+      color-mix(in oklch, var(--border) 50%, transparent) 1px,
+      transparent 1px
+    );
+
+  color: var(--text);
+  background-color: var(--bg);
+  background-image: var(--canvas-glow), var(--canvas-grid);
+  background-size: 100% 100%, 24px 24px;
+}
+
+@theme inline {
+  --font-sans: var(--sans);
+  --font-mono: var(--mono);
+}
+
+.font-mono {
+  font-family: var(--mono);
+}
+
+.property-cluster-map .gm-style .gm-style-iw-c {
+  padding: 0 !important;
+  max-width: 240px !important;
+}
+
+.property-cluster-map .gm-style .gm-style-iw-chr {
+  display: none !important;
+}
+
+.property-cluster-map .gm-style .gm-style-iw-d {
+  overflow: hidden !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.property-cluster-map .gm-style .gm-style-iw-d > div {
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* Resets any wrapper div Google Maps inserts between .gm-style-iw-c and our
+   content, regardless of class name or nesting depth. */
+.property-cluster-map .gm-style .gm-style-iw-c *:has(.pcm-iw-root) {
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+}
+
+.property-cluster-map .gm-style .gm-ui-hover-effect {
+  display: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

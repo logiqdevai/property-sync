@@ -919,7 +919,11 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
     for (let index = 0; index < sourceImageUrls.length; index++) {
       const url = sourceImageUrls[index];
       try {
-        const buffer = await this.downloadImage(url);
+        const preloaded = params.preloadedImages?.get(url);
+        const buffer =
+          preloaded && isLikelyImageBuffer(preloaded)
+            ? preloaded
+            : await this.downloadImage(url);
         if (!buffer?.length) continue;
 
         const filename = this.buildUniqueImageFilename(url, propertyId, index);

@@ -32,10 +32,17 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
 
+  // The desktop crawler app (desktop/) serves its UI from this custom scheme (Vite on 5174 in dev).
+  const DESKTOP_APP_ORIGIN = 'app://property-sync';
   const enabledCors =
     process.env.NODE_ENV !== 'local'
-      ? [process.env.APP_URL, process.env.LANDING_URL]
-      : ['http://localhost:5173', 'http://localhost:3001'];
+      ? [process.env.APP_URL, process.env.LANDING_URL, DESKTOP_APP_ORIGIN]
+      : [
+          'http://localhost:5173',
+          'http://localhost:3001',
+          'http://localhost:5174',
+          DESKTOP_APP_ORIGIN,
+        ];
 
   app.enableCors({
     origin: enabledCors,

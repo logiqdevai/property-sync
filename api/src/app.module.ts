@@ -33,6 +33,7 @@ import { CmsSyncModule } from './modules/cms-sync/cms-sync.module';
 import { ContentPublishingModule } from './modules/content-publishing/content-publishing.module';
 import { CostLogsModule } from './modules/cost-logs/cost-logs.module';
 import { ActivityLogsModule } from './modules/activity-logs/activity-logs.module';
+import { DesktopCrawlModule } from './modules/desktop-crawl/desktop-crawl.module';
 
 @Module({
   imports: [

@@ -1,0 +1,25 @@
+appId: com.logiqdev.propertysync.crawler
+productName: Property Sync Crawler
+directories:
+  output: release
+  buildResources: build
+files:
+  - out/**
+  - package.json
+  - "!**/*.map"
+# playwright-core launches Chrome as a child process and reads its own files from disk; keep it
+# outside the asar archive.
+asarUnpack:
+  - node_modules/playwright-core/**
+win:
+  target:
+    - target: nsis
+      arch: [x64]
+  artifactName: Property-Sync-Crawler-Setup-${version}.${ext}
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: false
+  createDesktopShortcut: always
+  createStartMenuShortcut: true
+  shortcutName: Property Sync Crawler

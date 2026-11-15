@@ -349,6 +349,10 @@ function errorMessage(error: unknown): string {
 
 function describeBody(req: Request): unknown {
   const contentType = req.headers['content-type'] ?? '';
+  // Raw uploads (the desktop crawler's gzipped crawl) are logged by size, never by content.
+  if (Buffer.isBuffer(req.body)) {
+    return { _binary: true, content_type: contentType, bytes: req.body.length };
+  }
   if (!contentType.includes('multipart/form-data')) return req.body;
 
   const upload = req as Request & { file?: UploadedFile; files?: unknown };
