@@ -10,6 +10,8 @@ import {
   Post,
   Query,
   Req,
+  Res,
+  StreamableFile,
   UploadedFiles,
   UseGuards,
   UseInterceptors,
@@ -21,7 +23,7 @@ import {
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
-import type { Request } from 'express';
+import type { Request, Response } from 'express';
 import { gunzipSync } from 'zlib';
 import { ZodError } from 'zod';
 import { AuthRole } from 'generated/prisma';
@@ -86,6 +88,26 @@ export class DesktopCrawlController {
   })
   getLatestApp() {
     return this.appReleaseService.getLatest();
+  }
+
+  @Get('app/update/:fileName')
+  @ApiOperation({
+    summary:
+      'Auto-update feed of the desktop app: latest.yml and the installer it names (streamed)',
+  })
+  async getUpdateFile(
+    @Param('fileName') fileName: string,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<StreamableFile> {
+    const file = await this.appReleaseService.openUpdateFile(fileName);
+    res.set({
+      'Content-Type': fileName.endsWith('.yml')
+        ? 'text/yaml; charset=utf-8'
+        : file.contentType,
+      'Cache-Control': 'no-cache',
+      ...(file.size ? { 'Content-Length': String(file.size) } : {}),
+    });
+    return new StreamableFile(file.stream);
   }
 
   @Get('scrapers')

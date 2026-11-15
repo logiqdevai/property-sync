@@ -17,6 +17,8 @@ export const IpcChannels = {
   PHOTOS_STOP: "photos:stop",
   PHOTOS_STATE: "photos:state",
   PHOTOS_DISMISS: "photos:dismiss",
+  UPDATE_STATE: "update:state",
+  UPDATE_INSTALL: "update:install",
 } as const;
 
 export interface DesktopSession {
@@ -140,6 +142,27 @@ export interface StartPhotosRequest {
   agency_name: string;
 }
 
+export const UpdateStatuses = {
+  /** Not checked yet, or running from source (updates only apply to the installed app). */
+  IDLE: "IDLE",
+  CHECKING: "CHECKING",
+  UP_TO_DATE: "UP_TO_DATE",
+  DOWNLOADING: "DOWNLOADING",
+  /** Downloaded; installs on restart (or when the app is next closed). */
+  READY: "READY",
+  ERROR: "ERROR",
+} as const;
+export type UpdateStatus = (typeof UpdateStatuses)[keyof typeof UpdateStatuses];
+
+export interface UpdateState {
+  status: UpdateStatus;
+  current_version: string;
+  /** The version being downloaded or ready to install. */
+  new_version: string | null;
+  percent: number;
+  error: string | null;
+}
+
 /** What the preload script exposes on `window.desktop`. */
 export interface DesktopBridge {
   auth: {
@@ -157,6 +180,12 @@ export interface DesktopBridge {
     getState(): Promise<CrawlState>;
     onState(listener: (state: CrawlState) => void): () => void;
     getCheckpoint(scraperId: string): Promise<CrawlCheckpointInfo | null>;
+  };
+  update: {
+    getState(): Promise<UpdateState>;
+    onState(listener: (state: UpdateState) => void): () => void;
+    /** Restarts the app into the downloaded version. Refused while a crawl or photo check runs. */
+    install(): Promise<void>;
   };
   photos: {
     start(request: StartPhotosRequest): Promise<void>;

@@ -3,7 +3,9 @@
  * App Config in the web app (GET /desktop-crawl/app/latest).
  *
  * Uploads the installer to `<GCS_BUCKET_NAME>/desktop-crawler/<file>` (older versions are kept),
- * then rewrites `desktop-crawler/latest.json` to point at it. Use the env file of the environment
+ * then electron-builder's `latest.yml` (the installed apps' auto-updater reads it through
+ * GET /desktop-crawl/app/update/latest.yml) and `latest.json` (the admin download button). The
+ * installer goes up first, so neither manifest ever points at a file that isn't there yet. Use the env file of the environment
  * whose bucket the deployed API reads.
  *
  *   cd desktop && npm run dist          # builds release/Property-Sync-Crawler-Setup-<version>.exe
@@ -20,6 +22,7 @@ import { GcsConfig } from '../src/integrations/storage/gcs/config/gcs.config';
 
 const FOLDER = 'desktop-crawler';
 const MANIFEST = 'latest.json';
+const UPDATER_MANIFEST = 'latest.yml';
 
 function arg(name: string): string | undefined {
   const prefix = `--${name}=`;
@@ -59,6 +62,25 @@ async function main() {
       contentType: 'application/vnd.microsoft.portable-executable',
       contentDisposition: `attachment; filename="${fileName}"`,
     },
+  });
+
+  // Written by electron-builder next to the installer (needs `publish:` in electron-builder.yml).
+  const updaterManifest = resolve(file, '..', UPDATER_MANIFEST);
+  if (!existsSync(updaterManifest)) {
+    throw new Error(
+      `${updaterManifest} not found; installed apps could not auto-update`,
+    );
+  }
+  const yml = readFileSync(updaterManifest, 'utf8');
+  if (!yml.includes(fileName)) {
+    throw new Error(
+      `${UPDATER_MANIFEST} does not describe ${fileName}; rebuild with npm run dist`,
+    );
+  }
+  await bucket.file(`${FOLDER}/${UPDATER_MANIFEST}`).save(yml, {
+    contentType: 'text/yaml',
+    resumable: false,
+    metadata: { cacheControl: 'no-cache' },
   });
 
   const manifest = {

@@ -45,3 +45,9 @@ export const PENDING_RESTORE_LOOKBACK_MS = 14 * 24 * 60 * 60 * 1000;
 export const DESKTOP_APP_MANIFEST_FILE = 'latest.json';
 /** Lifetime of the download link handed to the admin page. */
 export const DESKTOP_APP_DOWNLOAD_LINK_MINUTES = 15;
+
+/**
+ * Files the auto-updater may fetch through `GET /desktop-crawl/app/update/:file`: electron-builder's
+ * `latest.yml` and the installers. Nothing else in the folder (no path separators) is reachable.
+ */
+export const DESKTOP_APP_UPDATE_FILE_PATTERN = /^(latest.yml|[w.-]+.exe)$/;

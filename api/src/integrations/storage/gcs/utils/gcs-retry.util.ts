@@ -54,8 +54,7 @@ export async function withGcsRetry<T>(
       return await operation();
     } catch (error) {
       lastError = error;
-      const canRetry =
-        attempt < attempts && isTransientGcsError(error);
+      const canRetry = attempt < attempts && isTransientGcsError(error);
       if (!canRetry) {
         throw error;
       }

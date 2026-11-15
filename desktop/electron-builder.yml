@@ -23,3 +23,10 @@ nsis:
   createDesktopShortcut: always
   createStartMenuShortcut: true
   shortcutName: Property Sync Crawler
+
+# Makes electron-builder write release/latest.yml (version, file name, sha512) for the auto-updater.
+# The url is only a placeholder: the app points the updater at its own API at runtime
+# (src/main/updates/app-updater.ts), and api/scripts/publish-desktop-crawler.ts uploads the files.
+publish:
+  provider: generic
+  url: https://updates.invalid/desktop-crawl/app/update

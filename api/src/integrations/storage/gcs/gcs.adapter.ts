@@ -1,3 +1,4 @@
+import type { Readable } from 'stream';
 import { Injectable, Logger } from '@nestjs/common';
 import {
   UploadImageRequest,
@@ -207,5 +208,24 @@ export class GcsAdapter {
       this.logger.error('Download image error:', error);
       throw new Error(`Failed to download image: ${error.message}`);
     }
+  }
+
+  /**
+   * Streams a stored file without loading it into memory (large downloads such as the desktop app
+   * installer). Returns null when the file does not exist.
+   */
+  public async openReadStream(
+    fullPath: string,
+  ): Promise<{ stream: Readable; size: number; contentType: string } | null> {
+    const storage = this.gcsConfig.getStorageClient();
+    const file = storage.bucket(this.gcsConfig.getBucketName()).file(fullPath);
+    const [exists] = await file.exists();
+    if (!exists) return null;
+    const [metadata] = await file.getMetadata();
+    return {
+      stream: file.createReadStream(),
+      size: Number(metadata.size ?? 0),
+      contentType: metadata.contentType || 'application/octet-stream',
+    };
   }
 }

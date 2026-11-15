@@ -1,3 +1,4 @@
+import type { Readable } from 'stream';
 import { Injectable, Logger } from '@nestjs/common';
 import { GcsAdapter } from '../gcs.adapter';
 import {
@@ -108,8 +109,7 @@ export class GcsService {
   ): Promise<string> {
     try {
       return await withGcsRetry(
-        () =>
-          this.gcsAdapter.getSignedUrl(filename, folder, expiresInMinutes),
+        () => this.gcsAdapter.getSignedUrl(filename, folder, expiresInMinutes),
         {
           onRetry: (error, attempt) => {
             this.logger.warn(
@@ -132,8 +132,7 @@ export class GcsService {
   ): Promise<string> {
     try {
       return await withGcsRetry(
-        () =>
-          this.gcsAdapter.getSignedUrlForPath(fullPath, expiresInMinutes),
+        () => this.gcsAdapter.getSignedUrlForPath(fullPath, expiresInMinutes),
         {
           onRetry: (error, attempt) => {
             this.logger.warn(
@@ -224,5 +223,12 @@ export class GcsService {
       this.logger.error('Download image error:', error);
       throw new Error(`Failed to download image: ${error.message}`);
     }
+  }
+
+  /** See GcsAdapter.openReadStream. */
+  public openReadStream(
+    fullPath: string,
+  ): Promise<{ stream: Readable; size: number; contentType: string } | null> {
+    return this.gcsAdapter.openReadStream(fullPath);
   }
 }

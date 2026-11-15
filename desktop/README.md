@@ -63,13 +63,22 @@ when `NODE_ENV=local`). See `api/src/main.ts`.
 npm run dist              # -> release/Property-Sync-Crawler-Setup-<version>.exe
 ```
 
-To make it downloadable from the web app (**Admin → App Config → Desktop crawler app → Download for Windows**):
+To release a new version:
 
-```bash
-npm run publish           # dist + upload to the API's storage bucket (env: api/.env.staging)
-```
+1. Bump `version` in `package.json` (installed apps only update to a **higher** version).
+2. `npm run publish`: builds, then uploads the installer, `latest.yml` and `latest.json` to
+   `desktop-crawler/` in the API's storage bucket (env: `api/.env.staging`). Older installers are kept.
 
-This uploads the installer to `desktop-crawler/` in the bucket and updates `desktop-crawler/latest.json`;
-the API hands out a 15-minute download link to the newest one (`GET /desktop-crawl/app/latest`).
-Bump `version` in `package.json` for each release (older installers are kept in the bucket). The installer is unsigned, so Windows SmartScreen
+Then:
+- **Installed apps update themselves.** While signed in they check on start and every 4 hours
+  (`src/main/updates/app-updater.ts`), download the new version in the background and show
+  "Version X is ready, Restart now" (disabled while a crawl runs). If nobody restarts, it installs
+  when the app is next closed. The feed is `GET /desktop-crawl/app/update/:file` on the API, which
+  streams the files from the private bucket with the user's token.
+- **New computers** download it from the web app: **Admin, App Config, Desktop crawler app,
+  Download for Windows** (`GET /desktop-crawl/app/latest` gives a 15-minute link).
+
+Versions before 1.1.0 have no updater: install 1.1.0 by hand once on those computers.
+
+The installer is unsigned, so Windows SmartScreen
 warns on first install ("More info" → "Run anyway"). A code-signing certificate removes that.

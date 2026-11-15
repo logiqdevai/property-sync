@@ -24,6 +24,11 @@ const bridge: DesktopBridge = {
     onState: (listener) => subscribe(IpcChannels.CRAWL_STATE, listener),
     getCheckpoint: (scraperId) => ipcRenderer.invoke(IpcChannels.CRAWL_CHECKPOINT, scraperId),
   },
+  update: {
+    getState: () => ipcRenderer.invoke(IpcChannels.UPDATE_STATE),
+    onState: (listener) => subscribe(IpcChannels.UPDATE_STATE, listener),
+    install: () => ipcRenderer.invoke(IpcChannels.UPDATE_INSTALL),
+  },
   photos: {
     start: (request) => ipcRenderer.invoke(IpcChannels.PHOTOS_START, request),
     stop: () => ipcRenderer.invoke(IpcChannels.PHOTOS_STOP),

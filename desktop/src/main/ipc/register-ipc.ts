@@ -10,6 +10,7 @@ import { detectBrowserChannel } from "../browser/browser-launcher";
 import { checkpointStore } from "../crawl/checkpoint-store";
 import { crawlSession } from "../crawl/crawl-session";
 import { photoRepairSession } from "../photos/photo-repair-session";
+import { appUpdater } from "../updates/app-updater";
 
 /** Both tasks drive the same browser profile, so only one can run at a time. */
 function assertIdle(): void {
@@ -22,6 +23,7 @@ function assertIdle(): void {
 export function registerIpc(): void {
   ipcMain.handle(IpcChannels.SET_SESSION, (_event, session: DesktopSession | null) => {
     sessionStore.set(session);
+    appUpdater.onSession(session);
   });
 
   ipcMain.handle(IpcChannels.APP_INFO, () => ({
@@ -54,6 +56,13 @@ export function registerIpc(): void {
   ipcMain.handle(IpcChannels.PHOTOS_STOP, () => photoRepairSession.stop());
   ipcMain.handle(IpcChannels.PHOTOS_DISMISS, () => photoRepairSession.dismiss());
   ipcMain.handle(IpcChannels.PHOTOS_STATE, () => photoRepairSession.getState());
+
+  ipcMain.handle(IpcChannels.UPDATE_STATE, () => appUpdater.getState());
+  ipcMain.handle(IpcChannels.UPDATE_INSTALL, () => {
+    // Restarting mid-crawl would cut it off (it is saved, but the user would have to continue it).
+    if (isBusy()) throw new Error("Finish or stop the crawl or photo check first, then restart.");
+    appUpdater.install();
+  });
 }
 
 /** Asked before quitting while a task runs (the crawl itself is saved either way). */
