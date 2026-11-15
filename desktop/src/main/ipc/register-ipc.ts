@@ -8,17 +8,9 @@ import {
 import { sessionStore } from "../auth/session-store";
 import { detectBrowserChannel } from "../browser/browser-launcher";
 import { checkpointStore } from "../crawl/checkpoint-store";
-import { crawlSession } from "../crawl/crawl-session";
+import { crawlSessions } from "../crawl/crawl-session";
 import { photoRepairSession } from "../photos/photo-repair-session";
 import { appUpdater } from "../updates/app-updater";
-
-/** Both tasks drive the same browser profile, so only one can run at a time. */
-function assertIdle(): void {
-  if (crawlSession.isRunning()) throw new Error("A crawl is running. Wait for it to finish or stop it first.");
-  if (photoRepairSession.isRunning()) {
-    throw new Error("Photos are being fixed. Wait for that to finish or stop it first.");
-  }
-}
 
 export function registerIpc(): void {
   ipcMain.handle(IpcChannels.SET_SESSION, (_event, session: DesktopSession | null) => {
@@ -38,21 +30,18 @@ export function registerIpc(): void {
 
   ipcMain.handle(IpcChannels.BROWSER_CHECK, () => ({ channel: detectBrowserChannel() }));
 
-  ipcMain.handle(IpcChannels.CRAWL_START, (_event, request: StartCrawlRequest) => {
-    assertIdle();
-    crawlSession.start(request);
-  });
-  ipcMain.handle(IpcChannels.CRAWL_STOP, () => crawlSession.stop());
-  ipcMain.handle(IpcChannels.CRAWL_DISMISS, () => crawlSession.dismiss());
-  ipcMain.handle(IpcChannels.CRAWL_STATE, () => crawlSession.getState());
-  ipcMain.handle(IpcChannels.CRAWL_CHECKPOINT, (_event, scraperId: string) =>
-    checkpointStore.info(scraperId),
-  );
+  // Crawls of different agencies run side by side, each in its own Chrome tab.
+  ipcMain.handle(IpcChannels.CRAWL_START, (_event, request: StartCrawlRequest) => crawlSessions.start(request));
+  ipcMain.handle(IpcChannels.CRAWL_STOP, (_event, scraperId: string) => crawlSessions.stop(scraperId));
+  ipcMain.handle(IpcChannels.CRAWL_DISMISS, (_event, scraperId: string) => crawlSessions.dismiss(scraperId));
+  ipcMain.handle(IpcChannels.CRAWL_STATE, () => crawlSessions.getStates());
+  ipcMain.handle(IpcChannels.CRAWL_CHECKPOINT, (_event, scraperId: string) => checkpointStore.info(scraperId));
+  ipcMain.handle(IpcChannels.CRAWL_CHECKPOINTS, () => checkpointStore.listInfo());
 
-  ipcMain.handle(IpcChannels.PHOTOS_START, (_event, request: StartPhotosRequest) => {
-    assertIdle();
-    photoRepairSession.start(request);
-  });
+  // One photo check at a time; it can run next to crawls (its own tab).
+  ipcMain.handle(IpcChannels.PHOTOS_START, (_event, request: StartPhotosRequest) =>
+    photoRepairSession.start(request),
+  );
   ipcMain.handle(IpcChannels.PHOTOS_STOP, () => photoRepairSession.stop());
   ipcMain.handle(IpcChannels.PHOTOS_DISMISS, () => photoRepairSession.dismiss());
   ipcMain.handle(IpcChannels.PHOTOS_STATE, () => photoRepairSession.getState());
@@ -67,5 +56,5 @@ export function registerIpc(): void {
 
 /** Asked before quitting while a task runs (the crawl itself is saved either way). */
 export function isBusy(): boolean {
-  return crawlSession.isRunning() || photoRepairSession.isRunning();
+  return crawlSessions.isRunning() || photoRepairSession.isRunning();
 }

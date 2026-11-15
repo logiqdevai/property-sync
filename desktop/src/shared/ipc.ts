@@ -12,6 +12,7 @@ export const IpcChannels = {
   CRAWL_STOP: "crawl:stop",
   CRAWL_STATE: "crawl:state",
   CRAWL_CHECKPOINT: "crawl:checkpoint",
+  CRAWL_CHECKPOINTS: "crawl:checkpoints",
   CRAWL_DISMISS: "crawl:dismiss",
   PHOTOS_START: "photos:start",
   PHOTOS_STOP: "photos:stop",
@@ -92,6 +93,9 @@ export interface CrawlState {
   /** Short technical lines, newest last (shown under "Details"). */
   log: string[];
 }
+
+/** Every crawl the app knows about this session, by scraper id (running, finished, stopped). */
+export type CrawlStates = Record<string, CrawlState>;
 
 export interface CrawlCheckpointInfo {
   scraper_id: string;
@@ -174,12 +178,16 @@ export interface DesktopBridge {
     checkBrowser(): Promise<BrowserCheck>;
   };
   crawl: {
+    /** Starts one agency's crawl in its own Chrome tab; several can run at once. */
     start(request: StartCrawlRequest): Promise<void>;
-    stop(): Promise<void>;
-    dismiss(): Promise<void>;
-    getState(): Promise<CrawlState>;
-    onState(listener: (state: CrawlState) => void): () => void;
+    stop(scraperId: string): Promise<void>;
+    /** Forgets a finished/stopped/failed crawl's result (its saved progress stays). */
+    dismiss(scraperId: string): Promise<void>;
+    getStates(): Promise<CrawlStates>;
+    onStates(listener: (states: CrawlStates) => void): () => void;
     getCheckpoint(scraperId: string): Promise<CrawlCheckpointInfo | null>;
+    /** Saved, unfinished crawls of every agency, by scraper id. */
+    listCheckpoints(): Promise<Record<string, CrawlCheckpointInfo>>;
   };
   update: {
     getState(): Promise<UpdateState>;

@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import { Button, Card, useOverlayState } from "@heroui/react";
 import { Square } from "lucide-react";
 import { CrawlPhases, type CrawlState } from "@shared/ipc";
@@ -8,6 +7,7 @@ import { StepList } from "@/components/ui/step-list";
 import { TaskProgress } from "@/components/ui/task-progress";
 import { StatTile } from "@/components/ui/stat-tile";
 import { formatElapsed } from "@/lib/date";
+import { useNow } from "@/hooks/use-now";
 import { buildCrawlSteps, canStopCrawl } from "../utils/crawl-steps.utils";
 
 interface CrawlProgressCardProps {
@@ -16,18 +16,9 @@ interface CrawlProgressCardProps {
   onStop(): void;
 }
 
-function useNow(intervalMs: number) {
-  const [now, setNow] = useState(() => Date.now());
-  useEffect(() => {
-    const timer = setInterval(() => setNow(Date.now()), intervalMs);
-    return () => clearInterval(timer);
-  }, [intervalMs]);
-  return now;
-}
-
 export function CrawlProgressCard({ state, isStopping, onStop }: CrawlProgressCardProps) {
   const stopDialog = useOverlayState();
-  const now = useNow(15_000);
+  const now = useNow(10_000);
 
   return (
     <Card className="gap-6 p-6">
@@ -36,7 +27,7 @@ export function CrawlProgressCard({ state, isStopping, onStop }: CrawlProgressCa
           <Card.Title>Crawling {state.agency_name}</Card.Title>
           <Card.Description>
             Running for {formatElapsed(state.started_at, now)}
-            {state.resumed ? " (continued from a saved crawl)" : ""}. Leave the Chrome window open.
+            {state.resumed ? " (continued from a saved crawl)" : ""}. Leave its Chrome tab open.
           </Card.Description>
         </Card.Header>
         {canStopCrawl(state.phase) ? (

@@ -10,7 +10,7 @@ import {
 import { api, ApiError } from "../api/api-client";
 import type { PhotoCheckResult } from "../api/api.interfaces";
 import { clearBlock, type BlockContext } from "../browser/block-handling";
-import { openCrawlerBrowser, type CrawlerBrowser } from "../browser/browser-launcher";
+import { openCrawlerPage, type CrawlerPage } from "../browser/browser-launcher";
 import { notifyUser } from "../utils/attention";
 import { errorMessage, sleep, StoppedError } from "../utils/async.utils";
 import { StateChannel } from "../utils/state-channel";
@@ -82,7 +82,7 @@ class PhotoRepairSessionManager {
   }
 
   private async run(request: StartPhotosRequest): Promise<void> {
-    let browser: CrawlerBrowser | null = null;
+    let browser: CrawlerPage | null = null;
     try {
       const targets = await api.getPhotoTargets(request.agency_id);
       this.state.patch({ total: targets.length });
@@ -109,7 +109,7 @@ class PhotoRepairSessionManager {
       }
 
       this.state.patch({ phase: PhotoPhases.FIXING });
-      browser = await openCrawlerBrowser();
+      browser = await openCrawlerPage();
       const warmed = new Set<string>();
       const stillMissing: string[] = [];
       let fixed = 0;

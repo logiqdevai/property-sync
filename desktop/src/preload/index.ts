@@ -18,11 +18,12 @@ const bridge: DesktopBridge = {
   },
   crawl: {
     start: (request) => ipcRenderer.invoke(IpcChannels.CRAWL_START, request),
-    stop: () => ipcRenderer.invoke(IpcChannels.CRAWL_STOP),
-    dismiss: () => ipcRenderer.invoke(IpcChannels.CRAWL_DISMISS),
-    getState: () => ipcRenderer.invoke(IpcChannels.CRAWL_STATE),
-    onState: (listener) => subscribe(IpcChannels.CRAWL_STATE, listener),
+    stop: (scraperId) => ipcRenderer.invoke(IpcChannels.CRAWL_STOP, scraperId),
+    dismiss: (scraperId) => ipcRenderer.invoke(IpcChannels.CRAWL_DISMISS, scraperId),
+    getStates: () => ipcRenderer.invoke(IpcChannels.CRAWL_STATE),
+    onStates: (listener) => subscribe(IpcChannels.CRAWL_STATE, listener),
     getCheckpoint: (scraperId) => ipcRenderer.invoke(IpcChannels.CRAWL_CHECKPOINT, scraperId),
+    listCheckpoints: () => ipcRenderer.invoke(IpcChannels.CRAWL_CHECKPOINTS),
   },
   update: {
     getState: () => ipcRenderer.invoke(IpcChannels.UPDATE_STATE),

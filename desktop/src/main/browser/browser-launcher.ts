@@ -9,6 +9,9 @@ import type { BrowserChannel } from "@shared/ipc";
  * browser: a real, visible, everyday browser on a home/office connection is exactly what the
  * agencies' bot protection lets through. A persistent profile keeps cookies between runs, so a
  * site that was cleared once usually stays cleared.
+ *
+ * Chrome allows one window per profile, so every task (each agency's crawl, the photo repair)
+ * shares that one window and gets its own tab. The window closes when the last tab is released.
  */
 
 const candidates: Record<BrowserChannel, string[]> = {
@@ -37,56 +40,90 @@ export function detectBrowserChannel(): BrowserChannel | null {
   return null;
 }
 
-export interface CrawlerBrowser {
-  context: BrowserContext;
+/** One task's tab in the shared browser window. */
+export interface CrawlerPage {
   page: Page;
+  /** Closes this tab; the last one to close also closes the window. */
   close(): Promise<void>;
 }
 
-let inUse = false;
+interface SharedBrowser {
+  context: Promise<BrowserContext>;
+  users: number;
+}
 
-/** Opens the visible browser. Only one crawl or photo repair can use it at a time. */
-export async function openCrawlerBrowser(): Promise<CrawlerBrowser> {
-  if (inUse) throw new Error("The browser is already in use by another task.");
+let shared: SharedBrowser | null = null;
+/** Tabs already handed to a task (the window opens with one blank tab we reuse). */
+const claimed = new WeakSet<Page>();
+
+function launch(channel: BrowserChannel): Promise<BrowserContext> {
+  return chromium
+    .launchPersistentContext(join(app.getPath("userData"), "browser-profile"), {
+      channel,
+      headless: false,
+      viewport: null,
+      ignoreDefaultArgs: ["--enable-automation"],
+      args: ["--disable-blink-features=AutomationControlled", "--start-maximized"],
+    })
+    .catch((error: unknown) => {
+      const message = error instanceof Error ? error.message : String(error);
+      if (/user data directory is already in use|ProcessSingleton/i.test(message)) {
+        throw new Error("The crawler's Chrome window is still open from before. Close it and try again.", {
+          cause: error,
+        });
+      }
+      throw error;
+    });
+}
+
+export async function openCrawlerPage(): Promise<CrawlerPage> {
   const channel = detectBrowserChannel();
   if (!channel) {
     throw new Error("Google Chrome is not installed on this computer. Install it and try again.");
   }
 
-  inUse = true;
-  try {
-    const context = await chromium.launchPersistentContext(
-      join(app.getPath("userData"), "browser-profile"),
-      {
-        channel,
-        headless: false,
-        viewport: null,
-        ignoreDefaultArgs: ["--enable-automation"],
-        args: ["--disable-blink-features=AutomationControlled", "--start-maximized"],
-      },
-    );
-    const page = context.pages()[0] ?? (await context.newPage());
-    let closed = false;
-    const close = async () => {
-      if (closed) return;
-      closed = true;
-      inUse = false;
-      await context.close().catch(() => undefined);
-    };
-    // The user may close the window themselves; free the lock either way.
-    context.on("close", () => {
-      closed = true;
-      inUse = false;
-    });
-    return { context, page, close };
-  } catch (error) {
-    inUse = false;
-    const message = error instanceof Error ? error.message : String(error);
-    if (/user data directory is already in use|ProcessSingleton/i.test(message)) {
-      throw new Error("The crawler's browser window is still open. Close it and try again.", {
-        cause: error,
+  if (!shared) {
+    const created: SharedBrowser = { context: launch(channel), users: 0 };
+    shared = created;
+    created.context
+      .then((context) =>
+        // The user closed the whole window: every tab is gone, start fresh next time.
+        context.on("close", () => {
+          if (shared === created) shared = null;
+        }),
+      )
+      .catch(() => {
+        if (shared === created) shared = null;
       });
-    }
+  }
+
+  const browser = shared;
+  browser.users++;
+  let context: BrowserContext;
+  let page: Page;
+  try {
+    context = await browser.context;
+    const blank = context.pages().find((p) => !claimed.has(p) && p.url() === "about:blank");
+    page = blank ?? (await context.newPage());
+    claimed.add(page);
+  } catch (error) {
+    browser.users--;
     throw error;
   }
+
+  let closed = false;
+  return {
+    page,
+    close: async () => {
+      if (closed) return;
+      closed = true;
+      browser.users--;
+      if (browser.users <= 0 && shared === browser) {
+        shared = null;
+        await context.close().catch(() => undefined);
+      } else {
+        await page.close().catch(() => undefined);
+      }
+    },
+  };
 }

@@ -19,8 +19,8 @@ import {
   useStartCrawl,
   useStopCrawl,
 } from "@/features/crawl-session/hooks/use-crawl-session";
-import { isPhotoRepairActive, usePhotoRepair } from "@/features/photo-repair/hooks/use-photo-repair";
 import { useOpenExternal } from "@/features/desktop-app/hooks/use-desktop-app";
+import { OpenAgencyInWebAppButton } from "@/components/ui/open-agency-in-web-app-button";
 import { CrawlStartCard } from "./components/crawl-start-card";
 import { CrawlProgressCard } from "./components/crawl-progress-card";
 import { CrawlResultCard } from "./components/crawl-result-card";
@@ -30,17 +30,14 @@ const CrawlPage: FC = () => {
   const navigate = useNavigate();
   const { data: agency, isPending: agencyPending } = useGetCrawlableAgency({ scraperId });
   const { data: checkpoint } = useGetCrawlCheckpoint(scraperId);
-  const crawl = useCrawlSession();
-  const photos = usePhotoRepair();
+  const crawl = useCrawlSession(scraperId);
   const { mutate: startCrawl, isPending: isStarting } = useStartCrawl();
   const { mutate: stopCrawl, isPending: isStopping } = useStopCrawl();
   const { mutate: dismissCrawl } = useDismissCrawl();
   const { mutate: openExternal } = useOpenExternal();
 
-  const isThisCrawl = crawl.scraper_id === scraperId && crawl.phase !== CrawlPhases.IDLE;
-  const otherTaskRunning =
-    (isCrawlActive(crawl) && crawl.scraper_id !== scraperId) || isPhotoRepairActive(photos);
-  const agencyName = agency?.agency_name ?? crawl.agency_name ?? "this agency";
+  const agencyName = agency?.agency_name ?? crawl?.agency_name ?? "this agency";
+  const agencyId = agency?.agency_id ?? crawl?.agency_id ?? null;
 
   const start = (resume: boolean) => {
     if (!agency) return;
@@ -53,11 +50,11 @@ const CrawlPage: FC = () => {
   };
 
   const back = () => {
-    dismissCrawl();
+    dismissCrawl(scraperId);
     navigate(Routes.agencies);
   };
 
-  if (agencyPending && !isThisCrawl) {
+  if (agencyPending && !crawl) {
     return (
       <Card className="gap-3 p-6">
         <Skeleton className="h-5 w-56 rounded-md" />
@@ -67,7 +64,7 @@ const CrawlPage: FC = () => {
     );
   }
 
-  if (!agency && !isThisCrawl) {
+  if (!agency && !crawl) {
     return (
       <Notice
         status="danger"
@@ -88,19 +85,19 @@ const CrawlPage: FC = () => {
         eyebrow={<BackLink to={Routes.agencies} label="Agencies" />}
         title={agencyName}
         description={agency?.agency_url}
+        actions={agencyId ? <OpenAgencyInWebAppButton agencyId={agencyId} agencyName={agencyName} /> : null}
       />
       <BrowserMissingNotice />
 
-      {!isThisCrawl ? (
+      {!crawl || crawl.phase === CrawlPhases.IDLE ? (
         <CrawlStartCard
           agencyName={agencyName}
           checkpoint={checkpoint}
-          isBlockedByOtherTask={otherTaskRunning}
           isStarting={isStarting}
           onStart={start}
         />
       ) : isCrawlActive(crawl) ? (
-        <CrawlProgressCard state={crawl} isStopping={isStopping} onStop={() => stopCrawl()} />
+        <CrawlProgressCard state={crawl} isStopping={isStopping} onStop={() => stopCrawl(scraperId)} />
       ) : (
         <CrawlResultCard
           state={crawl}
@@ -110,7 +107,7 @@ const CrawlPage: FC = () => {
         />
       )}
 
-      {isThisCrawl ? <TechnicalDetails lines={crawl.log} /> : null}
+      {crawl ? <TechnicalDetails lines={crawl.log} /> : null}
     </>
   );
 };

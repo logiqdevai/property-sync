@@ -16,4 +16,5 @@ export const ApiRoutes = {
 export const WebAppRoutes = {
   pendingReview: "/dashboard/properties?pending_crm_update=true",
   adminCrawlRun: (id: string) => `/admin/crawl-runs/${id}`,
+  adminAgency: (id: string) => `/admin/agencies/${id}`,
 } as const;

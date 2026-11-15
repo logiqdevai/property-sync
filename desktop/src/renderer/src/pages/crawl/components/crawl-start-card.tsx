@@ -9,8 +9,6 @@ import { formatRelative } from "@/lib/date";
 interface CrawlStartCardProps {
   agencyName: string;
   checkpoint: CrawlCheckpointInfo | null | undefined;
-  /** Another crawl or photo check is running. */
-  isBlockedByOtherTask: boolean;
   isStarting: boolean;
   onStart(resume: boolean): void;
 }
@@ -18,7 +16,6 @@ interface CrawlStartCardProps {
 export function CrawlStartCard({
   agencyName,
   checkpoint,
-  isBlockedByOtherTask,
   isStarting,
   onStart,
 }: CrawlStartCardProps) {
@@ -29,15 +26,11 @@ export function CrawlStartCard({
       <Card.Header className="flex flex-col gap-1">
         <Card.Title>Update {agencyName}</Card.Title>
         <Card.Description>
-          A Chrome window opens and goes through every listing on the agency's website. Leave that window open
-          until the crawl is finished; you can keep using the computer meanwhile. Nothing is sent to the CRM: new
+          A Chrome tab opens and goes through every listing on the agency's website. Leave Chrome open until the
+          crawl is finished (other agencies can be crawled at the same time, each in its own tab); you can keep using the computer meanwhile. Nothing is sent to the CRM: new
           and changed listings wait for your review in Property Sync.
         </Card.Description>
       </Card.Header>
-
-      {isBlockedByOtherTask ? (
-        <Notice status="default" title="Another task is running" description="Wait for it to finish first." />
-      ) : null}
 
       {checkpoint ? (
         <Notice
@@ -50,7 +43,7 @@ export function CrawlStartCard({
                 variant="primary"
                 size="sm"
                 isPending={isStarting}
-                isDisabled={isStarting || isBlockedByOtherTask}
+                isDisabled={isStarting}
                 idleLeading={<History className="size-4" />}
                 onPress={() => onStart(true)}
               >
@@ -59,7 +52,7 @@ export function CrawlStartCard({
               <Button
                 variant="secondary"
                 size="sm"
-                isDisabled={isStarting || isBlockedByOtherTask}
+                isDisabled={isStarting}
                 onPress={startOverDialog.open}
               >
                 <RotateCcw className="size-4" />
@@ -73,7 +66,7 @@ export function CrawlStartCard({
           <ActionButtonWithPending
             variant="primary"
             isPending={isStarting}
-            isDisabled={isStarting || isBlockedByOtherTask}
+            isDisabled={isStarting}
             idleLeading={<Play className="size-4" />}
             onPress={() => onStart(false)}
           >

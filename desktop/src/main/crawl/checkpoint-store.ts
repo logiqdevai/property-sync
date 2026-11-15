@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from "fs";
+import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, rmSync, writeFileSync } from "fs";
 import { join } from "path";
 import { app } from "electron";
 import type { CrawlCheckpointInfo } from "@shared/ipc";
@@ -53,6 +53,18 @@ export const checkpointStore = {
 
   discard(scraperId: string): void {
     rmSync(fileFor(scraperId), { force: true });
+  },
+
+  /** Every saved, unfinished crawl, by scraper id. */
+  listInfo(): Record<string, CrawlCheckpointInfo> {
+    if (!existsSync(dir())) return {};
+    const result: Record<string, CrawlCheckpointInfo> = {};
+    for (const file of readdirSync(dir())) {
+      if (!file.endsWith(".json")) continue;
+      const info = this.info(file.slice(0, -".json".length));
+      if (info) result[info.scraper_id] = info;
+    }
+    return result;
   },
 
   info(scraperId: string): CrawlCheckpointInfo | null {

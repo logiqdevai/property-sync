@@ -2,42 +2,49 @@ import { Link, useLocation } from "react-router-dom";
 import { Spinner } from "@heroui/react";
 import { BlockStates } from "@shared/ipc";
 import { Routes } from "@/routes/routes";
-import { isCrawlActive, useCrawlSession } from "@/features/crawl-session/hooks/use-crawl-session";
+import { useActiveCrawls } from "@/features/crawl-session/hooks/use-crawl-session";
 import { isPhotoRepairActive, usePhotoRepair } from "@/features/photo-repair/hooks/use-photo-repair";
 import { cn } from "@/lib/utils";
 
-/** Shown on every page while a crawl or photo repair runs, linking back to it. */
+/** Shown on other pages while crawls or a photo check run; points to where the user is needed. */
 export function ActiveTaskBanner() {
-  const crawl = useCrawlSession();
+  const { active, needsUser } = useActiveCrawls();
   const photos = usePhotoRepair();
   const { pathname } = useLocation();
+  const photosActive = isPhotoRepairActive(photos);
 
-  let target: { to: string; text: string; needsUser: boolean } | null = null;
-  if (isCrawlActive(crawl) && crawl.scraper_id) {
-    target = {
-      to: Routes.crawl(crawl.scraper_id),
-      text: `Crawling ${crawl.agency_name ?? "an agency"}`,
-      needsUser: crawl.block === BlockStates.NEEDS_USER,
-    };
-  } else if (isPhotoRepairActive(photos) && photos.agency_id) {
-    target = {
-      to: Routes.photos(photos.agency_id),
-      text: `Checking photos of ${photos.agency_name ?? "an agency"}`,
-      needsUser: photos.block === BlockStates.NEEDS_USER,
-    };
-  }
-  if (!target || pathname === target.to) return null;
+  const parts: string[] = [];
+  if (active.length === 1) parts.push(`Crawling ${active[0].agency_name}`);
+  else if (active.length > 1) parts.push(`${active.length} crawls running`);
+  if (photosActive) parts.push(`checking photos of ${photos.agency_name ?? "an agency"}`);
+  if (parts.length === 0) return null;
+
+  const photosNeedUser = photosActive && photos.block === BlockStates.NEEDS_USER;
+  const helpTarget = needsUser[0];
+  let to: string = Routes.agencies;
+  if (helpTarget?.scraper_id) to = Routes.crawl(helpTarget.scraper_id);
+  else if (photosNeedUser && photos.agency_id) to = Routes.photos(photos.agency_id);
+  else if (active.length === 1 && active[0].scraper_id && !photosActive) to = Routes.crawl(active[0].scraper_id);
+  else if (active.length === 0 && photos.agency_id) to = Routes.photos(photos.agency_id);
+  if (pathname === to) return null;
+
+  const helpText = helpTarget
+    ? `${helpTarget.agency_name} needs your help in Chrome`
+    : photosNeedUser
+      ? "the photo check needs your help in Chrome"
+      : null;
+  const text = parts.join(", ");
 
   return (
     <Link
-      to={target.to}
+      to={to}
       className={cn(
         "flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium",
-        target.needsUser ? "bg-warning text-warning-foreground" : "bg-accent-soft text-accent",
+        helpText ? "bg-warning text-warning-foreground" : "bg-accent-soft text-accent",
       )}
     >
       <Spinner size="sm" color="current" />
-      {target.needsUser ? `${target.text}: your help is needed in Chrome` : target.text}
+      {helpText ? `${text}: ${helpText}` : text.charAt(0).toUpperCase() + text.slice(1)}
       <span className="underline underline-offset-4">Open</span>
     </Link>
   );

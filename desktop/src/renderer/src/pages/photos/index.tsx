@@ -9,7 +9,6 @@ import { TechnicalDetails } from "@/components/ui/technical-details";
 import { BrowserMissingNotice } from "@/components/ui/browser-missing-notice";
 import { Routes } from "@/routes/routes";
 import { useGetCrawlableAgency } from "@/features/desktop-crawl/hooks/use-desktop-crawl";
-import { isCrawlActive, useCrawlSession } from "@/features/crawl-session/hooks/use-crawl-session";
 import {
   isPhotoRepairActive,
   useDismissPhotoRepair,
@@ -17,6 +16,7 @@ import {
   useStartPhotoRepair,
   useStopPhotoRepair,
 } from "@/features/photo-repair/hooks/use-photo-repair";
+import { OpenAgencyInWebAppButton } from "@/components/ui/open-agency-in-web-app-button";
 import { PhotoStartCard } from "./components/photo-start-card";
 import { PhotoProgressCard } from "./components/photo-progress-card";
 import { PhotoResultCard } from "./components/photo-result-card";
@@ -26,14 +26,13 @@ const PhotosPage: FC = () => {
   const navigate = useNavigate();
   const { data: agency, isPending: agencyPending } = useGetCrawlableAgency({ agencyId });
   const photos = usePhotoRepair();
-  const crawl = useCrawlSession();
   const { mutate: startRepair, isPending: isStarting } = useStartPhotoRepair();
   const { mutate: stopRepair, isPending: isStopping } = useStopPhotoRepair();
   const { mutate: dismissRepair } = useDismissPhotoRepair();
 
   const isThisAgency = photos.agency_id === agencyId && photos.phase !== PhotoPhases.IDLE;
-  const otherTaskRunning =
-    isCrawlActive(crawl) || (isPhotoRepairActive(photos) && photos.agency_id !== agencyId);
+  // One photo check at a time; crawls can keep running next to it.
+  const otherTaskRunning = isPhotoRepairActive(photos) && photos.agency_id !== agencyId;
   const agencyName = agency?.agency_name ?? photos.agency_name ?? "this agency";
 
   const start = () => {
@@ -69,6 +68,7 @@ const PhotosPage: FC = () => {
         eyebrow={<BackLink to={Routes.agencies} label="Agencies" />}
         title={agencyName}
         description="Photos in the CRM"
+        actions={<OpenAgencyInWebAppButton agencyId={agencyId} agencyName={agencyName} />}
       />
       <BrowserMissingNotice />
 

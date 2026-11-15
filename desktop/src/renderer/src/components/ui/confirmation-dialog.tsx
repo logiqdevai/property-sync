@@ -12,6 +12,8 @@ export type ConfirmationDialogProps = {
   cancelLabel?: string;
   onConfirm: () => void | Promise<void>;
   isPending?: boolean;
+  /** "danger" (default) for destructive actions; "primary" for a plain go-ahead. */
+  confirmVariant?: "danger" | "primary";
 };
 
 export function ConfirmationDialog({
@@ -22,6 +24,7 @@ export function ConfirmationDialog({
   cancelLabel = "Cancel",
   onConfirm,
   isPending = false,
+  confirmVariant = "danger",
 }: ConfirmationDialogProps) {
   const handleConfirm = async () => {
     try {
@@ -46,7 +49,7 @@ export function ConfirmationDialog({
                 {cancelLabel}
               </Button>
               <ActionButtonWithPending
-                variant="danger"
+                variant={confirmVariant}
                 isPending={isPending}
                 isDisabled={isPending}
                 onPress={handleConfirm}
