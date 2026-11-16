@@ -4548,7 +4548,15 @@ export class UserPropertiesService {
         // Same location inputs as the canonical Property => it inherits the canonical's
         // resolved id (already copied by mapFromCanonical, or propagated when the canonical's
         // own job finishes), so a second resolution for the same listing would be wasted.
-        if (!sameLocationInputs(created, property)) {
+        // ...but only if it actually has an id. When the canonical was still unresolved at
+        // creation time (its async job races this create, or was skipped/propagated before this
+        // row existed) the copy stays null forever and every CRM push fails with "location id is
+        // required" -- so a row without an id always gets its own job (it short-circuits to the
+        // canonical's answer in processUserProperty when the inputs match, so it is cheap).
+        if (
+          created.estateweb_location_id == null ||
+          !sameLocationInputs(created, property)
+        ) {
           await this.enqueueResolveEstateWebLocation(
             'user_property',
             created.id,
@@ -4615,7 +4623,15 @@ export class UserPropertiesService {
         // Same location inputs as the canonical Property => it inherits the canonical's
         // resolved id (already copied by mapFromCanonical, or propagated when the canonical's
         // own job finishes), so a second resolution for the same listing would be wasted.
-        if (!sameLocationInputs(created, property)) {
+        // ...but only if it actually has an id. When the canonical was still unresolved at
+        // creation time (its async job races this create, or was skipped/propagated before this
+        // row existed) the copy stays null forever and every CRM push fails with "location id is
+        // required" -- so a row without an id always gets its own job (it short-circuits to the
+        // canonical's answer in processUserProperty when the inputs match, so it is cheap).
+        if (
+          created.estateweb_location_id == null ||
+          !sameLocationInputs(created, property)
+        ) {
           await this.enqueueResolveEstateWebLocation(
             'user_property',
             created.id,

@@ -103,6 +103,25 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
       const message = error instanceof Error ? error.message : String(error);
       this.logger.error(`CMS sync job ${cms_sync_run_id} failed: ${message}`);
       await this.markJobFailed(logId, startedAt, message, error);
+      // A throw before updateBatchResult (e.g. a validation error) would otherwise leave the
+      // run PENDING forever once BullMQ gives up (removeOnFail drops the job).
+      const maxAttempts = job.opts.attempts ?? 1;
+      if (job.attemptsMade + 1 >= maxAttempts) {
+        await this.prisma.cmsSyncRun
+          .updateMany({
+            where: { id: cms_sync_run_id, status: CmsSyncStatus.PENDING },
+            data: {
+              status: CmsSyncStatus.FAILED,
+              error_message: message.slice(0, 1000),
+              finished_at: new Date(),
+            },
+          })
+          .catch((e) =>
+            this.logger.warn(
+              `Could not mark CmsSyncRun ${cms_sync_run_id} FAILED: ${e instanceof Error ? e.message : String(e)}`,
+            ),
+          );
+      }
       throw error;
     }
   }
@@ -561,12 +580,32 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
             return runCreate();
           }
 
-          await adapter.pushUpdate(
-            userIntegrationId,
-            integrationId,
-            userProperty,
-            pushOptions,
-          );
+          try {
+            await adapter.pushUpdate(
+              userIntegrationId,
+              integrationId,
+              userProperty,
+              pushOptions,
+            );
+          } catch (error) {
+            // The ownership check can be skipped (reconciled/manual links), so a listing
+            // deleted in the CRM only surfaces here as a 404 on the PATCH. Confirm it is
+            // really gone, then drop the dead link and re-create instead of failing every
+            // retry (samson-homes 2026-11-15: PATCH /api/property/47075 -> 404).
+            if (
+              !isNotFoundEstateWebError(error) ||
+              (await this.listingBelongsToIntegration(
+                userIntegrationId,
+                integrationId,
+                userProperty,
+              ))
+            ) {
+              throw error;
+            }
+            await this.clearIntegrationPropertyId(operation.user_property_id);
+            userProperty.integration_property_id = null;
+            return runCreate();
+          }
           await this.stampIntegrationPropertyId(
             operation.user_property_id,
             operation.duplicate_group_id,

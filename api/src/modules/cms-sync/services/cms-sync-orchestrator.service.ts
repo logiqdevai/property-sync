@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { resolveEstateWebLocationFromSources } from '@/integrations/estateweb/utils/estateweb-location-lookup.util';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
@@ -737,6 +738,49 @@ export class CmsSyncOrchestratorService {
     };
   }
 
+  // The EstateWeb adapter rejects any push without a location id, so such a property can only
+  // fail (and, before this gate, left the whole run stuck PENDING). Keep it held for review
+  // instead of queueing a doomed operation; it is released once a location is resolved/set.
+  private async excludeWithoutEstateWebLocation<
+    T extends { user_property_id: string },
+  >(affected: T[], logLabel: string): Promise<T[]> {
+    if (affected.length === 0) return affected;
+    const rows = await this.prisma.userProperty.findMany({
+      where: { id: { in: affected.map((a) => a.user_property_id) } },
+      select: {
+        id: true,
+        estateweb_location_id: true,
+        city: true,
+        district: true,
+        title: true,
+        description: true,
+      },
+    });
+    const missing = new Set(
+      rows
+        .filter(
+          (r) =>
+            !r.estateweb_location_id &&
+            !resolveEstateWebLocationFromSources({
+              city: r.city,
+              district: r.district,
+              title: r.title,
+              description: r.description,
+            }),
+        )
+        .map((r) => r.id),
+    );
+    if (missing.size === 0) return affected;
+    this.logger.warn(
+      `${logLabel}: holding ${missing.size} propert(ies) without an EstateWeb location id: ${[...missing].join(', ')}`,
+    );
+    await this.prisma.userProperty.updateMany({
+      where: { id: { in: [...missing] } },
+      data: { pending_crm_update: true },
+    });
+    return affected.filter((a) => !missing.has(a.user_property_id));
+  }
+
   private async processTrackerBatch(
     crawlRunId: string | null,
     trackerGroup: TrackerGroup,
@@ -764,8 +808,12 @@ export class CmsSyncOrchestratorService {
       });
     }
 
-    const filtered = trackerGroup.affected.filter((a) =>
+    const enabled = trackerGroup.affected.filter((a) =>
       this.isChangeTypeEnabled(a.change_type, tracker, options),
+    );
+    const filtered = await this.excludeWithoutEstateWebLocation(
+      enabled,
+      logLabel,
     );
 
     if (filtered.length === 0) {
