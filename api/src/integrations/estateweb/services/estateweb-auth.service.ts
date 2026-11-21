@@ -1,5 +1,5 @@
 import { HttpStatus, Injectable, Logger } from '@nestjs/common';
-import { chromium } from 'playwright';
+import { BrowserContext, chromium, Page } from 'playwright';
 import { NotificationType } from 'generated/prisma';
 import { EstateWebConfig } from '../config/estateweb.config';
 import { EstateWebException } from '../exceptions/estateweb.exception';
@@ -56,11 +56,20 @@ export class EstateWebAuthService {
       );
     }
 
-    const context = await browser.newContext({
-      baseURL: baseUrl,
-      locale: 'en-US',
-    });
-    const page = await context.newPage();
+    // Built before the try below, whose finally is what closes the browser --
+    // a failure here used to leak a whole Chromium process.
+    let context: BrowserContext;
+    let page: Page;
+    try {
+      context = await browser.newContext({
+        baseURL: baseUrl,
+        locale: 'en-US',
+      });
+      page = await context.newPage();
+    } catch (error) {
+      await browser.close().catch(() => undefined);
+      throw error;
+    }
 
     try {
       await page.goto('/login', {
@@ -187,21 +196,28 @@ export class EstateWebAuthService {
     const headless = this.estateWebConfig.isHeadless();
 
     const browser = await chromium.launch({ headless });
-    const context = await browser.newContext({
-      baseURL: baseUrl,
-      locale: 'en-US',
-    });
+    let context: BrowserContext;
+    let page: Page;
+    try {
+      context = await browser.newContext({
+        baseURL: baseUrl,
+        locale: 'en-US',
+      });
 
-    await context.addCookies([
-      {
-        name: this.estateWebConfig.getConfig().sessionCookie,
-        value: session.estateSession,
-        domain: new URL(baseUrl).hostname,
-        path: '/',
-      },
-    ]);
+      await context.addCookies([
+        {
+          name: this.estateWebConfig.getConfig().sessionCookie,
+          value: session.estateSession,
+          domain: new URL(baseUrl).hostname,
+          path: '/',
+        },
+      ]);
 
-    const page = await context.newPage();
+      page = await context.newPage();
+    } catch (error) {
+      await browser.close().catch(() => undefined);
+      throw error;
+    }
 
     try {
       await page.goto('/app', {

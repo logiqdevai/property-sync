@@ -1,10 +1,8 @@
 import { app } from "electron";
-import electronUpdater from "electron-updater";
+import { autoUpdater } from "electron-updater";
 import { IpcChannels, UpdateStatuses, type DesktopSession, type UpdateState } from "@shared/ipc";
 import { errorMessage } from "../utils/async.utils";
 import { StateChannel } from "../utils/state-channel";
-
-const { autoUpdater } = electronUpdater;
 
 const CHECK_EVERY_MS = 4 * 60 * 60 * 1000;
 

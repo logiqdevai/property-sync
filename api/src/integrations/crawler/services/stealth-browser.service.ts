@@ -67,11 +67,39 @@ export interface NewStealthPageOptions {
 // pool) never gets killed by Bright Data mid-item.
 export const MANAGED_SESSION_MAX_AGE_MS = 45 * 60_000;
 
+// Shared local Chromium housekeeping (see startHousekeeping). Found in
+// production (2026-11-21): after one 1,055-detail-page crawl the shared
+// browser never recycled again -- recycling required browser.contexts() to be
+// empty, so a single context whose close() never completed blocked it
+// forever -- and the host's RAM, swap and CPU climbed for 3 days with no
+// crawl running until the box swap-thrashed and every Redis/Postgres socket
+// in the API timed out.
+//   - Relaunch the browser once it has served a crawl and then sat idle
+//     (no context leased) this long, so every crawl window starts fresh.
+const LOCAL_BROWSER_IDLE_RECYCLE_MS = 10 * 60_000;
+//   - Force-close any local context still leased after this long. A detail
+//     page is hard-capped at a few minutes and a listing walk well under an
+//     hour, so a context this old was leaked by its caller.
+const LOCAL_CONTEXT_MAX_AGE_MS = 3 * 60 * 60_000;
+const HOUSEKEEPING_INTERVAL_MS = 60_000;
+
 @Injectable()
 export class StealthBrowserService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(StealthBrowserService.name);
   private browser: Browser | null = null;
   private contextsSinceLaunch = 0;
+  // Contexts on the shared local browser that a caller still holds (opened,
+  // closeContext not yet called), with their open time. Recycling is gated on
+  // THIS, not browser.contexts(): a context whose close() hung is already
+  // released by its caller and must not keep the browser alive forever.
+  private readonly localLeases = new Map<BrowserContext, number>();
+  // Callers between acquireLocalBrowser() and their context being leased.
+  private pendingLocal = 0;
+  private lastLocalActivityAt = Date.now();
+  // Serializes launch/recycle so concurrent callers never launch two shared
+  // browsers (the loser of that race used to leak a whole Chromium).
+  private browserLock: Promise<unknown> = Promise.resolve();
+  private housekeepingTimer: NodeJS.Timeout | null = null;
 
   // Bounds how many browser contexts/pages -- local Chromium AND managed
   // (Bright Data) alike -- can be open at once across every concurrently
@@ -95,10 +123,22 @@ export class StealthBrowserService implements OnModuleInit, OnModuleDestroy {
   ) {}
 
   async onModuleInit(): Promise<void> {
-    await this.ensureBrowser();
+    await this.withBrowserLock(async () => {
+      if (!this.browser?.isConnected()) await this.launchLocalBrowser();
+    });
+    this.housekeepingTimer = setInterval(() => {
+      void this.runHousekeeping().catch((error: unknown) =>
+        this.logger.warn(`Chromium housekeeping failed: ${String(error)}`),
+      );
+    }, HOUSEKEEPING_INTERVAL_MS);
+    this.housekeepingTimer.unref();
   }
 
   async onModuleDestroy(): Promise<void> {
+    if (this.housekeepingTimer) {
+      clearInterval(this.housekeepingTimer);
+      this.housekeepingTimer = null;
+    }
     if (this.browser) {
       await this.browser.close().catch(() => undefined);
       this.browser = null;
@@ -116,17 +156,38 @@ export class StealthBrowserService implements OnModuleInit, OnModuleDestroy {
     contextOptions?: Partial<BrowserContextOptions>,
     options?: NewStealthPageOptions,
   ): Promise<StealthPageSession> {
-    const browser = options?.useManagedBrowser
-      ? await this.openManagedBrowser()
-      : options?.proxySession
-        ? await this.openProxyBrowser(options.proxySession)
-        : await this.ensureBrowser();
-
-    if (!options?.useManagedBrowser && !options?.proxySession) {
-      this.contextsSinceLaunch++;
+    if (options?.useManagedBrowser || options?.proxySession) {
+      const browser = options.useManagedBrowser
+        ? await this.openManagedBrowser()
+        : await this.openProxyBrowser(options.proxySession!);
+      try {
+        return await this.newStealthPageOnBrowser(
+          browser,
+          contextOptions,
+          options,
+        );
+      } catch (error) {
+        // This dedicated browser/connection exists only for this one page;
+        // nobody else will ever close it if the page couldn't be built.
+        await browser.close().catch(() => undefined);
+        throw error;
+      }
     }
 
-    return this.newStealthPageOnBrowser(browser, contextOptions, options);
+    const browser = await this.acquireLocalBrowser();
+    this.contextsSinceLaunch++;
+    try {
+      const session = await this.newStealthPageOnBrowser(
+        browser,
+        contextOptions,
+        options,
+      );
+      this.localLeases.set(session.context, Date.now());
+      return session;
+    } finally {
+      this.pendingLocal--;
+      this.lastLocalActivityAt = Date.now();
+    }
   }
 
   // Builds a context+page on an ALREADY-CONNECTED browser (local or managed).
@@ -245,6 +306,9 @@ export class StealthBrowserService implements OnModuleInit, OnModuleDestroy {
     options?: { closeBrowser?: boolean },
   ): Promise<void> {
     const browser = context.browser();
+    if (this.localLeases.delete(context)) {
+      this.lastLocalActivityAt = Date.now();
+    }
     // Persist this context's cookies (e.g. a cleared bot challenge) into the
     // crawl's shared jar BEFORE the context is torn down.
     const proxySession = this.proxySessions.get(context);
@@ -253,10 +317,22 @@ export class StealthBrowserService implements OnModuleInit, OnModuleDestroy {
         .cookies()
         .catch(() => proxySession.cookies);
     }
-    await Promise.race([
-      context.close().catch(() => undefined),
-      new Promise<void>((resolve) => setTimeout(resolve, timeoutMs)),
+    let timer: NodeJS.Timeout | undefined;
+    const closed = await Promise.race([
+      context
+        .close()
+        .catch(() => undefined)
+        .then(() => true),
+      new Promise<false>((resolve) => {
+        timer = setTimeout(() => resolve(false), timeoutMs);
+      }),
     ]);
+    clearTimeout(timer);
+    if (!closed) {
+      this.logger.warn(
+        `Browser context did not close within ${timeoutMs}ms; it is discarded on the next Chromium recycle`,
+      );
+    }
     this.pageReleasers.get(context)?.();
     // A managed-browser context owns its own dedicated remote connection (see
     // openManagedBrowser) rather than the shared local one -- close that
@@ -271,42 +347,97 @@ export class StealthBrowserService implements OnModuleInit, OnModuleDestroy {
     }
   }
 
-  private async ensureBrowser(): Promise<Browser> {
-    if (this.browser?.isConnected()) {
-      // Recycle only when fully idle -- closing the shared browser while another
-      // concurrent job still holds a context open would kill that job's page too.
-      // A long-lived process otherwise accumulates memory across hundreds of
-      // context cycles (one per crawl page plus one per detail-page enrichment
-      // item -- easily 500+ per run) with no natural restart point.
-      const { chromium_max_contexts_before_restart } =
-        await this.platformConfigService.getCrawlerConfig();
-      const dueForRestart =
-        this.contextsSinceLaunch >= chromium_max_contexts_before_restart &&
-        this.browser.contexts().length === 0;
+  private withBrowserLock<T>(fn: () => Promise<T>): Promise<T> {
+    const run = this.browserLock.then(fn, fn);
+    this.browserLock = run.catch(() => undefined);
+    return run;
+  }
 
-      if (!dueForRestart) {
-        return this.browser;
+  private get hasLocalUsers(): boolean {
+    return this.localLeases.size > 0 || this.pendingLocal > 0;
+  }
+
+  // Returns the shared local browser, (re)launching it if needed, and counts
+  // the caller as pending until it leases its context (newStealthPage
+  // decrements). Counting happens inside the lock so housekeeping can never
+  // close the browser between this returning and the context being created.
+  private async acquireLocalBrowser(): Promise<Browser> {
+    return this.withBrowserLock(async () => {
+      if (this.browser && !this.browser.isConnected()) {
+        this.logger.warn('Chromium disconnected — relaunching');
+        await this.closeLocalBrowser();
+      } else if (this.browser && !this.hasLocalUsers) {
+        // Recycle only when no caller holds a context -- closing the shared
+        // browser under a running job would kill that job's page too. A
+        // long-lived process otherwise accumulates memory across hundreds of
+        // context cycles (one per crawl page plus one per detail-page
+        // enrichment item -- easily 500+ per run).
+        const { chromium_max_contexts_before_restart } =
+          await this.platformConfigService.getCrawlerConfig();
+        if (this.contextsSinceLaunch >= chromium_max_contexts_before_restart) {
+          this.logger.log(
+            `Recycling Chromium after ${this.contextsSinceLaunch} contexts`,
+          );
+          await this.closeLocalBrowser();
+        }
       }
 
-      this.logger.log(
-        `Recycling Chromium after ${this.contextsSinceLaunch} contexts`,
-      );
-      await this.browser.close().catch(() => undefined);
-      this.browser = null;
-    } else if (this.browser) {
-      this.logger.warn('Chromium disconnected — relaunching');
-      await this.browser.close().catch(() => undefined);
-      this.browser = null;
-    }
+      if (!this.browser) await this.launchLocalBrowser();
+      this.pendingLocal++;
+      return this.browser!;
+    });
+  }
 
+  private async launchLocalBrowser(): Promise<void> {
     this.browser = await chromium.launch({
       headless: true,
       args: [...STEALTH_LAUNCH_ARGS],
     });
     this.contextsSinceLaunch = 0;
-
+    this.lastLocalActivityAt = Date.now();
     this.logger.log('Chromium launched for crawl worker');
-    return this.browser;
+  }
+
+  // Closing the browser also kills any context whose own close() hung.
+  private async closeLocalBrowser(): Promise<void> {
+    const browser = this.browser;
+    this.browser = null;
+    if (!browser) return;
+    const orphaned = browser.contexts().length;
+    if (orphaned > 0) {
+      this.logger.warn(
+        `Discarding ${orphaned} unreleased browser context(s) with Chromium`,
+      );
+    }
+    await browser.close().catch(() => undefined);
+  }
+
+  private async runHousekeeping(): Promise<void> {
+    const now = Date.now();
+
+    for (const [context, openedAt] of this.localLeases) {
+      if (now - openedAt < LOCAL_CONTEXT_MAX_AGE_MS) continue;
+      this.logger.error(
+        `Force-closing a browser context leased ${Math.round((now - openedAt) / 60_000)} min ago (never closed by its caller)`,
+      );
+      await this.closeContext(context).catch(() => undefined);
+    }
+
+    await this.withBrowserLock(async () => {
+      if (
+        !this.browser ||
+        this.hasLocalUsers ||
+        this.contextsSinceLaunch === 0 ||
+        Date.now() - this.lastLocalActivityAt < LOCAL_BROWSER_IDLE_RECYCLE_MS
+      ) {
+        return;
+      }
+      this.logger.log(
+        `Recycling idle Chromium after ${this.contextsSinceLaunch} contexts`,
+      );
+      await this.closeLocalBrowser();
+      // Relaunched lazily by the next acquireLocalBrowser().
+    });
   }
 
   // Launches a dedicated local Chromium whose traffic all goes through the

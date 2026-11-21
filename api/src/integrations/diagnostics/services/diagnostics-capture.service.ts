@@ -93,68 +93,77 @@ export class DiagnosticsCaptureService {
     );
     page.on('pageerror', (err) => pushConsoleEntry('pageerror', err.message));
 
-    if (traceEnabled) {
-      await context.tracing.start({ screenshots: true, snapshots: true });
-    }
-
     let outcome: T | null = null;
     let thrown: unknown = null;
-
-    try {
-      outcome = await fn(page);
-    } catch (err) {
-      thrown = err;
-    }
-
-    const success = outcome?.success ?? false;
-    const errorSummary =
-      outcome?.errorSummary ??
-      (thrown instanceof Error
-        ? thrown.message
-        : thrown
-          ? String(thrown)
-          : null);
-    const shouldKeep = !success;
-
+    let success = false;
+    let errorSummary: string | null = null;
+    let shouldKeep = true;
     const artifacts: PendingArtifact[] = [];
-
-    if (shouldKeep) {
-      const [screenshot, html] = await Promise.all([
-        page.screenshot({ fullPage: true }).catch(() => null),
-        page.content().catch(() => null),
-      ]);
-      if (screenshot) {
-        artifacts.push({
-          kind: DiagnosticsArtifactKind.SCREENSHOT,
-          filename: 'screenshot.png',
-          contentType: 'image/png',
-          buffer: screenshot,
-        });
-      }
-      if (html) {
-        artifacts.push({
-          kind: DiagnosticsArtifactKind.HTML_SNAPSHOT,
-          filename: 'page.html',
-          contentType: 'text/html',
-          buffer: Buffer.from(html, 'utf-8'),
-        });
-      }
-    }
-
-    // Tracing is not retroactive but tracing.stop() always has to be called to release
-    // resources -- passing no path discards it, matching the "discard on success" retention rule.
-    if (traceEnabled) {
-      await context.tracing.stop(shouldKeep ? { path: tracePath } : undefined);
-    }
-
     let browserVersion: string | undefined;
-    try {
-      browserVersion = context.browser()?.version();
-    } catch {
-      browserVersion = undefined;
-    }
 
-    await this.stealthBrowserService.closeContext(context);
+    // Everything between opening and closing the context sits in try/finally:
+    // a throw from tracing or a screenshot used to skip closeContext, leaking
+    // the context (and its page-concurrency slot) for the life of the process.
+    try {
+      if (traceEnabled) {
+        await context.tracing.start({ screenshots: true, snapshots: true });
+      }
+
+      try {
+        outcome = await fn(page);
+      } catch (err) {
+        thrown = err;
+      }
+
+      success = outcome?.success ?? false;
+      errorSummary =
+        outcome?.errorSummary ??
+        (thrown instanceof Error
+          ? thrown.message
+          : thrown
+            ? String(thrown)
+            : null);
+      shouldKeep = !success;
+
+      if (shouldKeep) {
+        const [screenshot, html] = await Promise.all([
+          page.screenshot({ fullPage: true }).catch(() => null),
+          page.content().catch(() => null),
+        ]);
+        if (screenshot) {
+          artifacts.push({
+            kind: DiagnosticsArtifactKind.SCREENSHOT,
+            filename: 'screenshot.png',
+            contentType: 'image/png',
+            buffer: screenshot,
+          });
+        }
+        if (html) {
+          artifacts.push({
+            kind: DiagnosticsArtifactKind.HTML_SNAPSHOT,
+            filename: 'page.html',
+            contentType: 'text/html',
+            buffer: Buffer.from(html, 'utf-8'),
+          });
+        }
+      }
+
+      // Tracing is not retroactive but tracing.stop() always has to be called to release
+      // resources -- passing no path discards it, matching the "discard on success" retention rule.
+      if (traceEnabled) {
+        await context.tracing.stop(
+          shouldKeep ? { path: tracePath } : undefined,
+        );
+      }
+
+      try {
+        browserVersion = context.browser()?.version();
+      } catch {
+        browserVersion = undefined;
+      }
+    } finally {
+      await this.stealthBrowserService.closeContext(context);
+    }
 
     if (!shouldKeep) {
       await rm(workDir, { recursive: true, force: true }).catch(
