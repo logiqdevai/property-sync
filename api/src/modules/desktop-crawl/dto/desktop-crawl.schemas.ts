@@ -30,12 +30,18 @@ export const DesktopCrawlUploadSchema = z.object({
 });
 export type DesktopCrawlUploadDto = z.infer<typeof DesktopCrawlUploadSchema>;
 
-export const SolveCaptchaSchema = z.object({
-  scraper_id: z.string().uuid(),
-  kind: z.enum(['hcaptcha', 'turnstile', 'recaptcha2']),
-  sitekey: z.string().min(1).max(200),
-  url: z.string().url().max(4000),
-});
+export const SolveCaptchaSchema = z
+  .object({
+    /** A crawl names its scraper; a photo check (which has no scraper) names its agency. */
+    scraper_id: z.string().uuid().optional(),
+    agency_id: z.string().uuid().optional(),
+    kind: z.enum(['hcaptcha', 'turnstile', 'recaptcha2']),
+    sitekey: z.string().min(1).max(200),
+    url: z.string().url().max(4000),
+  })
+  .refine((dto) => !!dto.scraper_id || !!dto.agency_id, {
+    message: 'scraper_id or agency_id is required',
+  });
 export type SolveCaptchaDto = z.infer<typeof SolveCaptchaSchema>;
 
 export const ReportCaptchaSchema = z.object({

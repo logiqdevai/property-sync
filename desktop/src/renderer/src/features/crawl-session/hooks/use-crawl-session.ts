@@ -20,6 +20,7 @@ const CRAWL_CHECKPOINTS_KEY = "crawl-checkpoints";
 export const RECOMMENDED_PARALLEL_CRAWLS = 3;
 
 const ACTIVE_PHASES: CrawlState["phase"][] = [
+  CrawlPhases.QUEUED,
   CrawlPhases.PREPARING,
   CrawlPhases.LISTING,
   CrawlPhases.DETAILS,
@@ -92,14 +93,18 @@ export const useStartCrawl = () => {
 export const useStartCrawls = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (requests: StartCrawlRequest[]) => startCrawls(requests),
-    onSuccess: (failures, requests) => {
+    mutationFn: (input: { requests: StartCrawlRequest[]; concurrency: number }) =>
+      startCrawls(input.requests, input.concurrency),
+    onSuccess: (failures, { requests, concurrency }) => {
       queryClient.invalidateQueries({ queryKey: [CRAWL_CHECKPOINT_KEY] });
       const started = requests.length - failures.length;
       if (started > 0) {
+        const queued = started > concurrency;
         toast({
-          title: `${started} crawl${started === 1 ? "" : "s"} started`,
-          description: "Each runs in its own Chrome tab. Leave Chrome open until they finish.",
+          title: `${started} crawl${started === 1 ? "" : "s"} ${queued ? "queued" : "started"}`,
+          description: queued
+            ? `${concurrency} run at a time; the next one starts by itself when one finishes. Leave Chrome open.`
+            : "Each runs in its own Chrome tab. Leave Chrome open until they finish.",
           duration: 4000,
           variant: "success",
         });

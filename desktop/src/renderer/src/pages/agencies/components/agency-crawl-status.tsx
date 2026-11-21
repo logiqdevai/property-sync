@@ -23,7 +23,9 @@ function RunningStatus({ state }: { state: CrawlState }) {
           <Spinner size="sm" color={needsUser ? "warning" : "accent"} />
           {describeRunningCrawl(state)}
         </span>
-        <span className="tabular-nums text-muted">Running {formatElapsed(state.started_at, now)}</span>
+        {state.phase === CrawlPhases.QUEUED ? null : (
+          <span className="tabular-nums text-muted">Running {formatElapsed(state.started_at, now)}</span>
+        )}
       </div>
       {needsUser ? (
         <span className="flex items-center gap-1.5 text-sm font-medium text-warning">

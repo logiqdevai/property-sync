@@ -3,15 +3,15 @@ import { RefreshCw } from "lucide-react";
 import { UpdateStatuses } from "@shared/ipc";
 import { useAppUpdate, useInstallAppUpdate } from "@/features/app-update/hooks/use-app-update";
 import { useActiveCrawls } from "@/features/crawl-session/hooks/use-crawl-session";
-import { isPhotoRepairActive, usePhotoRepair } from "@/features/photo-repair/hooks/use-photo-repair";
+import { useActivePhotoRepairs } from "@/features/photo-repair/hooks/use-photo-repair";
 
 /** Shows a new version downloading, then offers to restart into it (never mid-crawl). */
 export function UpdateBanner() {
   const update = useAppUpdate();
   const { active } = useActiveCrawls();
-  const photos = usePhotoRepair();
+  const { active: activePhotos } = useActivePhotoRepairs();
   const { mutate: install, isPending } = useInstallAppUpdate();
-  const busy = active.length > 0 || isPhotoRepairActive(photos);
+  const busy = active.length > 0 || activePhotos.length > 0;
 
   if (update.status === UpdateStatuses.DOWNLOADING) {
     return (

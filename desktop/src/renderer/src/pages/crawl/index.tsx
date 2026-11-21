@@ -101,7 +101,11 @@ const CrawlPage: FC = () => {
       ) : (
         <CrawlResultCard
           state={crawl}
-          onOpenReview={() => openExternal(`${environments.APP_URL}${WebAppRoutes.pendingReview}`)}
+          onOpenReview={() =>
+            openExternal(
+              `${environments.APP_URL}${agencyId ? WebAppRoutes.pendingReview(agencyId) : "/dashboard/properties?pending_crm_update=true"}`,
+            )
+          }
           onResume={() => start(true)}
           onBack={back}
         />

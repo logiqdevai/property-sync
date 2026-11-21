@@ -13,15 +13,20 @@ import { openCrawlerPage, type CrawlerPage } from "../browser/browser-launcher";
 import { notifyUser } from "../utils/attention";
 import { errorMessage, sleep, StoppedError } from "../utils/async.utils";
 import { KeyedStateChannel } from "../utils/keyed-state-channel";
+import { photoRepairSession } from "../photos/photo-repair-session";
 import { checkpointStore, type CheckpointItem, type CrawlCheckpoint } from "./checkpoint-store";
 import { walkDetailPages } from "./detail-walk";
 import { ListingsNotFoundError, walkListingPages } from "./listing-walk";
 
 const POLL_INTERVAL_MS = 5_000;
+/** How long, and how often, to wait for the CRM push to land before the photo check. */
+const PUSH_WAIT_MS = 20 * 60 * 1000;
+const PUSH_POLL_MS = 15_000;
 /** After this long the app stops watching; the server keeps going on its own. */
 const MAX_POLL_MS = 2 * 60 * 60 * 1000;
 
 const ACTIVE_PHASES: CrawlState["phase"][] = [
+  CrawlPhases.QUEUED,
   CrawlPhases.PREPARING,
   CrawlPhases.LISTING,
   CrawlPhases.DETAILS,
@@ -296,23 +301,111 @@ class CrawlSessionManager {
   }
 
   isRunning(scraperId?: string): boolean {
-    return scraperId ? this.running.has(scraperId) : this.running.size > 0;
+    if (scraperId) return this.running.has(scraperId) || this.isQueued(scraperId);
+    return this.running.size > 0 || this.queue.length > 0;
   }
 
   start(request: StartCrawlRequest): void {
-    if (this.running.has(request.scraper_id)) {
+    if (this.running.has(request.scraper_id) || this.isQueued(request.scraper_id)) {
       throw new Error(`${request.agency_name} is already being crawled.`);
     }
+    this.launch(request);
+  }
+
+  /** Crawls waiting for a free slot, in order, and how many may run at once while they wait. */
+  private queue: StartCrawlRequest[] = [];
+  private concurrency = Infinity;
+
+  private isQueued(scraperId: string): boolean {
+    return this.queue.some((r) => r.scraper_id === scraperId);
+  }
+
+  startQueue(
+    requests: StartCrawlRequest[],
+    concurrency: number,
+  ): Array<{ agency_name: string; reason: string }> {
+    const failures: Array<{ agency_name: string; reason: string }> = [];
+    this.concurrency = Math.max(1, Math.floor(concurrency) || 1);
+    for (const request of requests) {
+      if (this.running.has(request.scraper_id) || this.isQueued(request.scraper_id)) {
+        failures.push({ agency_name: request.agency_name, reason: "Already being crawled." });
+        continue;
+      }
+      this.queue.push(request);
+      this.states.set(request.scraper_id, { ...initialState(request), phase: CrawlPhases.QUEUED });
+    }
+    this.pump();
+    return failures;
+  }
+
+  /** Starts waiting crawls while there is room. */
+  private pump(): void {
+    while (this.queue.length > 0 && this.running.size < this.concurrency) {
+      this.launch(this.queue.shift()!);
+    }
+    if (this.queue.length === 0) this.concurrency = Infinity;
+  }
+
+  private launch(request: StartCrawlRequest): void {
     const session = new CrawlSession(request, this.states);
     this.running.set(request.scraper_id, session);
     this.states.set(request.scraper_id, initialState(request));
     void session.run().finally(() => {
       this.running.delete(request.scraper_id);
       this.states.flush();
+      this.startPhotosAfter(request);
+      this.pump();
     });
   }
 
+  /**
+   * After a finished crawl: push the held listings to the CRM (when asked) and wait for the push to
+   * land, so new listings exist there; then check their photos (when asked); then push once more
+   * for anything still held. Each step is optional and a failing step never blocks the others.
+   */
+  private startPhotosAfter(request: StartCrawlRequest): void {
+    if (this.states.get(request.scraper_id)?.phase !== CrawlPhases.DONE) return;
+    if (!request.photos_after && !request.push_after) return;
+    void this.afterCrawl(request);
+  }
+
+  private async afterCrawl(request: StartCrawlRequest): Promise<void> {
+    const log = (line: string) => this.states.log(request.scraper_id, line);
+    const pushHeld = async (wait: boolean) => {
+      try {
+        const { queued, failed } = await api.pushPending(request.agency_id);
+        log(`push to CRM: ${queued} listings queued${failed ? `, ${failed} could not be queued` : ""}`);
+        if (!wait || queued === 0) return;
+        const deadline = Date.now() + PUSH_WAIT_MS;
+        while (Date.now() < deadline) {
+          await sleep(PUSH_POLL_MS);
+          const { pending } = await api.getPendingPush(request.agency_id);
+          if (pending === 0) return;
+        }
+        log("push to CRM: still running after 20 minutes; moving on");
+      } catch (error) {
+        log(`push to CRM failed: ${errorMessage(error)}`);
+      }
+    };
+
+    if (request.push_after) await pushHeld(!!request.photos_after);
+    if (!request.photos_after) return;
+    try {
+      photoRepairSession.start(
+        { agency_id: request.agency_id, agency_name: request.agency_name },
+        request.push_after ? () => void pushHeld(false) : undefined,
+      );
+    } catch {
+      // Already being checked: nothing to do.
+    }
+  }
+
   stop(scraperId: string): void {
+    if (this.isQueued(scraperId)) {
+      this.queue = this.queue.filter((r) => r.scraper_id !== scraperId);
+      this.states.remove(scraperId);
+      return;
+    }
     this.running.get(scraperId)?.stop();
   }
 

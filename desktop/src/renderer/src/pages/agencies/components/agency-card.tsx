@@ -1,10 +1,11 @@
 import { useNavigate } from "react-router-dom";
-import { Button, Card, Checkbox } from "@heroui/react";
+import { Button, Card, Checkbox, Spinner } from "@heroui/react";
 import { ChevronRight, History, ImageOff, Play, Square } from "lucide-react";
-import { CrawlPhases, type CrawlCheckpointInfo, type CrawlState } from "@shared/ipc";
+import { BlockStates, PhotoPhases, CrawlPhases, type CrawlCheckpointInfo, type CrawlState } from "@shared/ipc";
 import { Routes } from "@/routes/routes";
 import { formatRelative } from "@/lib/date";
 import { cn } from "@/lib/utils";
+import { isPhotoRepairActive, usePhotoRepair } from "@/features/photo-repair/hooks/use-photo-repair";
 import { isCrawlActive } from "@/features/crawl-session/hooks/use-crawl-session";
 import type { CrawlableAgency, CrawlRunSummary } from "@/features/desktop-crawl/interfaces/desktop-crawl.interfaces";
 import { AgencyAttentionChip } from "./agency-attention-chip";
@@ -43,7 +44,10 @@ export function AgencyCard({
 }: AgencyCardProps) {
   const navigate = useNavigate();
   const running = isCrawlActive(crawl);
-  const canStop = !!crawl && running && (crawl.phase === CrawlPhases.PREPARING || crawl.phase === CrawlPhases.LISTING || crawl.phase === CrawlPhases.DETAILS);
+  const photos = usePhotoRepair(agency.agency_id);
+  const photosRunning = isPhotoRepairActive(photos);
+  const photosNeedUser = photosRunning && photos?.block === BlockStates.NEEDS_USER;
+  const canStop = !!crawl && running && (crawl.phase === CrawlPhases.QUEUED || crawl.phase === CrawlPhases.PREPARING || crawl.phase === CrawlPhases.LISTING || crawl.phase === CrawlPhases.DETAILS);
   const selectable = agency.has_config && !running;
   const canResume = !running && !!checkpoint;
 
@@ -86,6 +90,21 @@ export function AgencyCard({
 
       <AgencyCrawlStatus state={crawl} checkpoint={checkpoint} />
 
+      {photosRunning && photos ? (
+        <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-surface-secondary px-3 py-2.5 text-sm">
+          <span className="flex items-center gap-2 font-medium text-foreground">
+            <Spinner size="sm" color={photosNeedUser ? "warning" : "accent"} />
+            {photosNeedUser
+              ? "Photos: your help is needed in this agency's Chrome tab"
+              : photos.phase === PhotoPhases.QUEUED
+                ? "Photos: waiting for its turn"
+                : photos.phase === PhotoPhases.CHECKING
+                ? `Checking photos: ${photos.checked} of ${photos.total} listings`
+                : `Fixing photos: ${photos.fixed + photos.still_missing.length} of ${photos.missing} listings`}
+          </span>
+        </div>
+      ) : null}
+
       <div className="flex flex-wrap items-center gap-2">
         {running ? (
           canStop ? (
@@ -106,8 +125,8 @@ export function AgencyCard({
           </Button>
         )}
         <Button variant="secondary" size="sm" onPress={() => navigate(Routes.photos(agency.agency_id))}>
-          <ImageOff className="size-4" />
-          Fix missing photos
+          {photosRunning ? <Spinner size="sm" color="current" /> : <ImageOff className="size-4" />}
+          {photosRunning ? "Fixing photos…" : "Fix missing photos"}
         </Button>
         {crawl || checkpoint ? (
           <Button variant="ghost" size="sm" onPress={() => navigate(Routes.crawl(agency.scraper_id))}>

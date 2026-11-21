@@ -2,7 +2,7 @@
   "name": "property-sync-crawler",
   "productName": "Property Sync Crawler",
   "description": "Crawls agency websites that block the Property Sync server, through Chrome on this computer.",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "private": true,
   "author": "LogiqDev",
   "main": "./out/main/index.js",

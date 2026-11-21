@@ -31,6 +31,8 @@ const ApiRoutes = {
   solveCaptcha: "/desktop-crawl/captcha/solve",
   reportCaptcha: (taskId: number) => `/desktop-crawl/captcha/${taskId}/report`,
   photoTargets: (agencyId: string) => `/desktop-crawl/agencies/${agencyId}/photos`,
+  pendingPush: (agencyId: string) => `/desktop-crawl/agencies/${agencyId}/pending-push`,
+  pushPending: (agencyId: string) => `/desktop-crawl/agencies/${agencyId}/push-pending`,
   checkPhotos: (agencyId: string) => `/desktop-crawl/agencies/${agencyId}/photos/check`,
   uploadPhotos: (userPropertyId: string) => `/desktop-crawl/photos/${userPropertyId}`,
 } as const;
@@ -93,11 +95,17 @@ export const api = {
 
   getRun: (crawlRunId: string) => request<DesktopCrawlRunStatus>(ApiRoutes.run(crawlRunId)),
 
-  solveCaptcha: (body: { scraper_id: string; kind: CaptchaKind; sitekey: string; url: string }) =>
+  solveCaptcha: (body: { scraper_id?: string; agency_id?: string; kind: CaptchaKind; sitekey: string; url: string }) =>
     request<CaptchaSolveResponse>(ApiRoutes.solveCaptcha, json(body)),
 
   reportCaptcha: (taskId: number, correct: boolean) =>
     request<{ ok: true }>(ApiRoutes.reportCaptcha(taskId), json({ correct })),
+
+  getPendingPush: (agencyId: string) =>
+    request<{ pending: number }>(ApiRoutes.pendingPush(agencyId)),
+
+  pushPending: (agencyId: string) =>
+    request<{ queued: number; failed: number }>(ApiRoutes.pushPending(agencyId), json({})),
 
   getPhotoTargets: (agencyId: string) =>
     request<PhotoCheckTarget[]>(ApiRoutes.photoTargets(agencyId)),

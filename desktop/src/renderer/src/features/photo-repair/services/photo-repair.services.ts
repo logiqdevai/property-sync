@@ -9,10 +9,22 @@ export const startPhotoRepair = async (request: StartPhotosRequest): Promise<voi
   }
 };
 
-export const stopPhotoRepair = async (): Promise<void> => {
-  await window.desktop.photos.stop();
+export const stopPhotoRepair = async (agencyId: string): Promise<void> => {
+  await window.desktop.photos.stop(agencyId);
 };
 
-export const dismissPhotoRepair = async (): Promise<void> => {
-  await window.desktop.photos.dismiss();
+export const dismissPhotoRepair = async (agencyId: string): Promise<void> => {
+  await window.desktop.photos.dismiss(agencyId);
+};
+
+/** Queues several photo checks, `concurrency` at a time; returns the ones that could not be queued. */
+export const startPhotoRepairs = async (
+  requests: StartPhotosRequest[],
+  concurrency: number,
+): Promise<Array<{ agency_name: string; reason: string }>> => {
+  try {
+    return await window.desktop.photos.startQueue(requests, concurrency);
+  } catch (error) {
+    throw bridgeErrorMessage(error, "Could not start checking photos. Please try again.");
+  }
 };

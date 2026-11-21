@@ -9,12 +9,14 @@ export const IpcChannels = {
   OPEN_EXTERNAL: "app:open-external",
   BROWSER_CHECK: "browser:check",
   CRAWL_START: "crawl:start",
+  CRAWL_START_QUEUE: "crawl:start-queue",
   CRAWL_STOP: "crawl:stop",
   CRAWL_STATE: "crawl:state",
   CRAWL_CHECKPOINT: "crawl:checkpoint",
   CRAWL_CHECKPOINTS: "crawl:checkpoints",
   CRAWL_DISMISS: "crawl:dismiss",
   PHOTOS_START: "photos:start",
+  PHOTOS_START_QUEUE: "photos:start-queue",
   PHOTOS_STOP: "photos:stop",
   PHOTOS_STATE: "photos:state",
   PHOTOS_DISMISS: "photos:dismiss",
@@ -42,6 +44,8 @@ export interface BrowserCheck {
 
 export const CrawlPhases = {
   IDLE: "IDLE",
+  /** Waiting for a free slot in a queued batch ("run N at a time"). */
+  QUEUED: "QUEUED",
   PREPARING: "PREPARING",
   LISTING: "LISTING",
   DETAILS: "DETAILS",
@@ -111,10 +115,16 @@ export interface StartCrawlRequest {
   agency_name: string;
   /** Continue the saved, unfinished crawl of this agency instead of starting over. */
   resume: boolean;
+  /** Start this agency's photo check by itself once the crawl has finished. */
+  photos_after?: boolean;
+  /** Push the agency's held listings to the CRM after the crawl and after the photo check. */
+  push_after?: boolean;
 }
 
 export const PhotoPhases = {
   IDLE: "IDLE",
+  /** Waiting for a free slot in a queued batch ("run N at a time"). */
+  QUEUED: "QUEUED",
   CHECKING: "CHECKING",
   FIXING: "FIXING",
   DONE: "DONE",
@@ -167,6 +177,9 @@ export interface PhotoState {
   log: string[];
 }
 
+/** Every photo check of this session, by agency id. */
+export type PhotoStates = Record<string, PhotoState>;
+
 export interface StartPhotosRequest {
   agency_id: string;
   agency_name: string;
@@ -206,6 +219,16 @@ export interface DesktopBridge {
   crawl: {
     /** Starts one agency's crawl in its own Chrome tab; several can run at once. */
     start(request: StartCrawlRequest): Promise<void>;
+    /**
+     * Queues several crawls and runs at most `concurrency` of them at a time (counting crawls
+     * already running); each next one starts by itself when one finishes. Returns the ones that
+     * could not be queued, with the reason.
+     */
+    startQueue(
+      requests: StartCrawlRequest[],
+      concurrency: number,
+    ): Promise<Array<{ agency_name: string; reason: string }>>;
+    /** Stops a running crawl, or removes a waiting one from the queue. */
     stop(scraperId: string): Promise<void>;
     /** Forgets a finished/stopped/failed crawl's result (its saved progress stays). */
     dismiss(scraperId: string): Promise<void>;
@@ -222,10 +245,21 @@ export interface DesktopBridge {
     install(): Promise<void>;
   };
   photos: {
+    /** Starts one agency's photo check; several agencies can be checked at once. */
     start(request: StartPhotosRequest): Promise<void>;
-    stop(): Promise<void>;
-    dismiss(): Promise<void>;
-    getState(): Promise<PhotoState>;
-    onState(listener: (state: PhotoState) => void): () => void;
+    /**
+     * Queues several photo checks and runs at most `concurrency` at a time (counting checks already
+     * running); each next one starts by itself when one finishes. Returns the ones that could not
+     * be queued, with the reason.
+     */
+    startQueue(
+      requests: StartPhotosRequest[],
+      concurrency: number,
+    ): Promise<Array<{ agency_name: string; reason: string }>>;
+    /** Stops a running check, or removes a waiting one from the queue. */
+    stop(agencyId: string): Promise<void>;
+    dismiss(agencyId: string): Promise<void>;
+    getStates(): Promise<PhotoStates>;
+    onStates(listener: (states: PhotoStates) => void): () => void;
   };
 }

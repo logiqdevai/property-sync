@@ -65,4 +65,4 @@ export function buildCrawlSteps(state: CrawlState): Step[] {
 }
 
 export const canStopCrawl = (phase: CrawlPhase) =>
-  phase === CrawlPhases.PREPARING || phase === CrawlPhases.LISTING || phase === CrawlPhases.DETAILS;
+  phase === CrawlPhases.QUEUED || phase === CrawlPhases.PREPARING || phase === CrawlPhases.LISTING || phase === CrawlPhases.DETAILS;

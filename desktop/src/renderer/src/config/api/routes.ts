@@ -14,7 +14,8 @@ export const ApiRoutes = {
 
 /** Pages of the Property Sync web app the crawler links to. */
 export const WebAppRoutes = {
-  pendingReview: "/dashboard/properties?pending_crm_update=true",
+  /** The listings this agency's crawl is holding for review. */
+  pendingReview: (agencyId: string) => `/dashboard/properties?agency=${agencyId}&pending_crm_update=true`,
   adminCrawlRun: (id: string) => `/admin/crawl-runs/${id}`,
   adminAgency: (id: string) => `/admin/agencies/${id}`,
 } as const;

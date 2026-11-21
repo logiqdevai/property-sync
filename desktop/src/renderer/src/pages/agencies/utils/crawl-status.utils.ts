@@ -3,6 +3,8 @@ import { CrawlPhases, type CrawlState } from "@shared/ipc";
 /** One short line describing where a running crawl is. */
 export function describeRunningCrawl(state: CrawlState): string {
   switch (state.phase) {
+    case CrawlPhases.QUEUED:
+      return "Waiting for its turn";
     case CrawlPhases.PREPARING:
       return "Opening the website";
     case CrawlPhases.LISTING:

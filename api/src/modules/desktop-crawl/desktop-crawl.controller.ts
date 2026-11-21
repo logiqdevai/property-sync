@@ -56,6 +56,7 @@ import { DesktopCrawlService } from './services/desktop-crawl.service';
 import { DesktopCrawlIngestService } from './services/desktop-crawl-ingest.service';
 import { DesktopCrawlCaptchaService } from './services/desktop-crawl-captcha.service';
 import { DesktopCrawlPhotosService } from './services/desktop-crawl-photos.service';
+import { DesktopCrawlPushService } from './services/desktop-crawl-push.service';
 import { DesktopAppReleaseService } from './services/desktop-app-release.service';
 
 interface UploadedPhotoFile {
@@ -78,6 +79,7 @@ export class DesktopCrawlController {
     private readonly ingestService: DesktopCrawlIngestService,
     private readonly captchaService: DesktopCrawlCaptchaService,
     private readonly photosService: DesktopCrawlPhotosService,
+    private readonly pushService: DesktopCrawlPushService,
     private readonly appReleaseService: DesktopAppReleaseService,
   ) {}
 
@@ -170,6 +172,21 @@ export class DesktopCrawlController {
     @Body(new ZodValidationPipe(ReportCaptchaSchema)) dto: ReportCaptchaDto,
   ) {
     return this.captchaService.report(taskId, dto.correct);
+  }
+
+  @Get('agencies/:agencyId/pending-push')
+  @ApiOperation({ summary: "How many of the agency's listings are held for a CRM push" })
+  pendingPush(@Param('agencyId', ParseUUIDPipe) agencyId: string) {
+    return this.pushService.pendingCount(agencyId);
+  }
+
+  @Audited({ action: 'desktop_crawl.push_pending' })
+  @Post('agencies/:agencyId/push-pending')
+  @ApiOperation({
+    summary: "Queue the CRM push of the agency's held listings (background)",
+  })
+  pushPending(@Param('agencyId', ParseUUIDPipe) agencyId: string) {
+    return this.pushService.pushPending(agencyId);
   }
 
   @Get('agencies/:agencyId/photos')

@@ -41,11 +41,16 @@ export class DesktopCrawlCaptchaService {
       );
     }
 
+    // The hourly cap is per scraper for crawls, per agency for photo checks.
+    const limitField = dto.scraper_id ? 'scraperId' : 'agencyId';
     const recent = await this.prisma.costLog.count({
       where: {
         operation_type: CostOperationType.CAPTCHA,
         created_at: { gte: new Date(Date.now() - 60 * 60 * 1000) },
-        metadata: { path: ['scraperId'], equals: dto.scraper_id },
+        metadata: {
+          path: [limitField],
+          equals: dto.scraper_id ?? dto.agency_id,
+        },
       },
     });
     if (recent >= DESKTOP_CRAWL_MAX_CAPTCHA_SOLVES_PER_HOUR) {
@@ -110,7 +115,9 @@ export class DesktopCrawlCaptchaService {
           metadata: {
             ...(solution.cost == null ? { estimated: true } : {}),
             taskId: solution.taskId,
-            scraperId: dto.scraper_id,
+            ...(dto.scraper_id
+              ? { scraperId: dto.scraper_id }
+              : { agencyId: dto.agency_id }),
             source: 'desktop-crawl',
             userId,
             url: dto.url,

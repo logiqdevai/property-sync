@@ -1,6 +1,6 @@
 import type { Page } from "playwright-core";
 import { BlockStates, type BlockState } from "@shared/ipc";
-import { api } from "../api/api-client";
+import { api, ApiError } from "../api/api-client";
 import type { CaptchaKind } from "../api/api.interfaces";
 import { errorMessage, sleep } from "../utils/async.utils";
 
@@ -26,8 +26,10 @@ const ACCEPT_TIMEOUT_MS = 30_000;
 const USER_POLL_MS = 3_000;
 
 export interface BlockContext {
-  /** Needed to solve captchas through the API; null disables solving (photo repair). */
+  /** Crawls name their scraper to solve captchas through the API; null for photo checks. */
   scraperId: string | null;
+  /** Photo checks name their agency instead. With neither, solving is off. */
+  agencyId?: string;
   captchaSolverAvailable: boolean;
   setBlock(state: BlockState): void;
   log(line: string): void;
@@ -58,10 +60,10 @@ export async function clearBlock(page: Page, ctx: BlockContext): Promise<void> {
   let askedUser = false;
   while (await isBlocked(page)) {
     ctx.throwIfStopped();
-    if (ctx.scraperId && ctx.captchaSolverAvailable && attempts < MAX_SOLVE_ATTEMPTS) {
+    if ((ctx.scraperId || ctx.agencyId) && ctx.captchaSolverAvailable && attempts < MAX_SOLVE_ATTEMPTS) {
       attempts++;
       ctx.setBlock(BlockStates.SOLVING);
-      const outcome = await trySolve(page, ctx, ctx.scraperId);
+      const outcome = await trySolve(page, ctx);
       if (outcome === "unsupported") attempts = MAX_SOLVE_ATTEMPTS;
       continue;
     }
@@ -79,7 +81,6 @@ export async function clearBlock(page: Page, ctx: BlockContext): Promise<void> {
 async function trySolve(
   page: Page,
   ctx: BlockContext,
-  scraperId: string,
 ): Promise<"solved" | "failed" | "unsupported"> {
   let probe: CaptchaProbe;
   try {
@@ -96,13 +97,15 @@ async function trySolve(
   try {
     ctx.log(`solving ${probe.kind} on ${probe.url}`);
     solution = await api.solveCaptcha({
-      scraper_id: scraperId,
+      ...(ctx.scraperId ? { scraper_id: ctx.scraperId } : { agency_id: ctx.agencyId }),
       kind: probe.kind,
       sitekey: probe.sitekey,
       url: probe.url,
     });
   } catch (error) {
     ctx.log(`captcha solve failed: ${errorMessage(error)}`);
+    // Not set up on the server, or capped for this hour: don't retry, ask the person instead.
+    if (error instanceof ApiError && (error.status === 503 || error.status === 429)) return "unsupported";
     await sleep(5_000);
     return "failed";
   }

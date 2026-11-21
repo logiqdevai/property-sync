@@ -22,6 +22,7 @@ import { DesktopCrawlService } from './services/desktop-crawl.service';
 import { DesktopCrawlIngestService } from './services/desktop-crawl-ingest.service';
 import { DesktopCrawlCaptchaService } from './services/desktop-crawl-captcha.service';
 import { DesktopCrawlPhotosService } from './services/desktop-crawl-photos.service';
+import { DesktopCrawlPushService } from './services/desktop-crawl-push.service';
 import { DesktopAppReleaseService } from './services/desktop-app-release.service';
 
 @Module({
@@ -40,6 +41,7 @@ import { DesktopAppReleaseService } from './services/desktop-app-release.service
     DesktopCrawlIngestService,
     DesktopCrawlCaptchaService,
     DesktopCrawlPhotosService,
+    DesktopCrawlPushService,
     DesktopAppReleaseService,
     DesktopCrawlAutoUpdateRestoreCron,
   ],

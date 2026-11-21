@@ -25,15 +25,13 @@ const PhotosPage: FC = () => {
   const { agencyId = "" } = useParams();
   const navigate = useNavigate();
   const { data: agency, isPending: agencyPending } = useGetCrawlableAgency({ agencyId });
-  const photos = usePhotoRepair();
+  const photos = usePhotoRepair(agencyId);
   const { mutate: startRepair, isPending: isStarting } = useStartPhotoRepair();
   const { mutate: stopRepair, isPending: isStopping } = useStopPhotoRepair();
   const { mutate: dismissRepair } = useDismissPhotoRepair();
 
-  const isThisAgency = photos.agency_id === agencyId && photos.phase !== PhotoPhases.IDLE;
-  // One photo check at a time; crawls can keep running next to it.
-  const otherTaskRunning = isPhotoRepairActive(photos) && photos.agency_id !== agencyId;
-  const agencyName = agency?.agency_name ?? photos.agency_name ?? "this agency";
+  const isThisAgency = !!photos && photos.phase !== PhotoPhases.IDLE;
+  const agencyName = agency?.agency_name ?? photos?.agency_name ?? "this agency";
 
   const start = () => {
     if (agency) startRepair({ agency_id: agency.agency_id, agency_name: agency.agency_name });
@@ -75,24 +73,23 @@ const PhotosPage: FC = () => {
       {!isThisAgency ? (
         <PhotoStartCard
           agencyName={agencyName}
-          isBlockedByOtherTask={otherTaskRunning}
           isStarting={isStarting}
           onStart={start}
         />
       ) : isPhotoRepairActive(photos) ? (
-        <PhotoProgressCard state={photos} isStopping={isStopping} onStop={() => stopRepair()} />
+        <PhotoProgressCard state={photos!} isStopping={isStopping} onStop={() => stopRepair(agencyId)} />
       ) : (
         <PhotoResultCard
-          state={photos}
+          state={photos!}
           onAgain={start}
           onBack={() => {
-            dismissRepair();
+            dismissRepair(agencyId);
             navigate(Routes.agencies);
           }}
         />
       )}
 
-      {isThisAgency ? <TechnicalDetails lines={photos.log} /> : null}
+      {photos ? <TechnicalDetails lines={photos.log} /> : null}
     </>
   );
 };

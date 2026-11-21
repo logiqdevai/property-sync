@@ -32,19 +32,27 @@ export function registerIpc(): void {
 
   // Crawls of different agencies run side by side, each in its own Chrome tab.
   ipcMain.handle(IpcChannels.CRAWL_START, (_event, request: StartCrawlRequest) => crawlSessions.start(request));
+  ipcMain.handle(IpcChannels.CRAWL_START_QUEUE, (_event, requests: StartCrawlRequest[], concurrency: number) =>
+    crawlSessions.startQueue(requests, concurrency),
+  );
   ipcMain.handle(IpcChannels.CRAWL_STOP, (_event, scraperId: string) => crawlSessions.stop(scraperId));
   ipcMain.handle(IpcChannels.CRAWL_DISMISS, (_event, scraperId: string) => crawlSessions.dismiss(scraperId));
   ipcMain.handle(IpcChannels.CRAWL_STATE, () => crawlSessions.getStates());
   ipcMain.handle(IpcChannels.CRAWL_CHECKPOINT, (_event, scraperId: string) => checkpointStore.info(scraperId));
   ipcMain.handle(IpcChannels.CRAWL_CHECKPOINTS, () => checkpointStore.listInfo());
 
-  // One photo check at a time; it can run next to crawls (its own tab).
+  // Photo checks of different agencies run side by side (and next to crawls), each in its own tab.
   ipcMain.handle(IpcChannels.PHOTOS_START, (_event, request: StartPhotosRequest) =>
     photoRepairSession.start(request),
   );
-  ipcMain.handle(IpcChannels.PHOTOS_STOP, () => photoRepairSession.stop());
-  ipcMain.handle(IpcChannels.PHOTOS_DISMISS, () => photoRepairSession.dismiss());
-  ipcMain.handle(IpcChannels.PHOTOS_STATE, () => photoRepairSession.getState());
+  ipcMain.handle(IpcChannels.PHOTOS_START_QUEUE, (_event, requests: StartPhotosRequest[], concurrency: number) =>
+    photoRepairSession.startQueue(requests, concurrency),
+  );
+  ipcMain.handle(IpcChannels.PHOTOS_STOP, (_event, agencyId: string) => photoRepairSession.stop(agencyId));
+  ipcMain.handle(IpcChannels.PHOTOS_DISMISS, (_event, agencyId: string) =>
+    photoRepairSession.dismiss(agencyId),
+  );
+  ipcMain.handle(IpcChannels.PHOTOS_STATE, () => photoRepairSession.getStates());
 
   ipcMain.handle(IpcChannels.UPDATE_STATE, () => appUpdater.getState());
   ipcMain.handle(IpcChannels.UPDATE_INSTALL, () => {

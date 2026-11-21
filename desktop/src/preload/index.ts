@@ -18,6 +18,8 @@ const bridge: DesktopBridge = {
   },
   crawl: {
     start: (request) => ipcRenderer.invoke(IpcChannels.CRAWL_START, request),
+    startQueue: (requests, concurrency) =>
+      ipcRenderer.invoke(IpcChannels.CRAWL_START_QUEUE, requests, concurrency),
     stop: (scraperId) => ipcRenderer.invoke(IpcChannels.CRAWL_STOP, scraperId),
     dismiss: (scraperId) => ipcRenderer.invoke(IpcChannels.CRAWL_DISMISS, scraperId),
     getStates: () => ipcRenderer.invoke(IpcChannels.CRAWL_STATE),
@@ -32,10 +34,12 @@ const bridge: DesktopBridge = {
   },
   photos: {
     start: (request) => ipcRenderer.invoke(IpcChannels.PHOTOS_START, request),
-    stop: () => ipcRenderer.invoke(IpcChannels.PHOTOS_STOP),
-    dismiss: () => ipcRenderer.invoke(IpcChannels.PHOTOS_DISMISS),
-    getState: () => ipcRenderer.invoke(IpcChannels.PHOTOS_STATE),
-    onState: (listener) => subscribe(IpcChannels.PHOTOS_STATE, listener),
+    startQueue: (requests, concurrency) =>
+      ipcRenderer.invoke(IpcChannels.PHOTOS_START_QUEUE, requests, concurrency),
+    stop: (agencyId) => ipcRenderer.invoke(IpcChannels.PHOTOS_STOP, agencyId),
+    dismiss: (agencyId) => ipcRenderer.invoke(IpcChannels.PHOTOS_DISMISS, agencyId),
+    getStates: () => ipcRenderer.invoke(IpcChannels.PHOTOS_STATE),
+    onStates: (listener) => subscribe(IpcChannels.PHOTOS_STATE, listener),
   },
 };
 
