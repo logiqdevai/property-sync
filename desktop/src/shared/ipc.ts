@@ -22,6 +22,7 @@ export const IpcChannels = {
   PHOTOS_DISMISS: "photos:dismiss",
   UPDATE_STATE: "update:state",
   UPDATE_INSTALL: "update:install",
+  UPDATE_CHECK: "update:check",
 } as const;
 
 export interface DesktopSession {
@@ -243,6 +244,8 @@ export interface DesktopBridge {
     onState(listener: (state: UpdateState) => void): () => void;
     /** Restarts the app into the downloaded version. Refused while a crawl or photo check runs. */
     install(): Promise<void>;
+    /** Looks for a new version now; the result arrives through onState. */
+    check(): Promise<void>;
   };
   photos: {
     /** Starts one agency's photo check; several agencies can be checked at once. */

@@ -44,10 +44,16 @@ class AppUpdater {
     autoUpdater.setFeedURL({ provider: "generic", url: `${session.api_url}/desktop-crawl/app/update` });
     autoUpdater.requestHeaders = { Authorization: `Bearer ${session.access_token}` };
 
-    if (!this.timer) {
-      void this.check();
-      this.timer = setInterval(() => void this.check(), CHECK_EVERY_MS);
-    }
+    // Every sign-in (or app start with a saved login) checks right away, then every 4 hours.
+    void this.check();
+    if (!this.timer) this.timer = setInterval(() => void this.check(), CHECK_EVERY_MS);
+  }
+
+  /** The "Check for updates" button: same check as the automatic one, but errors are reported. */
+  async checkNow(): Promise<void> {
+    if (!app.isPackaged) throw new Error("Updates only apply to the installed app, not a development run.");
+    if (!this.timer) throw new Error("Sign in first; updates are only offered to signed-in users.");
+    await this.check();
   }
 
   install(): void {
@@ -59,6 +65,7 @@ class AppUpdater {
   private async check(): Promise<void> {
     const status = this.state.get().status;
     if (status === UpdateStatuses.DOWNLOADING || status === UpdateStatuses.READY) return;
+    if (!app.isPackaged) return;
     try {
       await autoUpdater.checkForUpdates();
     } catch (error) {

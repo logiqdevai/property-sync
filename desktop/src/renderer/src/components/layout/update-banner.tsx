@@ -22,6 +22,15 @@ export function UpdateBanner() {
     );
   }
 
+  if (update.status === UpdateStatuses.ERROR) {
+    return (
+      <div className="flex items-center justify-center gap-2 bg-warning/15 px-4 py-1.5 text-xs text-foreground">
+        Could not check for a new version{update.error ? `: ${update.error}` : ""}. Install it by hand from the
+        web app (Download for Windows) or sign out and in again.
+      </div>
+    );
+  }
+
   if (update.status !== UpdateStatuses.READY) return null;
 
   return (

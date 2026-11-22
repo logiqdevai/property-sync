@@ -1,11 +1,13 @@
 import { Link } from "react-router-dom";
 import { Button, Tooltip } from "@heroui/react";
-import { LogOut, Moon, Sun } from "lucide-react";
+import { LogOut, Moon, RefreshCw, Sun } from "lucide-react";
 import { AppLogo } from "@/components/layout/app-logo";
 import { useThemeContext } from "@/components/providers/theme-provider";
 import { environments } from "@/config/environments";
 import { Routes } from "@/routes/routes";
 import { useAuthStore } from "@/stores/auth";
+import { useAppUpdate, useCheckAppUpdate } from "@/features/app-update/hooks/use-app-update";
+import { UpdateStatuses } from "@shared/ipc";
 import { useGetAppInfo } from "@/features/desktop-app/hooks/use-desktop-app";
 
 export function AppHeader() {
@@ -13,6 +15,10 @@ export function AppHeader() {
   const email = useAuthStore((s) => s.email);
   const logout = useAuthStore((s) => s.logout);
   const { data: appInfo } = useGetAppInfo();
+  const update = useAppUpdate();
+  const { mutate: checkUpdate, isPending: isChecking } = useCheckAppUpdate();
+  const updateBusy =
+    isChecking || update.status === UpdateStatuses.CHECKING || update.status === UpdateStatuses.DOWNLOADING;
 
   return (
     <header className="flex h-14 shrink-0 items-center justify-between gap-4 border-b border-border bg-surface px-5">
@@ -23,6 +29,21 @@ export function AppHeader() {
       </Link>
       <div className="flex items-center gap-1">
         {email ? <span className="mr-2 hidden text-sm text-muted sm:inline">{email}</span> : null}
+        <Tooltip delay={300}>
+          <Tooltip.Trigger>
+            <Button
+              isIconOnly
+              variant="ghost"
+              size="sm"
+              aria-label="Check for updates"
+              isDisabled={updateBusy || update.status === UpdateStatuses.READY}
+              onPress={() => checkUpdate()}
+            >
+              <RefreshCw className={updateBusy ? "size-4 animate-spin" : "size-4"} />
+            </Button>
+          </Tooltip.Trigger>
+          <Tooltip.Content className="px-2 py-1 text-xs">Check for updates</Tooltip.Content>
+        </Tooltip>
         <Tooltip delay={300}>
           <Tooltip.Trigger>
             <Button isIconOnly variant="ghost" size="sm" aria-label="Switch theme" onPress={toggleTheme}>

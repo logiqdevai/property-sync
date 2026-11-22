@@ -55,6 +55,7 @@ export function registerIpc(): void {
   ipcMain.handle(IpcChannels.PHOTOS_STATE, () => photoRepairSession.getStates());
 
   ipcMain.handle(IpcChannels.UPDATE_STATE, () => appUpdater.getState());
+  ipcMain.handle(IpcChannels.UPDATE_CHECK, () => appUpdater.checkNow());
   ipcMain.handle(IpcChannels.UPDATE_INSTALL, () => {
     // Restarting mid-crawl would cut it off (it is saved, but the user would have to continue it).
     if (isBusy()) throw new Error("Finish or stop the crawl or photo check first, then restart.");

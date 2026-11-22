@@ -31,6 +31,7 @@ const bridge: DesktopBridge = {
     getState: () => ipcRenderer.invoke(IpcChannels.UPDATE_STATE),
     onState: (listener) => subscribe(IpcChannels.UPDATE_STATE, listener),
     install: () => ipcRenderer.invoke(IpcChannels.UPDATE_INSTALL),
+    check: () => ipcRenderer.invoke(IpcChannels.UPDATE_CHECK),
   },
   photos: {
     start: (request) => ipcRenderer.invoke(IpcChannels.PHOTOS_START, request),
