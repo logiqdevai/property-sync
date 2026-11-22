@@ -29,6 +29,10 @@ interface ProcessTrackerBatchOptions {
   // explicit manual pushes (e.g. "push to CRM" from the Properties page), which
   // should always go through regardless of the tracker's auto-sync setting.
   bypassAutoUpdateGate?: boolean;
+  // Filled with the user_property ids that were held back because they have no
+  // EstateWeb location, so a manual push can tell the user the real reason
+  // instead of guessing.
+  heldWithoutLocation?: Set<string>;
 }
 
 interface TrackerGroup {
@@ -682,6 +686,7 @@ export class CmsSyncOrchestratorService {
         continue;
       }
 
+      const heldWithoutLocation = new Set<string>();
       const enqueued = await this.processTrackerBatch(
         null,
         {
@@ -702,11 +707,25 @@ export class CmsSyncOrchestratorService {
         },
         {
           bypassAutoUpdateGate: true,
+          heldWithoutLocation,
         },
       );
 
+      const pushable: typeof entry.affected = [];
+      for (const item of entry.affected) {
+        if (heldWithoutLocation.has(item.user_property_id)) {
+          failed.push({
+            user_property_id: item.user_property_id,
+            error:
+              'Property was not pushed. No EstateWeb location: the property has no resolvable city/district. Set a location on the property and try again.',
+          });
+        } else {
+          pushable.push(item);
+        }
+      }
+
       if (!enqueued) {
-        for (const item of entry.affected) {
+        for (const item of pushable) {
           failed.push({
             user_property_id: item.user_property_id,
             error:
@@ -718,7 +737,7 @@ export class CmsSyncOrchestratorService {
         continue;
       }
 
-      queued += entry.affected.length;
+      queued += pushable.length;
       batchesEnqueued += 1;
     }
 
@@ -815,6 +834,14 @@ export class CmsSyncOrchestratorService {
       enabled,
       logLabel,
     );
+    if (options?.heldWithoutLocation) {
+      const kept = new Set(filtered.map((a) => a.user_property_id));
+      for (const a of enabled) {
+        if (!kept.has(a.user_property_id)) {
+          options.heldWithoutLocation.add(a.user_property_id);
+        }
+      }
+    }
 
     if (filtered.length === 0) {
       this.logger.log(
