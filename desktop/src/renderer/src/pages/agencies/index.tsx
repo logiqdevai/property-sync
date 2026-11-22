@@ -102,26 +102,57 @@ const AgenciesPage: FC = () => {
   const runningNow = active.filter((s) => s.phase !== CrawlPhases.QUEUED).length;
   const totalAfterStart = Math.min(selected.length, concurrency) + runningNow;
 
-  const startSelected = () => {
+  // "All" means every agency in the list on screen (so a search or filter narrows it).
+  const photoTargetsAll = useMemo(
+    () => (agencies ?? []).filter((a) => !isPhotoRepairActive(photoStates[a.agency_id])),
+    [agencies, photoStates],
+  );
+
+  // What the confirmation dialog is about to start (set when a bulk action needs a go-ahead).
+  const [plan, setPlan] = useState<{ kind: "crawl" | "photos"; agencies: CrawlableAgency[]; all: boolean } | null>(
+    null,
+  );
+
+  const runCrawls = (list: CrawlableAgency[]) => {
     // Each continues its saved crawl if it has one, otherwise starts fresh.
     startCrawls(
-      { requests: selected.map((agency) => toRequest(agency, true, photosAfter, pushAfter)), concurrency },
+      { requests: list.map((agency) => toRequest(agency, true, photosAfter, pushAfter)), concurrency },
       { onSuccess: () => selection.clear() },
     );
   };
 
-  const fixPhotosSelected = () => {
-    const targets = selected.filter((a) => !isPhotoRepairActive(photoStates[a.agency_id]));
-    if (targets.length === 0) return;
+  const runPhotos = (list: CrawlableAgency[]) => {
+    if (list.length === 0) return;
     startPhotos(
-      { requests: targets.map((a) => ({ agency_id: a.agency_id, agency_name: a.agency_name })), concurrency },
+      { requests: list.map((a) => ({ agency_id: a.agency_id, agency_name: a.agency_name })), concurrency },
       { onSuccess: () => selection.clear() },
     );
   };
 
-  const onCrawlSelected = () => {
-    if (totalAfterStart > RECOMMENDED_PARALLEL_CRAWLS) manyDialog.open();
-    else startSelected();
+  const askOrRun = (kind: "crawl" | "photos", list: CrawlableAgency[], all: boolean) => {
+    // "All" always asks first; a selection only when it would load the computer.
+    const heavy = kind === "crawl" && Math.min(list.length, concurrency) + runningNow > RECOMMENDED_PARALLEL_CRAWLS;
+    if (all || heavy) {
+      setPlan({ kind, agencies: list, all });
+      manyDialog.open();
+    } else if (kind === "crawl") runCrawls(list);
+    else runPhotos(list);
+  };
+
+  const onCrawlSelected = () => askOrRun("crawl", selected, false);
+  const onFixPhotosSelected = () =>
+    askOrRun(
+      "photos",
+      selected.filter((a) => !isPhotoRepairActive(photoStates[a.agency_id])),
+      false,
+    );
+  const onCrawlAll = () => askOrRun("crawl", selectable, true);
+  const onFixPhotosAll = () => askOrRun("photos", photoTargetsAll, true);
+
+  const confirmPlan = () => {
+    if (!plan) return;
+    if (plan.kind === "crawl") runCrawls(plan.agencies);
+    else runPhotos(plan.agencies);
   };
 
   return (
@@ -179,7 +210,11 @@ const AgenciesPage: FC = () => {
             onSelectAll={() => selection.selectAll(selectable.map((a) => a.scraper_id))}
             onDeselectAll={selection.clear}
             onCrawlSelected={onCrawlSelected}
-            onFixPhotosSelected={fixPhotosSelected}
+            onFixPhotosSelected={onFixPhotosSelected}
+            onCrawlAll={onCrawlAll}
+            onFixPhotosAll={onFixPhotosAll}
+            crawlAllCount={selectable.length}
+            photosAllCount={photoTargetsAll.length}
             isStarting={isStartingMany || isStartingPhotos}
             concurrency={concurrency}
             onConcurrencyChange={setConcurrency}
@@ -215,26 +250,43 @@ const AgenciesPage: FC = () => {
 
       <ConfirmationDialog
         state={manyDialog}
-        title={`Run ${totalAfterStart} crawls at the same time?`}
+        title={
+          plan?.kind === "photos"
+            ? `Check photos of ${plan.agencies.length} agenc${plan.agencies.length === 1 ? "y" : "ies"}?`
+            : plan?.all
+              ? `Crawl all ${plan.agencies.length} agencies?`
+              : `Run ${totalAfterStart} crawls at the same time?`
+        }
         description={
           <div className="flex flex-col gap-2 text-sm">
+            {plan?.all ? (
+              <p>
+                This starts every agency in the list, {concurrency} at a time; the next one starts by itself when
+                one finishes. Leave Chrome open until they are all done.
+              </p>
+            ) : null}
             <p>
-              Each crawl opens its own Chrome tab. Running more than {RECOMMENDED_PARALLEL_CRAWLS} at once can make
+              Each one opens its own Chrome tab. Running more than {RECOMMENDED_PARALLEL_CRAWLS} at once can make
               this computer slow, especially with other programs open, and more websites may ask you to prove
               you're a person at the same time.
             </p>
-            {active.length > 0 ? (
+            {plan?.kind === "crawl" && runningNow > 0 ? (
               <p className="text-muted">
-                {runningNow} {runningNow === 1 ? "is" : "are"} already running; this adds {Math.min(selected.length, concurrency)}.
+                {runningNow} {runningNow === 1 ? "is" : "are"} already running; this adds{" "}
+                {Math.min(plan.agencies.length, concurrency)}.
               </p>
             ) : null}
             <p>You can stop any of them at any time; what was read so far is kept.</p>
           </div>
         }
-        confirmLabel={`Start ${selected.length} crawl${selected.length === 1 ? "" : "s"}`}
+        confirmLabel={
+          plan?.kind === "photos"
+            ? `Check ${plan.agencies.length} agenc${plan.agencies.length === 1 ? "y" : "ies"}`
+            : `Start ${plan?.agencies.length ?? 0} crawl${plan?.agencies.length === 1 ? "" : "s"}`
+        }
         cancelLabel="Go back"
         confirmVariant="primary"
-        onConfirm={startSelected}
+        onConfirm={confirmPlan}
       />
     </>
   );

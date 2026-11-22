@@ -1,13 +1,25 @@
 import { useNavigate } from "react-router-dom";
 import { Button, Card, Checkbox, Spinner } from "@heroui/react";
 import { ChevronRight, History, ImageOff, Play, Square } from "lucide-react";
-import { BlockStates, PhotoPhases, CrawlPhases, type CrawlCheckpointInfo, type CrawlState } from "@shared/ipc";
+import {
+  BlockStates,
+  PhotoPhases,
+  CrawlPhases,
+  type CrawlCheckpointInfo,
+  type CrawlState,
+} from "@shared/ipc";
 import { Routes } from "@/routes/routes";
 import { formatRelative } from "@/lib/date";
 import { cn } from "@/lib/utils";
-import { isPhotoRepairActive, usePhotoRepair } from "@/features/photo-repair/hooks/use-photo-repair";
+import {
+  isPhotoRepairActive,
+  usePhotoRepair,
+} from "@/features/photo-repair/hooks/use-photo-repair";
 import { isCrawlActive } from "@/features/crawl-session/hooks/use-crawl-session";
-import type { CrawlableAgency, CrawlRunSummary } from "@/features/desktop-crawl/interfaces/desktop-crawl.interfaces";
+import type {
+  CrawlableAgency,
+  CrawlRunSummary,
+} from "@/features/desktop-crawl/interfaces/desktop-crawl.interfaces";
 import { AgencyAttentionChip } from "./agency-attention-chip";
 import { AgencyCrawlStatus } from "./agency-crawl-status";
 import { OpenAgencyInWebAppButton } from "@/components/ui/open-agency-in-web-app-button";
@@ -46,8 +58,15 @@ export function AgencyCard({
   const running = isCrawlActive(crawl);
   const photos = usePhotoRepair(agency.agency_id);
   const photosRunning = isPhotoRepairActive(photos);
-  const photosNeedUser = photosRunning && photos?.block === BlockStates.NEEDS_USER;
-  const canStop = !!crawl && running && (crawl.phase === CrawlPhases.QUEUED || crawl.phase === CrawlPhases.PREPARING || crawl.phase === CrawlPhases.LISTING || crawl.phase === CrawlPhases.DETAILS);
+  const photosNeedUser =
+    photosRunning && photos?.block === BlockStates.NEEDS_USER;
+  const canStop =
+    !!crawl &&
+    running &&
+    (crawl.phase === CrawlPhases.QUEUED ||
+      crawl.phase === CrawlPhases.PREPARING ||
+      crawl.phase === CrawlPhases.LISTING ||
+      crawl.phase === CrawlPhases.DETAILS);
   const selectable = agency.has_config && !running;
   const canResume = !running && !!checkpoint;
 
@@ -62,29 +81,40 @@ export function AgencyCard({
             onChange={onSelectedChange}
             className="mt-0.5"
           >
-            <Checkbox.Control>
+            <Checkbox.Control className="border-2 border-foreground/45 [[data-selected=true]_&]:border-accent [[data-indeterminate=true]_&]:border-accent">
               <Checkbox.Indicator />
             </Checkbox.Control>
           </Checkbox>
           <div className="flex min-w-0 flex-col gap-1">
-            <Card.Title className="truncate text-base">{agency.agency_name}</Card.Title>
-            <Card.Description className="truncate text-xs">{agency.agency_url}</Card.Description>
+            <Card.Title className="truncate text-base">
+              {agency.agency_name}
+            </Card.Title>
+            <Card.Description className="truncate text-xs">
+              {agency.agency_url}
+            </Card.Description>
           </div>
         </div>
         <div className="flex items-center gap-1">
           <AgencyAttentionChip reason={agency.attention} />
-          <OpenAgencyInWebAppButton agencyId={agency.agency_id} agencyName={agency.agency_name} />
+          <OpenAgencyInWebAppButton
+            agencyId={agency.agency_id}
+            agencyName={agency.agency_name}
+          />
         </div>
       </div>
 
       <dl className="grid grid-cols-1 gap-x-6 gap-y-1 text-sm sm:grid-cols-2">
         <div className="flex gap-2">
           <dt className="text-muted">Automatic update:</dt>
-          <dd className="text-foreground">{describeRun(agency.last_server_crawl)}</dd>
+          <dd className="text-foreground">
+            {describeRun(agency.last_server_crawl)}
+          </dd>
         </div>
         <div className="flex gap-2">
           <dt className="text-muted">From this app:</dt>
-          <dd className="text-foreground">{describeRun(agency.last_desktop_crawl)}</dd>
+          <dd className="text-foreground">
+            {describeRun(agency.last_desktop_crawl)}
+          </dd>
         </div>
       </dl>
 
@@ -99,8 +129,8 @@ export function AgencyCard({
               : photos.phase === PhotoPhases.QUEUED
                 ? "Photos: waiting for its turn"
                 : photos.phase === PhotoPhases.CHECKING
-                ? `Checking photos: ${photos.checked} of ${photos.total} listings`
-                : `Fixing photos: ${photos.fixed + photos.still_missing.length} of ${photos.missing} listings`}
+                  ? `Checking photos: ${photos.checked} of ${photos.total} listings`
+                  : `Fixing photos: ${photos.fixed + photos.still_missing.length} of ${photos.missing} listings`}
           </span>
         </div>
       ) : null}
@@ -108,7 +138,12 @@ export function AgencyCard({
       <div className="flex flex-wrap items-center gap-2">
         {running ? (
           canStop ? (
-            <Button variant="secondary" size="sm" isDisabled={isStopping} onPress={onStop}>
+            <Button
+              variant="secondary"
+              size="sm"
+              isDisabled={isStopping}
+              onPress={onStop}
+            >
               <Square className="size-4" />
               Stop
             </Button>
@@ -119,23 +154,42 @@ export function AgencyCard({
             Continue
           </Button>
         ) : (
-          <Button variant="primary" size="sm" isDisabled={!agency.has_config} onPress={() => onStart(false)}>
+          <Button
+            variant="primary"
+            size="sm"
+            isDisabled={!agency.has_config}
+            onPress={() => onStart(false)}
+          >
             <Play className="size-4" />
             {crawl?.phase === CrawlPhases.DONE ? "Crawl again" : "Crawl now"}
           </Button>
         )}
-        <Button variant="secondary" size="sm" onPress={() => navigate(Routes.photos(agency.agency_id))}>
-          {photosRunning ? <Spinner size="sm" color="current" /> : <ImageOff className="size-4" />}
+        <Button
+          variant="secondary"
+          size="sm"
+          onPress={() => navigate(Routes.photos(agency.agency_id))}
+        >
+          {photosRunning ? (
+            <Spinner size="sm" color="current" />
+          ) : (
+            <ImageOff className="size-4" />
+          )}
           {photosRunning ? "Fixing photos…" : "Fix missing photos"}
         </Button>
         {crawl || checkpoint ? (
-          <Button variant="ghost" size="sm" onPress={() => navigate(Routes.crawl(agency.scraper_id))}>
+          <Button
+            variant="ghost"
+            size="sm"
+            onPress={() => navigate(Routes.crawl(agency.scraper_id))}
+          >
             Details
             <ChevronRight className="size-4" />
           </Button>
         ) : null}
         {!agency.has_config ? (
-          <span className="text-xs text-muted">Not set up yet. Ask a developer.</span>
+          <span className="text-xs text-muted">
+            Not set up yet. Ask a developer.
+          </span>
         ) : null}
       </div>
     </Card>
