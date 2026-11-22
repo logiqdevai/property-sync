@@ -95,7 +95,7 @@ export function AgencyCard({
           </div>
         </div>
         <div className="flex items-center gap-1">
-          <AgencyAttentionChip reason={agency.attention} />
+          <AgencyAttentionChip reason={agency.attention} scraperStatus={agency.scraper_status} />
           <OpenAgencyInWebAppButton
             agencyId={agency.agency_id}
             agencyName={agency.agency_name}
