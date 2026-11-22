@@ -1,3 +1,4 @@
+import { checkListingLiveness } from '../utils/listing-url-liveness.util';
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
@@ -735,7 +736,8 @@ export class PropertyNormalizationService {
             // value (creation-time normalization found no price) self-heal from
             // a later re-crawl instead of staying null forever.
             price: existingLink.property.price ?? record.price,
-            price_start: existingLink.property.price_start ?? record.price_start,
+            price_start:
+              existingLink.property.price_start ?? record.price_start,
             city: record.city ?? existingLink.property.city,
             district: record.district ?? existingLink.property.district,
             // Once a location id is set, only the async Google-verified re-check
@@ -1571,9 +1573,7 @@ export class PropertyNormalizationService {
   // only — throws on any failure (key resolution, the AI call itself) so the
   // processor can decide whether to let BullMQ retry the job or, on the
   // terminal attempt, degrade to applyFallbackForChunk instead.
-  async processNormalizationChunk(
-    data: NormalizationChunkJobData,
-  ): Promise<{
+  async processNormalizationChunk(data: NormalizationChunkJobData): Promise<{
     item: NormalizationChunkItemResult;
     affected: SyncForPropertyResult[];
   }> {
@@ -1676,7 +1676,10 @@ export class PropertyNormalizationService {
 
     if (sourceProperties.length === 0) {
       return {
-        item: { ...this.emptyChunkResult(data.chunk_index, 'failed'), error: message },
+        item: {
+          ...this.emptyChunkResult(data.chunk_index, 'failed'),
+          error: message,
+        },
         affected: [],
       };
     }
@@ -1782,7 +1785,9 @@ export class PropertyNormalizationService {
         include: {
           source_links: {
             include: {
-              source_property: { select: { last_seen_at: true } },
+              source_property: {
+                select: { last_seen_at: true, source_url: true },
+              },
             },
           },
         },
@@ -1909,20 +1914,43 @@ export class PropertyNormalizationService {
     }
 
     let soldWatermarkCheckEnabled = false;
+    let blockedSite = false;
     if (scraperId) {
       const scraper = await this.prisma.scraper.findUnique({
         where: { id: scraperId },
-        select: { active_version: { select: { config: true } } },
+        select: {
+          use_managed_browser: true,
+          use_proxy_browser: true,
+          active_version: { select: { config: true } },
+        },
       });
       const config = scraper?.active_version?.config as unknown as
         | ScraperConfig
         | undefined;
       soldWatermarkCheckEnabled = config?.sold_watermark_check === true;
+      // Bot-protected sites answer a plain HTTP fetch with a challenge page, so
+      // a 200 there proves nothing.
+      blockedSite =
+        scraper?.use_managed_browser === true ||
+        scraper?.use_proxy_browser === true;
+    }
+
+    // Not seeing a listing this run (timeout, pagination hiccup) is not proof it
+    // is gone: ask the agency's site. Listings that still load are kept live --
+    // the stathopoulosmesitiko 2026-11-20 run unpublished 9 live listings off a
+    // timed-out crawl. Skipped when an admin confirmed the drop, and for
+    // bot-protected sites.
+    let removable = candidates;
+    if (!skipSpikeCheck && !blockedSite) {
+      removable = await this.dropListingsStillLive(candidates, crawlRunId);
+      if (removable.length === 0) {
+        return { removedCount: 0, totalTracked, affected: [] };
+      }
     }
 
     const affected: SyncForPropertyResult[] = [];
 
-    for (const property of candidates) {
+    for (const property of removable) {
       let newStatus: PropertyStatus = PropertyStatus.REMOVED;
       let changeType: PropertySyncChangeType = 'removed';
 
@@ -1981,7 +2009,7 @@ export class PropertyNormalizationService {
       affected.push(...removalResults);
     }
 
-    const removedCount = candidates.length;
+    const removedCount = removable.length;
     const removalRatio = totalTracked > 0 ? removedCount / totalTracked : 0;
     const isSpike =
       removedCount > PROPERTY_REMOVAL_SPIKE_ABSOLUTE_THRESHOLD ||
@@ -2009,6 +2037,43 @@ export class PropertyNormalizationService {
     }
 
     return { removedCount, totalTracked, affected };
+  }
+
+  // Returns only the candidates that can't be shown to still exist: a property
+  // is kept when any of its source URLs still loads as a real listing.
+  // 'unknown' answers (blocked/timeouts) leave it a removal candidate.
+  private async dropListingsStillLive<
+    T extends {
+      id: string;
+      source_links: { source_property: { source_url: string } }[];
+    },
+  >(candidates: T[], crawlRunId: string): Promise<T[]> {
+    const LANES = 8;
+    const stillLive = new Set<string>();
+    let next = 0;
+    const lane = async () => {
+      while (next < candidates.length) {
+        const property = candidates[next++];
+        for (const link of property.source_links) {
+          const verdict = await checkListingLiveness(
+            link.source_property.source_url,
+          );
+          if (verdict === 'live') {
+            stillLive.add(property.id);
+            break;
+          }
+        }
+      }
+    };
+    await Promise.all(
+      Array.from({ length: Math.min(LANES, candidates.length) }, lane),
+    );
+    if (stillLive.size > 0) {
+      this.logger.warn(
+        `Crawl ${crawlRunId}: ${stillLive.size}/${candidates.length} unseen properties still load on the agency site — kept live, not removed`,
+      );
+    }
+    return candidates.filter((property) => !stillLive.has(property.id));
   }
 
   private async resolveUserIdForCrawlRun(
