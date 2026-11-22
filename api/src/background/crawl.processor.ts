@@ -169,7 +169,12 @@ export class CrawlProcessor extends WorkerHost implements OnModuleInit {
 
     const attempt = job.attemptsMade + 1;
     const maxAttempts = job.opts.attempts ?? 1;
-    const isRetry = job.attemptsMade > 0;
+    // BullMQ's stalled-job recovery (worker killed by a deploy/crash) re-delivers the job
+    // WITHOUT incrementing attemptsMade, so it must be detected via stalledCounter --
+    // otherwise the redelivered job sees its own run still RUNNING, is skipped as a
+    // "conflict", and the run sits dead until the watchdog fails it (pamfili,
+    // 2026-11-22: a deploy 7s after the run started).
+    const isRetry = job.attemptsMade > 0 || (job.stalledCounter ?? 0) > 0;
 
     // A retry (BullMQ backoff or stalled-job recovery after a worker crash) finds the
     // run still sitting in RUNNING or FAILED from the attempt that died mid-flight --
