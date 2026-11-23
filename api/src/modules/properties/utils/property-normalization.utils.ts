@@ -18,6 +18,7 @@ import {
 } from '../interfaces/cms-property.interface';
 import { sanitizeRawDescription } from '../constants/normalization-prompt';
 import { mergeCmsFieldsFromNormalizedRow } from './property-cms-field-mapper.util';
+import { cmsFieldsComparable } from './cms-fields-history.util';
 import { getEstateWebInitPropertyType } from '@/integrations/estateweb/utils/estateweb-init-lookup.util';
 import { resolveEstateWebLocationFromSources } from '@/integrations/estateweb/utils/estateweb-location-lookup.util';
 import { resolveEstateWebTypeIdFromPropertyType } from '@/integrations/estateweb/utils/estateweb-type-lookup.util';
@@ -881,7 +882,14 @@ export function diffPropertyChanges(
       oldProperty[field as keyof Property],
     );
     const newComparable = toHistoryComparable(newData[field]);
-    if (!valuesEqual(oldComparable, newComparable)) {
+    const isEqual =
+      field === 'cms_fields'
+        ? valuesEqual(
+            cmsFieldsComparable(oldComparable),
+            cmsFieldsComparable(newComparable),
+          )
+        : valuesEqual(oldComparable, newComparable);
+    if (!isEqual) {
       events.push({
         ...base,
         event_type: PropertyHistoryEventType.UPDATED,

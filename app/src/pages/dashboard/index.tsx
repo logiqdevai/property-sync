@@ -212,6 +212,11 @@ export default function DashboardHome() {
                       {entry.property_title}
                     </span>
                   )}
+                  {entry.agency_name ? (
+                    <span className="text-xs text-muted break-words">
+                      {entry.agency_name}
+                    </span>
+                  ) : null}
                   <ActivityChangeLabel entry={entry} />
                 </div>
                 <span className="text-xs text-muted whitespace-nowrap shrink-0">

@@ -34,6 +34,9 @@ export class UserDashboardActivityItem {
   @ApiProperty()
   property_title: string;
 
+  @ApiProperty({ nullable: true, description: 'Source agency of the property' })
+  agency_name: string | null;
+
   @ApiProperty({ enum: PropertyHistoryEventType })
   event_type: PropertyHistoryEventType;
 

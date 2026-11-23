@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
 import { PropertyHistoryEventType, PropertyStatus } from 'generated/prisma';
 import { UPDATE_EVENT_TYPES } from '@/modules/properties/utils/property-change-filter.util';
+import { humanizeCmsFieldsChange } from '@/modules/properties/utils/cms-fields-history.util';
 import { UserDashboardResponse } from './entities/user-dashboard.entity';
 
 const RECENT_ACTIVITY_LIMIT = 100;
@@ -97,7 +98,22 @@ export class UserDashboardService {
           },
           orderBy: { created_at: 'desc' },
           take: RECENT_ACTIVITY_LIMIT,
-          include: { property: { select: { title: true } } },
+          include: {
+            property: {
+              select: {
+                title: true,
+                source_links: {
+                  orderBy: { is_primary_source: 'desc' },
+                  take: 1,
+                  select: {
+                    source_property: {
+                      select: { source_agency: { select: { name: true } } },
+                    },
+                  },
+                },
+              },
+            },
+          },
         }),
       ]);
 
@@ -110,17 +126,36 @@ export class UserDashboardService {
         properties_removed_this_week: propertiesRemovedThisWeek,
         tracked_agencies: trackedAgencies,
       },
-      activity: recentHistory.map((entry) => ({
-        id: entry.id,
-        property_id: entry.property_id,
-        user_property_id: userPropertyIdByCanonicalId.get(entry.property_id) ?? '',
-        property_title: entry.property.title,
-        event_type: entry.event_type,
-        field: entry.field,
-        old_value: entry.old_value,
-        new_value: entry.new_value,
-        created_at: entry.created_at,
-      })),
+      activity: recentHistory.flatMap((entry) => {
+        let oldValue: unknown = entry.old_value;
+        let newValue: unknown = entry.new_value;
+        if (entry.field === 'cms_fields') {
+          const change = humanizeCmsFieldsChange(oldValue, newValue);
+          if (change) {
+            // Order-only changes have nothing to show; drop them.
+            if (!change.old_value && !change.new_value) return [];
+            oldValue = change.old_value;
+            newValue = change.new_value;
+          }
+        }
+        return [
+          {
+            id: entry.id,
+            property_id: entry.property_id,
+            user_property_id:
+              userPropertyIdByCanonicalId.get(entry.property_id) ?? '',
+            property_title: entry.property.title,
+            agency_name:
+              entry.property.source_links[0]?.source_property.source_agency
+                .name ?? null,
+            event_type: entry.event_type,
+            field: entry.field,
+            old_value: oldValue,
+            new_value: newValue,
+            created_at: entry.created_at,
+          },
+        ];
+      }),
     };
   }
 }

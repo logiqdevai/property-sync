@@ -14,6 +14,7 @@ export interface UserDashboardActivityItem {
   property_id: string;
   user_property_id: string;
   property_title: string;
+  agency_name: string | null;
   event_type: PropertyHistoryEventType;
   field: string | null;
   old_value: unknown;

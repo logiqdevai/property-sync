@@ -107,6 +107,7 @@ interface ScriptArgs {
   itemsFile?: string;
   dryRun: boolean;
   force: boolean;
+  skipSpikeCheck: boolean;
 }
 
 function parseArgs(): ScriptArgs {
