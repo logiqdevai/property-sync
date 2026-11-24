@@ -21,7 +21,9 @@
 // Input file (JSON):
 //   {
 //     "users": ["person@example.com"],
-//     "copy_publishing_from": "<agency id | base_url | exact name>",      // optional
+//     "copy_publishing_from": "default",   // REQUIRED. "default" = the user's most recently tracked agency
+//                                          // that has a config (what the user always wants), or an agency
+//                                          // id | base_url | exact name, or "none" (only if the user said so)
 //     "agencies": [
 //       {
 //         "name": "ΣΤΑΘΟΠΟΥΛΟΣ - ΠΑΤΡΑ",
@@ -68,7 +70,7 @@ const DEFAULT_ONBOARD_CRAWL_INTERVAL = '0 9 * * *';
 
 interface InputFile {
   users: string[];
-  copy_publishing_from?: string;
+  copy_publishing_from: string;
   agencies: AgencyInput[];
 }
 
@@ -100,6 +102,11 @@ async function loadInput(path: string): Promise<InputFile> {
   }
   if (!Array.isArray(parsed.agencies) || parsed.agencies.length === 0) {
     throw new Error('"agencies" must be a non-empty array');
+  }
+  if (!parsed.copy_publishing_from?.trim()) {
+    throw new Error(
+      '"copy_publishing_from" is required: use "default" (the standard), an agency id/url/name, or "none" only if the user explicitly asked for no content publishing. Without it the tracker has NO languages and no titles/descriptions are ever generated.',
+    );
   }
   for (const [index, agency] of parsed.agencies.entries()) {
     if (!agency.name || !agency.base_url) {
@@ -163,8 +170,31 @@ async function main() {
     }
 
     let publishingSourceId: string | null = null;
-    if (input.copy_publishing_from) {
-      const ref = input.copy_publishing_from.trim();
+    const wantedRef = input.copy_publishing_from.trim();
+    if (wantedRef.toLowerCase() === 'default') {
+      const latest = await prisma.contentPublishingConfig.findFirst({
+        where: {
+          user_tracked_agency: {
+            user_id: users[0].id,
+            source_agency: {
+              base_url: {
+                notIn: input.agencies.map((a) => normalizeUrl(a.base_url)),
+              },
+            },
+          },
+        },
+        orderBy: { user_tracked_agency: { created_at: 'desc' } },
+        select: { user_tracked_agency: { select: { source_agency_id: true } } },
+      });
+      if (!latest) {
+        throw new Error(
+          'copy_publishing_from "default": the user has no existing content publishing config to copy',
+        );
+      }
+      publishingSourceId = latest.user_tracked_agency.source_agency_id;
+      console.log(`copy_publishing_from default -> agency ${publishingSourceId}`);
+    } else if (wantedRef.toLowerCase() !== 'none') {
+      const ref = wantedRef;
       const source = await prisma.sourceAgency.findFirst({
         where: {
           OR: [{ id: ref }, { base_url: normalizeUrl(ref) }, { name: ref }],
@@ -288,6 +318,10 @@ async function main() {
             } catch (error) {
               row.publishing = `FAILED: ${errorMessage(error)}`;
             }
+          }
+
+          if (wantedRef.toLowerCase() !== 'none' && row.publishing !== 'copied') {
+            row.publishing = `FAILED (NO CONTENT PUBLISHING CONFIG - fix before crawling): ${row.publishing}`;
           }
 
           try {

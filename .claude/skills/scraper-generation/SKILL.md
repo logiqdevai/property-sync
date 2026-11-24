@@ -41,10 +41,14 @@ Ask only for what is missing, in one message:
   Use the website url exactly as the user gave it for `base_url` (query string and path included);
   never reduce it to the site root. Only trailing slashes are trimmed.
   A password never contains spaces. If a line doesn't fit this shape, ask instead of guessing.
-- **Copy content publishing from** - optionally, the name/url/id of an existing agency whose
-  content-publishing config (languages, title/description strategies, AI families) should be
-  copied onto each new tracker, as the wizard's "Copy from agency" does. Ask once; "none" is fine.
-  It is read from the *same user's* tracker of that agency, so the user must track it.
+- **Copy content publishing from** - **MANDATORY, never ask, never skip.** Always set
+  `"copy_publishing_from": "default"` in the input JSON (the script refuses to run without the
+  field). `default` copies the content-publishing config (languages, title/description strategies,
+  AI families) of the user's most recently tracked agency, which is the standard setup. Use a
+  different agency id/url/name only if the user named one, and `"none"` only if the user
+  explicitly said no content publishing. Without this the tracker has no languages and no titles or
+  descriptions are ever generated for any crawled listing (this was forgotten once and cost a full
+  regeneration of ~1,100 listings). It is read from the *same user's* tracker, so that user must track it.
 - **CRM client id** per agency - never ask. If the user gave a number, pass it as `crm_client_id`;
   otherwise find it from the typed name in §1c.
 
@@ -84,6 +88,11 @@ An `EstateWeb upstream HTTP 500 on GET /api/client` means the user's default Est
 cannot list clients; report it, don't retry in a loop.
 
 ### 1d. Report
+
+**Gate before building the scraper or crawling anything:** every user row must say
+`publishing: copied`. A `FAILED (NO CONTENT PUBLISHING CONFIG ...)` line means stop, fix it
+(rerun with a valid source) and only then continue. Also verify in the DB that
+`content_publishing_configs` exists for each new tracker with its `content_outputs` rows.
 
 Show a short table: agency, whether it was created or already existed, and per user tracked /
 publishing / EstateWeb. Never print the passwords back. Call out every `FAILED:` line with its

@@ -119,7 +119,12 @@ function formatCmsMetadata(metadata: CmsPropertyMetadata | null | undefined): st
     .map(([key, value]) => `${key}: ${String(value)}`);
 }
 
-function buildLocalizedContentRows(property: PropertyDetailViewData): Array<{
+type LocalizedContentSource = "crm" | "generated";
+
+function buildLocalizedContentRows(
+  property: PropertyDetailViewData,
+  wanted: LocalizedContentSource,
+): Array<{
   key: string;
   language: string;
   label: string;
@@ -128,7 +133,8 @@ function buildLocalizedContentRows(property: PropertyDetailViewData): Array<{
   source: "crm" | "generated";
 }> {
   const ads = property.integration_property?.ads ?? null;
-  if (Array.isArray(ads) && ads.length > 0) {
+  if (wanted === "crm") {
+    if (!Array.isArray(ads) || ads.length === 0) return [];
     return ads
       .map((ad) => {
         const title = ad.title?.trim() || null;
@@ -446,7 +452,22 @@ export function PropertyDetailView({
   const crmPropertyAppUrl = property.integration_property_id
     ? getCrmPropertyAppUrl(property.integration_property_id)
     : null;
-  const localizedContentRows = buildLocalizedContentRows(property);
+  const crmLocalizedRows = buildLocalizedContentRows(property, "crm");
+  const generatedLocalizedRows = buildLocalizedContentRows(property, "generated");
+  const [localizedSourcePick, setLocalizedSourcePick] =
+    useState<LocalizedContentSource | null>(null);
+  // Generated content is what the user just produced, so show it first; the
+  // CRM copy stays one click away (it is only replaced after a push).
+  const localizedSource: LocalizedContentSource =
+    localizedSourcePick === "crm" && crmLocalizedRows.length > 0
+      ? "crm"
+      : localizedSourcePick === "generated" && generatedLocalizedRows.length > 0
+        ? "generated"
+        : generatedLocalizedRows.length > 0
+          ? "generated"
+          : "crm";
+  const localizedContentRows =
+    localizedSource === "crm" ? crmLocalizedRows : generatedLocalizedRows;
   const defaultLocalizedLanguage =
     localizedContentRows.find((row) => row.language === "EL")?.language ??
     localizedContentRows[0]?.language ??
@@ -714,11 +735,32 @@ export function PropertyDetailView({
               <h2 className="text-sm font-semibold text-foreground">
                 Localized content
               </h2>
-              <span className="text-[11px] text-muted">
-                {selectedLocalizedContent.source === "crm"
-                  ? "Pushed to CRM"
-                  : "Generated (not yet pushed)"}
-              </span>
+              {crmLocalizedRows.length > 0 && generatedLocalizedRows.length > 0 ? (
+                <div className="flex gap-1.5 text-[11px]">
+                  {(["generated", "crm"] as const).map((src) => (
+                    <button
+                      key={src}
+                      type="button"
+                      onClick={() => setLocalizedSourcePick(src)}
+                      className={
+                        localizedSource === src
+                          ? "rounded-md bg-accent px-2 py-0.5 font-medium text-accent-foreground"
+                          : "rounded-md bg-surface-secondary px-2 py-0.5 text-muted hover:text-foreground"
+                      }
+                    >
+                      {src === "generated"
+                        ? "Generated (not yet pushed)"
+                        : "Currently in CRM"}
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <span className="text-[11px] text-muted">
+                  {selectedLocalizedContent.source === "crm"
+                    ? "Pushed to CRM"
+                    : "Generated (not yet pushed)"}
+                </span>
+              )}
             </div>
             {localizedContentRows.length > 1 ? (
               <Select

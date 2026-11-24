@@ -4133,6 +4133,7 @@ export class UserPropertiesService {
         title: true,
         description: true,
         canonical_property_id: true,
+        integration_property_id: true,
       },
     });
 
@@ -4279,7 +4280,12 @@ export class UserPropertiesService {
     const changedIds = [
       ...new Set([...propertyChangedIds, ...localizedChangedIds]),
     ];
-    const pushIds = changedIds.length > 0 ? changedIds : uniqueIds;
+    // Only listings whose text actually changed AND that already exist in the
+    // CRM are pushed. Never CREATE new CRM listings or re-push untouched ones.
+    const inCrm = new Set(
+      properties.filter((p) => p.integration_property_id).map((p) => p.id),
+    );
+    const pushIds = changedIds.filter((id) => inCrm.has(id));
 
     let queued = 0;
     if (pushIds.length > 0) {
@@ -5495,6 +5501,7 @@ export class UserPropertiesService {
         title: true,
         description: true,
         canonical_property_id: true,
+        integration_property_id: true,
       },
     });
 
@@ -5642,7 +5649,10 @@ export class UserPropertiesService {
     const changedIds = [
       ...new Set([...propertyChangedIds, ...localizedChangedIds]),
     ];
-    const pushIds = changedIds.length > 0 ? changedIds : uniqueIds;
+    // Only changed listings that already exist in the CRM are pushed.
+    const pushIds = changedIds.filter((id) =>
+      properties.some((p) => p.id === id && p.integration_property_id),
+    );
     const pushByUser = new Map<string, string[]>();
     for (const property of properties) {
       if (!pushIds.includes(property.id)) continue;
