@@ -219,6 +219,7 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
     }
 
     const result = await this.executeOperations(
+      cms_sync_run_id,
       adapter,
       userIntegrationId,
       operations,
@@ -230,6 +231,15 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
         (tracker?.watermark_manual_selection ?? false),
       propertyNote,
     );
+
+    // The user cancelled the run while it was executing: keep the CANCELLED
+    // status (do not overwrite it with SUCCESS/FAILED) and do not retry.
+    if (await this.isRunCancelled(cms_sync_run_id)) {
+      this.logger.warn(
+        `CmsSyncRun ${cms_sync_run_id} was cancelled mid-run; stopped after ${result.responses.length} of ${operations.length} operation(s)`,
+      );
+      return;
+    }
 
     const mergedResult = this.mergeWithPreviousResult(previousResponse, result);
     const status =
@@ -346,7 +356,16 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
     });
   }
 
+  private async isRunCancelled(cmsSyncRunId: string): Promise<boolean> {
+    const run = await this.prisma.cmsSyncRun.findUnique({
+      where: { id: cmsSyncRunId },
+      select: { status: true },
+    });
+    return run?.status === CmsSyncStatus.CANCELLED;
+  }
+
   private async executeOperations(
+    cmsSyncRunId: string,
     adapter: CmsSyncAdapter,
     userIntegrationId: string,
     operations: CmsSyncBatchOperation[],
@@ -375,6 +394,10 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
     );
 
     for (let i = 0; i < operations.length; i += concurrentInsertions) {
+      // Cancelling a run in the UI only flips its DB row; without this check a
+      // running batch keeps pushing every remaining listing to the CRM.
+      if (await this.isRunCancelled(cmsSyncRunId)) break;
+
       const chunk = operations.slice(i, i + concurrentInsertions);
 
       const chunkResults = await Promise.all(
