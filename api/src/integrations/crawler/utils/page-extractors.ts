@@ -247,7 +247,11 @@ export function extractDetailPage(
   let externalId: string | null = null;
   if (cfg?.external_id_source === 'selector' && cfg.external_id_selector) {
     const el = document.querySelector(cfg.external_id_selector);
-    const text = cleanText(el?.textContent);
+    const rawText = cleanText(el?.textContent);
+    // A code never contains a currency sign. A positional selector that landed
+    // on the price row (listing without a code row) must yield no id, so the
+    // listing falls back to its URL slug instead of the price's digits.
+    const text = /[€$£]/.test(rawText) ? '' : rawText;
     // Strip a KNOWN label word first where present (handles clean
     // "Property ID: 988" / "Κωδικός: 988" cases with zero
     // false-positive risk). This list can never cover every

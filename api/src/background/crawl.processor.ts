@@ -252,7 +252,12 @@ export class CrawlProcessor extends WorkerHost implements OnModuleInit {
       // of from the config's start_url (see CrawlRunsService#resolveResumeMetadata).
       const resumeMeta = readResumeMetadata(run.metadata);
       const config: ScraperConfig = resumeMeta.startUrl
-        ? { ...baseConfig, start_url: resumeMeta.startUrl }
+        ? {
+            ...baseConfig,
+            start_url: resumeMeta.startUrl,
+            // A run resumed from a URL/page is a partial walk of that one section.
+            extra_start_urls: undefined,
+          }
         : baseConfig;
       if (resumeMeta.startUrl) {
         this.logger.log(

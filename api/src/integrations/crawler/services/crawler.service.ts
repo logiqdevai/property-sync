@@ -88,16 +88,66 @@ export class CrawlerService {
     options?: CrawlRunOptions,
     blockHandlingConfig?: BlockHandlingConfig,
   ): Promise<CrawlResult> {
-    return this.diagnosticsCaptureService.run(diagnosticsCtx, (page) =>
-      this.scrapeListingPages(
-        page,
-        config,
-        options,
-        blockHandlingConfig,
-        diagnosticsCtx.useManagedBrowser,
-        diagnosticsCtx.proxySession,
-      ),
-    );
+    return this.diagnosticsCaptureService.run(diagnosticsCtx, async (page) => {
+      const extraStartUrls = (config.extra_start_urls ?? []).filter(
+        (u) => typeof u === 'string' && u.trim() !== '',
+      );
+      const sweep = (cfg: ScraperConfig) =>
+        this.scrapeListingPages(
+          page,
+          cfg,
+          options,
+          blockHandlingConfig,
+          diagnosticsCtx.useManagedBrowser,
+          diagnosticsCtx.proxySession,
+        );
+      const primary = await sweep({ ...config, extra_start_urls: undefined });
+      if (extraStartUrls.length === 0 || !primary.success) {
+        return primary;
+      }
+
+      // Walk every extra entry point and merge. Any failed sweep fails the whole
+      // run: a partial result would mark that sweep's listings as removed.
+      const items = [...primary.items];
+      const steps = [...primary.steps];
+      const seen = new Set(items.map((i) => i.source_url));
+      for (const url of extraStartUrls) {
+        steps.push({
+          ts: crawlTimestamp(),
+          msg: 'extra_start_url',
+          url,
+        });
+        const r = await sweep({
+          ...config,
+          start_url: url,
+          extra_start_urls: undefined,
+        });
+        steps.push(...r.steps);
+        for (const item of r.items) {
+          if (seen.has(item.source_url)) continue;
+          seen.add(item.source_url);
+          items.push(item);
+        }
+        if (!r.success) {
+          return {
+            items,
+            steps,
+            success: false,
+            errorSummary: `extra start_url ${url} failed: ${r.errorSummary ?? 'no listings found'}`,
+            networkError: r.networkError,
+            zeroListingsPage0: r.zeroListingsPage0,
+          };
+        }
+      }
+      return {
+        items,
+        steps,
+        success: true,
+        errorSummary: null,
+        networkError: false,
+        zeroListingsPage0: false,
+      };
+    });
   }
 
   private async scrapeListingPages(

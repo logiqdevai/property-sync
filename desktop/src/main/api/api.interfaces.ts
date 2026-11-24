@@ -15,6 +15,8 @@ export interface DetailPageConfig {
 
 export interface ScraperConfig {
   start_url: string;
+  /** More listing-walk entry points on the same site, walked after start_url (same selectors/pagination). */
+  extra_start_urls?: string[];
   listing_selector: string;
   fields?: Record<string, FieldDef>;
   pagination?: PaginationConfig;

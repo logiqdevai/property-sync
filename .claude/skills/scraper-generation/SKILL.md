@@ -1,6 +1,6 @@
 ---
 name: scraper-generation
-description: Two modes. (1) Onboard new agencies end to end from a list of "url, EstateWeb email, password" lines plus the user email(s) to track for - creates the agency, tracks it for those users, copies content-publishing settings and connects a new EstateWeb account per user, like the admin "New agency" wizard. (2) Build or fix a scraper (Scraper + ScraperVersion.config) for a real-estate agency site in property-sync, especially "hard" sites with no obvious unified listings page, sites that need one property category included/excluded, or a scraper whose crawl/normalization pipeline is stuck/broken; also finds and sets an agency's City from its site. Use when asked to "add/onboard agencies", "create a scraper for <agency/url>", "the scraper isn't finding X", "exclude category Y", "set the agency city", or "no properties/user properties were created after a crawl".
+description: Two modes. (1) Onboard new agencies end to end from a list of "url, EstateWeb email, password" lines plus the user email(s) to track for - creates the agency, tracks it for those users, copies content-publishing settings and connects a new EstateWeb account per user, like the admin "New agency" wizard, then sets the city and builds the agency's scraper by default without asking. (2) Build or fix a scraper (Scraper + ScraperVersion.config) for a real-estate agency site in property-sync, especially "hard" sites with no obvious unified listings page, sites that need one property category included/excluded, or a scraper whose crawl/normalization pipeline is stuck/broken; also finds and sets an agency's City from its site. Use when asked to "add/onboard agencies", "create a scraper for <agency/url>", "the scraper isn't finding X", "exclude category Y", "set the agency city", or "no properties/user properties were created after a crawl".
 metadata:
   version: "1.1.0"
 ---
@@ -12,7 +12,8 @@ metadata:
 Unless the request already makes it obvious, **ask the user which one they want** (AskUserQuestion,
 two options) before doing anything else:
 
-1. **Add agencies** - onboard one or many agencies end to end (Option 1 below).
+1. **Add agencies** - onboard one or many agencies end to end (Option 1 below). This always ends by
+   building each new agency's scraper (Option 2), without asking.
 2. **Create or fix a scraper** - the scraper playbook (Option 2 below), which also covers finding
    and setting an agency's City (§7).
 
@@ -100,6 +101,25 @@ asking or offering: find each city from the agency's own site (the typed name's 
 a hint, never the source) and set it, then report `agency -> city (where found)`. City stays empty
 unless the input had `city` or you set it here.
 
+### 1e. Build the scraper (default, never ask)
+
+After the city step, **build the scraper for every agency in the batch that has no `Scraper` yet**, as
+Option 2 below, without asking or offering ("do you want scrapers too?" is wrong: the user always does).
+Skip an agency only if it already has a scraper (then just say so). Do these in order per agency, one
+agency's investigation at a time (they are independent, so several can be explored in parallel if the
+batch is large):
+
+1. Use the agency's `base_url` as the starting point, but find the real unified sale listing URL (§2, §3).
+2. Verify with real Playwright (§6) and show the sample property block (§6a).
+3. Write `Scraper` + `ScraperVersion` as `TESTING` (§7), then do the §8 safety read of each new tracker
+   (`auto_update_to_crm`, `remove_watermark`, `max_image_count`) and say that `TESTING` scrapers run on
+   the next daily schedule.
+4. Report per agency: listings found vs. covered, categories NOT covered (if the site has no single
+   URL for all of them, say so plainly with the counts), description/id coverage, and exceptions.
+
+Do not start a crawl yourself. If one URL cannot cover every sale category, never settle for a partial
+scraper: put the first URL in `start_url` and the rest in `extra_start_urls` (§2, §4).
+
 ## Option 2 - Create or fix a scraper
 
 # Property-Sync Scraper Generation Playbook
@@ -156,9 +176,14 @@ still exist on non-WP stacks).
 - Confirm pagination for real: fetch page 2 and diff its first item against page 1's; fetch one page
   past the last page and confirm it degrades gracefully (0 results / selector not found), not a
   redirect back to page 1 that would make the crawler loop forever.
-- `ScraperConfig.start_url` is a **single string** — the platform has no native multi-URL/multi-category
-  crawl. If you can't find one URL that covers what's needed, the unified-archive search above is not
-  optional, it's the only way to get full coverage with one `Scraper`.
+- `ScraperConfig.start_url` is a single string, but `extra_start_urls: string[]` walks more entry points
+  on the same site in the same run (same selectors/pagination/detail config, results merged and
+  de-duplicated, the run fails if ANY sweep fails so nothing is mass-removed). Use it when the site's
+  search returns one category per URL and no unified URL exists (look for one first, above): list every
+  sale category's URL, confirm each count, and check the sum matches the site's total. Never drop
+  categories just because there is no unified URL. All three crawls honor it: the server crawler, the desktop app
+  (`desktop/src/main/crawl/listing-walk.ts`, needs a desktop release to take effect) and the mcp-crawl
+  skill (§4 walks every entry point).
 
 ## 3. Category include/exclude
 
@@ -214,6 +239,7 @@ interface DetailPageConfig {
 
 interface ScraperConfig {
   start_url: string;
+  extra_start_urls?: string[];          // more entry points, walked after start_url in the same run
   listing_selector: string;               // matches EACH card container
   fields?: Record<string, string | FieldDef>;  // selectors are WITHIN a card
   pagination?: PaginationConfig;
@@ -357,6 +383,27 @@ Practical technique:
 5. Confirm the resolved text equals the user-supplied ground truth (ID and price) exactly before
    marking the scraper/field as verified. If it doesn't match, don't guess-adjust the selector — re-walk
    the DOM ancestry against that page's real markup.
+
+### 6b. Traps that only show up when you check every page
+
+- **Pagination in the DOM, not the URL (SPAs).** AngularJS/React sites often fetch the whole result
+  set in one API call and page it client-side, so the URL never changes and `url_param` is useless.
+  Use `next_button` with a selector that matches the control **only while it is enabled**, e.g.
+  `ul.pagination li:not(.disabled) > a[<next handler attribute>]`, so the walk ends by the selector
+  vanishing on the last page. Verify by clicking through every page and comparing the unique card
+  count to the number the site prints. Wait for the first card to change after each click, otherwise
+  the next-control check races the re-render and ends the walk early.
+- **A "first row" id selector breaks when a row is missing.** `#details li:first-child span` works only
+  while the code row is always first. Run the id selector on every listing (not a sample), count how
+  many don't match `^d+$` (or the site's code shape), and report the exceptions: the extractor
+  falls back to any digits it finds, so a missing code row can silently turn a price like "330,000 €"
+  into the id "330".
+- **Category params that silently fall back.** Many search UIs ignore unknown, comma-separated or
+  repeated category values and quietly return the default category. Always read the printed result
+  count (and the page/total) after each attempt instead of assuming the parameter worked.
+- **Description widgets hide from a one-page or heuristic check.** Find the widget by its stable class
+  (e.g. an Elementor/theme "content" widget) and confirm it is non-empty on all (or ~20+ spread)
+  pages before trusting or dismissing it.
 
 ## 7. Write to the DB
 

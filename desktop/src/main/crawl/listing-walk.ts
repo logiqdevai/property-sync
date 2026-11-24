@@ -28,24 +28,48 @@ const POLL_MS = 500;
 
 type ExtractedCard = { source_url: string; raw: Record<string, unknown> };
 
+/**
+ * Walks start_url, then every extra_start_urls entry (sites whose search returns one category per
+ * URL). Every sweep must find listings, otherwise the whole walk fails rather than silently
+ * dropping a category.
+ */
 export async function walkListingPages(
   page: Page,
   job: DesktopCrawlJob,
   ctx: ListingWalkContext,
   collected: Map<string, CheckpointItem>,
 ): Promise<number> {
+  const startUrls = [
+    job.config.start_url,
+    ...(job.config.extra_start_urls ?? []).filter((u) => typeof u === "string" && u.trim() !== ""),
+  ];
+  let pages = 0;
+  for (const startUrl of startUrls) {
+    pages += await walkOneStartUrl(page, job, ctx, collected, startUrl, pages);
+  }
+  return pages;
+}
+
+async function walkOneStartUrl(
+  page: Page,
+  job: DesktopCrawlJob,
+  ctx: ListingWalkContext,
+  collected: Map<string, CheckpointItem>,
+  startUrl: string,
+  pagesBefore: number,
+): Promise<number> {
   const { config, pacing } = job;
   const pagination = normalizePagination(config.pagination);
   const accumulating = pagination.type === "load_more" || pagination.type === "infinite_scroll";
 
-  await gotoWithRetry(page, config.start_url, pacing.page_timeout_ms);
+  await gotoWithRetry(page, startUrl, pacing.page_timeout_ms);
   await clearBlock(page, ctx);
   await dismissCookieConsent(page);
 
   if (!(await waitForCards(page, config.listing_selector))) {
     // A wall that appeared late, or a slow page: one more full try before giving up.
     await clearBlock(page, ctx);
-    await gotoWithRetry(page, config.start_url, pacing.page_timeout_ms);
+    await gotoWithRetry(page, startUrl, pacing.page_timeout_ms);
     await clearBlock(page, ctx);
     if (!(await waitForCards(page, config.listing_selector))) throw new ListingsNotFoundError();
   }
@@ -69,8 +93,8 @@ export async function walkListingPages(
       collected.set(card.source_url, { ...existing, source_url: card.source_url, raw: card.raw });
     }
     pages++;
-    ctx.onListingPage(pages, collected.size);
-    ctx.log(`listing page ${pages}: ${cards.length} cards, ${added} new`);
+    ctx.onListingPage(pagesBefore + pages, collected.size);
+    ctx.log(`listing page ${pagesBefore + pages}: ${cards.length} cards, ${added} new`);
 
     // A page that adds nothing new means pagination is looping or past the end.
     if (added === 0 && pages > 1 && !accumulating) break;

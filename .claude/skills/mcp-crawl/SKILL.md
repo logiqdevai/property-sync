@@ -79,7 +79,8 @@ where s.id = '<scraper-id>';   -- or: where s.source_agency_id = '<agency-id>'
 ```
 
 `sv.config` is the same `ScraperConfig` shape `scraper-generation` SKILL.md §4 documents:
-`start_url`, `listing_selector`, `fields` (name → CSS selector or `{selector, type}`, `type` one of
+`start_url`, optional `extra_start_urls` (more listing entry points on the same site, see §4),
+`listing_selector`, `fields` (name → CSS selector or `{selector, type}`, `type` one of
 `text | href | src | background_image`), `pagination` (`{type, selector?, url_param?}`), and
 `detail_page` (`image_selector`, `image_type`, `description_selector`, `specs_selector`,
 `features_selector`, `external_id_source`/`external_id_selector`, `title_selector`, `price_selector`,
@@ -302,11 +303,18 @@ npx dotenv -e .env.staging -- node -r tsconfig-paths/register -r ts-node/registe
 - Your job meanwhile: check `<out>.log` occasionally (tail it); don't drive pages yourself in parallel.
   Process died or log stale >5 min → look at the `.stdout.txt`, fix, restart the same command (it resumes).
 - If the site needs a listing walk first, run the driver's listing mode the same way (the driver decides
-  listing vs detail from the URL) or collect the listing items via §4 and pass them as `--seed`.
+  listing vs detail from the URL) or collect the listing items via §4 and pass them as `--seed`. `--start` takes ONE url: when
+  `config.extra_start_urls` exists, collect every sweep's items via §4 first and pass them all as `--seed`.
 
 ## 4. Listing-page walk
 
-Open the start URL in its own page/tab (`mcp__chrome-devtools__new_page` with `config.start_url`),
+**Walk every listing entry point, not just the first:** `config.start_url` and then each URL in
+`config.extra_start_urls` (sites whose search returns one category per URL; a scraper that has this
+field loses those categories if you only walk `start_url`). Each is its own sweep with the same
+extraction and pagination below, all accumulated into the one `Map<source_url, item>`. A sweep that
+finds no cards is a failure: stop and report it, never skip it and ingest a partial set.
+
+Open the first start URL in its own page/tab (`mcp__chrome-devtools__new_page` with `config.start_url`),
 then extract with `mcp__chrome-devtools__evaluate_script`. **`evaluate_script`'s `args` only accepts
 element `uid`s from a snapshot — you cannot pass a config object through `args`.** Build the config
 into the function string itself via `JSON.stringify`, e.g.:

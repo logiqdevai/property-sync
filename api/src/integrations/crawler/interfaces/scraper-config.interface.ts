@@ -56,6 +56,13 @@ export interface DetailPageConfig {
 
 export interface ScraperConfig {
   start_url: string;
+  // More listing-walk entry points on the SAME site, walked in order after
+  // start_url within the same crawl run (same listing_selector, fields,
+  // pagination and detail_page). For sites whose search can only return one
+  // category/section per URL. The run succeeds only if EVERY sweep succeeds, so
+  // a failed sweep can never make its listings look removed. Ignored by the
+  // desktop/Chrome-MCP crawls, which only read start_url.
+  extra_start_urls?: string[];
   listing_selector: string;
   fields?: Record<string, string | FieldDef>;
   pagination?: PaginationConfig;
