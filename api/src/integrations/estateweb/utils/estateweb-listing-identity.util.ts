@@ -116,9 +116,16 @@ export function isEstateWebListingIdentityMismatch(
     return true;
   }
 
+  // A live sqm of 0 means "never filled in", not "0 m2": the CMS adapter pushes
+  // sqm: 0 whenever our square_meters is blank (e.g. a listing created while its
+  // detail page was blocked). Once the detail page is read and we hold a real
+  // value, comparing it against that 0 flagged our own ad as a different
+  // property, which cleared the link and created a duplicate (casafutura,
+  // 2026-11-23: 23 ads re-created).
   if (
     userProperty.square_meters != null &&
     listing.sqm != null &&
+    listing.sqm !== 0 &&
     !numbersEqual(userProperty.square_meters, listing.sqm)
   ) {
     return true;

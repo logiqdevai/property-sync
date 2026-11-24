@@ -93,6 +93,18 @@ describe('isEstateWebListingIdentityMismatch', () => {
     );
   });
 
+  // casafutura 2026-11-23: ads created while the detail page was blocked were pushed
+  // with sqm 0; when the page was later read, our real sqm vs that 0 looked like a
+  // different property and a duplicate ad was created.
+  it('treats a live sqm of 0 as unknown, not as a conflict', () => {
+    const userProperty = makeUserProperty({ square_meters: 100 as never });
+    const listing = { scope_id: 1, sqm: 0 };
+
+    expect(isEstateWebListingIdentityMismatch(userProperty, listing)).toBe(
+      false,
+    );
+  });
+
   it('accepts a price that equals the pushed base price, not just the raw price', () => {
     const userProperty = makeUserProperty({
       price: 95 as never,

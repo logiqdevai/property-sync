@@ -1,7 +1,17 @@
 import { useEffect, useMemo, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Copy, Download } from "lucide-react";
-import { Button, ListBox, Modal, Select, Table, useOverlayState } from "@heroui/react";
+import {
+  Autocomplete,
+  Button,
+  ListBox,
+  Modal,
+  SearchField,
+  Select,
+  Table,
+  useFilter,
+  useOverlayState,
+} from "@heroui/react";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { CopyIconButton } from "@/components/ui/copy-icon-button";
 import { getCrmPropertyAppUrl } from "@/config/constants/crm-app-urls";
@@ -12,13 +22,11 @@ import type {
 } from "@/features/estateweb/interfaces/estateweb.interfaces";
 import {
   useEstateWebAdminIntegrations,
-  useEstateWebDuplicateProperties,
+  useEstateWebDuplicatePropertiesForIntegrations,
 } from "@/features/estateweb/hooks/use-estateweb";
 import { downloadTextFile } from "@/lib/download-text-file";
 
 export type EstateWebDuplicatePropertiesModalState = ReturnType<typeof useOverlayState>;
-
-const NONE_SELECTED = "";
 
 // Copies the EstateWeb listing ids of the extra copies (everything except the listing
 // linked to a saved property) -- the ones to delete in "Manage EstateWeb properties".
@@ -73,11 +81,17 @@ function canMergeGroup(group: EstateWebDuplicatePropertyGroup): boolean {
   return getGroupPropertyIds(group).length >= 2;
 }
 
+// A duplicate group tagged with the integration (EstateWeb account) it was found in:
+// the same code or EstateWeb id can legitimately appear in two different accounts.
+type IntegrationDuplicateGroup = EstateWebDuplicatePropertyGroup & {
+  integrationId: string;
+};
+
 type DuplicateTableRow = EstateWebDuplicatePropertyListing & {
   code: string;
   groupCount: number;
   isFirstInGroup: boolean;
-  group: EstateWebDuplicatePropertyGroup;
+  group: IntegrationDuplicateGroup;
 };
 
 export function EstateWebDuplicatePropertiesModal({
@@ -88,15 +102,20 @@ export function EstateWebDuplicatePropertiesModal({
   const queryClient = useQueryClient();
   const mergeProperties = useMergeProperties();
   const mergeGroupConfirm = useOverlayState();
-  const [selectedIntegrationId, setSelectedIntegrationId] = useState<string>(NONE_SELECTED);
+  const { contains } = useFilter({ sensitivity: "base" });
+  // draftIds = what is ticked in the picker; checkedIds = what the results below are for
+  // (empty = still on the picker step).
+  const [draftIds, setDraftIds] = useState<string[]>([]);
+  const [checkedIds, setCheckedIds] = useState<string[]>([]);
   const [copyIdField, setCopyIdField] = useState<CopyIdField>("user_property_id");
   const [pendingMergeGroup, setPendingMergeGroup] =
-    useState<EstateWebDuplicatePropertyGroup | null>(null);
+    useState<IntegrationDuplicateGroup | null>(null);
   const [copyFeedback, setCopyFeedback] = useState<string | null>(null);
 
   useEffect(() => {
     if (!state.isOpen) {
-      setSelectedIntegrationId(NONE_SELECTED);
+      setDraftIds([]);
+      setCheckedIds([]);
       setCopyIdField("user_property_id");
       setPendingMergeGroup(null);
       setCopyFeedback(null);
@@ -106,21 +125,43 @@ export function EstateWebDuplicatePropertiesModal({
   const { data: integrations, isPending: integrationsPending } = useEstateWebAdminIntegrations(
     state.isOpen,
   );
-  const hasSelection = selectedIntegrationId !== NONE_SELECTED;
-  const {
-    data: duplicates,
-    isPending: duplicatesPending,
-    isError,
-    error,
-  } = useEstateWebDuplicateProperties(
-    hasSelection ? selectedIntegrationId : null,
+  const hasSelection = checkedIds.length > 0;
+  const isMultiIntegration = checkedIds.length > 1;
+  const duplicateQueries = useEstateWebDuplicatePropertiesForIntegrations(
+    checkedIds,
     state.isOpen && hasSelection,
   );
+  const duplicatesPending = duplicateQueries.some((query) => query.isPending);
+  const failedQuery = duplicateQueries.find((query) => query.isError);
+  const isError = Boolean(failedQuery);
+  const error = failedQuery?.error;
 
-  const selectedIntegration =
-    integrations?.find((integration) => integration.id === selectedIntegrationId) ?? null;
+  const checkedIntegrations = useMemo(
+    () =>
+      checkedIds.map(
+        (id) => integrations?.find((integration) => integration.id === id) ?? null,
+      ),
+    [checkedIds, integrations],
+  );
 
-  const groups = useMemo(() => duplicates ?? [], [duplicates]);
+  // useQueries returns a new array every render, so key the memo on the data itself.
+  const duplicatesKey = duplicateQueries.map((query) => query.dataUpdatedAt).join(",");
+  const groups = useMemo<IntegrationDuplicateGroup[]>(
+    () =>
+      duplicateQueries.flatMap((query, index) =>
+        (query.data ?? []).map((group) => ({ ...group, integrationId: checkedIds[index] })),
+      ),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [duplicatesKey, checkedIds],
+  );
+
+  const integrationNameById = useMemo(
+    () =>
+      new Map(
+        (integrations ?? []).map((integration) => [integration.id, integrationLabel(integration)]),
+      ),
+    [integrations],
+  );
 
   const stats = useMemo(() => {
     const groupCount = groups.length;
@@ -158,24 +199,34 @@ export function EstateWebDuplicatePropertiesModal({
     return { ids: [...new Set(ids)], skippedGroups };
   }, [groups]);
 
-  const isCopyingExtraCopies = copyIdField === CRM_EXTRA_COPY_IDS;
+  // EstateWeb ids only mean something inside one account, and the result is pasted into a
+  // single account's bulk delete tool, so that option exists only for a single integration.
+  const copyFieldOptions = isMultiIntegration
+    ? CopyIdFieldOptions.filter((option) => option.id !== CRM_EXTRA_COPY_IDS)
+    : CopyIdFieldOptions;
+  const activeCopyIdField: CopyIdField =
+    isMultiIntegration && copyIdField === CRM_EXTRA_COPY_IDS ? "user_property_id" : copyIdField;
+  const isCopyingExtraCopies = activeCopyIdField === CRM_EXTRA_COPY_IDS;
 
   const copyValues = useMemo(() => {
-    if (copyIdField === CRM_EXTRA_COPY_IDS) return extraCopies.ids;
+    if (activeCopyIdField === CRM_EXTRA_COPY_IDS) return extraCopies.ids;
     const values = rows
-      .map((row) => getCopyFieldValue(row, copyIdField))
+      .map((row) => getCopyFieldValue(row, activeCopyIdField))
       .filter((value): value is string => Boolean(value));
     return [...new Set(values)];
-  }, [rows, copyIdField, extraCopies]);
+  }, [rows, activeCopyIdField, extraCopies]);
 
   const handleDownload = () => {
     const lines = rows.map((row) => {
       const url = getCrmPropertyAppUrl(String(row.id)) ?? String(row.id);
-      return `${url}   Κωδικός: ${row.code}`;
+      const account = isMultiIntegration
+        ? `   Account: ${integrationNameById.get(row.group.integrationId) ?? row.group.integrationId}`
+        : "";
+      return `${url}   Κωδικός: ${row.code}${account}`;
     });
-    const integrationPart = sanitizeFilenamePart(
-      selectedIntegration?.userEmail ?? selectedIntegrationId,
-    );
+    const integrationPart = isMultiIntegration
+      ? `${checkedIds.length}-integrations`
+      : sanitizeFilenamePart(checkedIntegrations[0]?.userEmail ?? checkedIds[0]);
     const datePart = new Date().toISOString().slice(0, 10);
     downloadTextFile(
       `estateweb-duplicates-${integrationPart}-${datePart}.txt`,
@@ -193,7 +244,7 @@ export function EstateWebDuplicatePropertiesModal({
       // Extra-copy ids are pasted into the bulk delete tool, which takes a comma-separated
       // list; the other fields keep one value per line.
       await navigator.clipboard.writeText(copyValues.join(isCopyingExtraCopies ? "," : "\n"));
-      setCopyFeedback(`Copied ${copyValues.length} ${CopyIdFieldOptions.find((option) => option.id === copyIdField)?.label.toLowerCase() ?? "IDs"}.`);
+      setCopyFeedback(`Copied ${copyValues.length} ${CopyIdFieldOptions.find((option) => option.id === activeCopyIdField)?.label.toLowerCase() ?? "IDs"}.`);
     } catch {
       setCopyFeedback("Could not copy to clipboard.");
     }
@@ -217,7 +268,7 @@ export function EstateWebDuplicatePropertiesModal({
     setPendingMergeGroup(null);
   };
 
-  const requestMergeGroup = (group: EstateWebDuplicatePropertyGroup) => {
+  const requestMergeGroup = (group: IntegrationDuplicateGroup) => {
     setPendingMergeGroup(group);
     mergeGroupConfirm.open();
   };
@@ -236,32 +287,65 @@ export function EstateWebDuplicatePropertiesModal({
                   {!hasSelection ? (
                     <>
                       <p className="text-sm text-muted">
-                        Pick an EstateWeb connection to check for listings pushed there more than
-                        once.
+                        Pick one or more EstateWeb connections to check for listings pushed there
+                        more than once.
                       </p>
-                      <Select
-                        aria-label="Select EstateWeb integration"
-                        selectedKey={selectedIntegrationId}
-                        onSelectionChange={(key) => setSelectedIntegrationId(String(key))}
+                      <Autocomplete
+                        aria-label="Select EstateWeb integrations"
+                        placeholder={integrationsPending ? "Loading…" : "Select integrations…"}
+                        selectionMode="multiple"
+                        value={draftIds}
+                        onChange={(keys) => setDraftIds(keys.map(String))}
+                        onClear={() => setDraftIds([])}
                         isDisabled={integrationsPending}
+                        fullWidth
                       >
-                        <Select.Trigger>
-                          <Select.Value />
-                          <Select.Indicator />
-                        </Select.Trigger>
-                        <Select.Popover>
-                          <ListBox>
-                            <ListBox.Item key={NONE_SELECTED} id={NONE_SELECTED}>
-                              {integrationsPending ? "Loading…" : "Select an integration…"}
-                            </ListBox.Item>
-                            {(integrations ?? []).map((integration) => (
-                              <ListBox.Item key={integration.id} id={integration.id}>
-                                {integrationLabel(integration)}
-                              </ListBox.Item>
-                            ))}
-                          </ListBox>
-                        </Select.Popover>
-                      </Select>
+                        <Autocomplete.Trigger>
+                          <Autocomplete.Value />
+                          <Autocomplete.ClearButton />
+                          <Autocomplete.Indicator />
+                        </Autocomplete.Trigger>
+                        <Autocomplete.Popover>
+                          <Autocomplete.Filter filter={contains}>
+                            <SearchField autoFocus name="integration-search" variant="secondary">
+                              <SearchField.Group>
+                                <SearchField.SearchIcon />
+                                <SearchField.Input placeholder="Search by email…" />
+                                <SearchField.ClearButton />
+                              </SearchField.Group>
+                            </SearchField>
+                            <ListBox
+                              renderEmptyState={() => (
+                                <p className="px-3 py-2 text-sm text-muted">
+                                  No integrations found.
+                                </p>
+                              )}
+                            >
+                              {(integrations ?? []).map((integration) => (
+                                <ListBox.Item
+                                  key={integration.id}
+                                  id={integration.id}
+                                  textValue={integrationLabel(integration)}
+                                >
+                                  {integrationLabel(integration)}
+                                  <ListBox.ItemIndicator />
+                                </ListBox.Item>
+                              ))}
+                            </ListBox>
+                          </Autocomplete.Filter>
+                        </Autocomplete.Popover>
+                      </Autocomplete>
+                      <div className="flex justify-end">
+                        <Button
+                          variant="primary"
+                          onPress={() => setCheckedIds(draftIds)}
+                          isDisabled={draftIds.length === 0}
+                        >
+                          {draftIds.length > 1
+                            ? `Check ${draftIds.length} integrations`
+                            : "Check duplicates"}
+                        </Button>
+                      </div>
                     </>
                   ) : (
                     <>
@@ -272,14 +356,16 @@ export function EstateWebDuplicatePropertiesModal({
                             variant="ghost"
                             isIconOnly
                             aria-label="Change integration"
-                            onPress={() => setSelectedIntegrationId(NONE_SELECTED)}
+                            onPress={() => setCheckedIds([])}
                           >
                             <ArrowLeft className="size-4" />
                           </Button>
                           <p className="min-w-0 truncate text-sm text-muted">
-                            {selectedIntegration
-                              ? integrationLabel(selectedIntegration)
-                              : "Selected integration"}
+                            {isMultiIntegration
+                              ? `${checkedIds.length} integrations`
+                              : checkedIntegrations[0]
+                                ? integrationLabel(checkedIntegrations[0])
+                                : "Selected integration"}
                           </p>
                         </div>
                         <Button
@@ -324,7 +410,7 @@ export function EstateWebDuplicatePropertiesModal({
                           <div className="flex flex-wrap items-end gap-2">
                             <Select
                               aria-label="ID field to copy"
-                              selectedKey={copyIdField}
+                              selectedKey={activeCopyIdField}
                               onSelectionChange={(key) => {
                                 setCopyIdField(key as CopyIdField);
                                 setCopyFeedback(null);
@@ -337,7 +423,7 @@ export function EstateWebDuplicatePropertiesModal({
                               </Select.Trigger>
                               <Select.Popover>
                                 <ListBox>
-                                  {CopyIdFieldOptions.map((option) => (
+                                  {copyFieldOptions.map((option) => (
                                     <ListBox.Item key={option.id} id={option.id}>
                                       {option.label}
                                     </ListBox.Item>
@@ -373,7 +459,9 @@ export function EstateWebDuplicatePropertiesModal({
                             <p className="text-sm text-muted">{copyFeedback}</p>
                           ) : null}
 
-                          <div className="min-w-0 max-h-96 overflow-hidden rounded-xl border border-border">
+                          {/* overflow-auto, not overflow-hidden: with hidden, everything below the
+                              first ~6 rows was clipped and unreachable (46 rows, 6 visible). */}
+                          <div className="min-w-0 max-h-96 overflow-auto rounded-xl border border-border">
                             <Table>
                               <Table.ScrollContainer>
                                 <Table.Content
@@ -381,6 +469,9 @@ export function EstateWebDuplicatePropertiesModal({
                                   className="min-w-max"
                                 >
                                   <Table.Header>
+                                    {isMultiIntegration ? (
+                                      <Table.Column isRowHeader>Integration</Table.Column>
+                                    ) : null}
                                     <Table.Column isRowHeader>Κωδικός</Table.Column>
                                     <Table.Column>Count</Table.Column>
                                     <Table.Column>EstateWeb property</Table.Column>
@@ -394,9 +485,17 @@ export function EstateWebDuplicatePropertiesModal({
                                       const url = getCrmPropertyAppUrl(String(row.id));
                                       return (
                                         <Table.Row
-                                          key={`${row.code}-${row.id}`}
-                                          id={`${row.code}-${row.id}`}
+                                          key={`${row.group.integrationId}-${row.code}-${row.id}`}
+                                          id={`${row.group.integrationId}-${row.code}-${row.id}`}
                                         >
+                                          {isMultiIntegration ? (
+                                            <Table.Cell className="max-w-48">
+                                              <span className="block truncate text-xs text-muted">
+                                                {integrationNameById.get(row.group.integrationId) ??
+                                                  row.group.integrationId}
+                                              </span>
+                                            </Table.Cell>
+                                          ) : null}
                                           <Table.Cell>
                                             <span className="font-mono text-sm text-foreground">
                                               {row.code}

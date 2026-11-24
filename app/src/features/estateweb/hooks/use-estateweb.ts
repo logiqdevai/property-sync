@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQueries, useQuery } from "@tanstack/react-query";
 import type { EstateWebPushSiteSetting } from "../interfaces/estateweb-integration-settings.interfaces";
 import type { EstateWebIdentifierType } from "../interfaces/estateweb.interfaces";
 import {
@@ -99,6 +99,21 @@ export const useEstateWebDuplicateProperties = (
     queryKey: ["estateweb", "admin", "duplicates", userIntegrationId],
     queryFn: () => getEstateWebDuplicateProperties(userIntegrationId as string),
     enabled: enabled && !!userIntegrationId,
+  });
+};
+
+// Duplicate check for several integrations at once. Shares the query key with
+// useEstateWebDuplicateProperties, so a result loaded by either is reused by the other.
+export const useEstateWebDuplicatePropertiesForIntegrations = (
+  userIntegrationIds: string[],
+  enabled = true,
+) => {
+  return useQueries({
+    queries: userIntegrationIds.map((userIntegrationId) => ({
+      queryKey: ["estateweb", "admin", "duplicates", userIntegrationId],
+      queryFn: () => getEstateWebDuplicateProperties(userIntegrationId),
+      enabled,
+    })),
   });
 };
 

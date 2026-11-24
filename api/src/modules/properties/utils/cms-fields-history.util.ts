@@ -1,7 +1,9 @@
 import {
   getEstateWebFieldOptionName,
   getEstateWebInitField,
+  getEstateWebPropertyTypeNamePath,
 } from '@/integrations/estateweb/utils/estateweb-init-lookup.util';
+import { getEstateWebLocationNamePath } from '@/integrations/estateweb/utils/estateweb-location-lookup.util';
 
 type CmsEntry = { id: number; value: unknown };
 
@@ -39,6 +41,63 @@ function describeValue(entry: CmsEntry): string {
 function describeEntry(entry: CmsEntry): string {
   const name = getEstateWebInitField(entry.id)?.name ?? `Field #${entry.id}`;
   return `${name}: ${describeValue(entry)}`;
+}
+
+function lookupName(field: string, value: unknown): unknown {
+  if (value == null) return value;
+  const id = typeof value === 'number' ? value : Number(value);
+  if (!Number.isFinite(id)) return value;
+  if (field === 'estateweb_type_id') {
+    return getEstateWebPropertyTypeNamePath(id) ?? value;
+  }
+  if (field === 'estateweb_location_id') {
+    return getEstateWebLocationNamePath(id) ?? value;
+  }
+  return value;
+}
+
+/**
+ * Make any property-history change readable: EstateWeb ids become names and
+ * cms_fields shows only the entries that changed. Returns `null` when the
+ * change has nothing to show (cms_fields reordered only).
+ */
+export function humanizeHistoryChange(
+  field: string | null,
+  oldValue: unknown,
+  newValue: unknown,
+): { old_value: unknown; new_value: unknown } | null {
+  if (field === 'cms_fields') {
+    const change = humanizeCmsFieldsChange(oldValue, newValue);
+    if (!change) return { old_value: oldValue, new_value: newValue };
+    if (!change.old_value && !change.new_value) return null;
+    return change;
+  }
+  if (field === 'estateweb_type_id' || field === 'estateweb_location_id') {
+    return {
+      old_value: lookupName(field, oldValue),
+      new_value: lookupName(field, newValue),
+    };
+  }
+  if (
+    field === 'cms_metadata' &&
+    oldValue &&
+    newValue &&
+    typeof oldValue === 'object' &&
+    typeof newValue === 'object'
+  ) {
+    const o = oldValue as Record<string, unknown>;
+    const n = newValue as Record<string, unknown>;
+    const fmt = (m: Record<string, unknown>, keys: string[]) =>
+      keys.map((k) => `${k}: ${String(m[k])}`);
+    const changed = [...new Set([...Object.keys(o), ...Object.keys(n)])].filter(
+      (k) => JSON.stringify(o[k]) !== JSON.stringify(n[k]),
+    );
+    return {
+      old_value: fmt(o, changed.filter((k) => k in o)),
+      new_value: fmt(n, changed.filter((k) => k in n)),
+    };
+  }
+  return { old_value: oldValue, new_value: newValue };
 }
 
 /** Order-insensitive comparison key for a cms_fields array. */

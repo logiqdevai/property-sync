@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
 import { PropertyHistoryEventType, PropertyStatus } from 'generated/prisma';
 import { UPDATE_EVENT_TYPES } from '@/modules/properties/utils/property-change-filter.util';
-import { humanizeCmsFieldsChange } from '@/modules/properties/utils/cms-fields-history.util';
+import { humanizeHistoryChange } from '@/modules/properties/utils/cms-fields-history.util';
 import { UserDashboardResponse } from './entities/user-dashboard.entity';
 
 const RECENT_ACTIVITY_LIMIT = 100;
@@ -127,17 +127,15 @@ export class UserDashboardService {
         tracked_agencies: trackedAgencies,
       },
       activity: recentHistory.flatMap((entry) => {
-        let oldValue: unknown = entry.old_value;
-        let newValue: unknown = entry.new_value;
-        if (entry.field === 'cms_fields') {
-          const change = humanizeCmsFieldsChange(oldValue, newValue);
-          if (change) {
-            // Order-only changes have nothing to show; drop them.
-            if (!change.old_value && !change.new_value) return [];
-            oldValue = change.old_value;
-            newValue = change.new_value;
-          }
-        }
+        const readable = humanizeHistoryChange(
+          entry.field,
+          entry.old_value,
+          entry.new_value,
+        );
+        // Order-only cms_fields changes have nothing to show; drop them.
+        if (!readable) return [];
+        const oldValue = readable.old_value;
+        const newValue = readable.new_value;
         return [
           {
             id: entry.id,
