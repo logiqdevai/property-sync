@@ -4,10 +4,11 @@ import type { ActivityPeriod, UserDashboardResponse } from "../interfaces/user-d
 
 export const getUserDashboard = async (
   period: ActivityPeriod = "week",
+  windows?: number,
 ): Promise<UserDashboardResponse> => {
   try {
     const response = await axiosInstance.get(ApiRoutes.dashboard.root, {
-      params: { period },
+      params: { period, windows },
     });
     return response.data;
   } catch {

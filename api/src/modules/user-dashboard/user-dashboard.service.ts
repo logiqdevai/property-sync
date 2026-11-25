@@ -5,8 +5,11 @@ import { UPDATE_EVENT_TYPES } from '@/modules/properties/utils/property-change-f
 import { humanizeHistoryChange } from '@/modules/properties/utils/cms-fields-history.util';
 import { UserDashboardResponse } from './entities/user-dashboard.entity';
 
-// Raw history rows fetched; the UI groups them per property.
-const RECENT_ACTIVITY_LIMIT = 1000;
+// Max distinct properties listed in Recent Activity. A single crawl can write
+// thousands of history rows, so we cap by property (not by row), otherwise the
+// newest rows fill the cap and every period looks identical.
+const ACTIVITY_PROPERTY_LIMIT = 3000;
+const MAX_ACTIVITY_WINDOWS = 12;
 
 const ACTIVITY_PERIOD_DAYS = { day: 1, week: 7, month: 30 } as const;
 export type ActivityPeriod = keyof typeof ACTIVITY_PERIOD_DAYS;
@@ -18,11 +21,21 @@ export class UserDashboardService {
   async getDashboard(
     userId: string,
     period?: string,
+    windows?: number,
   ): Promise<UserDashboardResponse> {
+    // windows = how many consecutive periods the list covers (1 = just the
+    // selected period; 2 = the period and the one before it, ...).
+    const windowCount = Number.isFinite(windows)
+      ? Math.min(Math.max(Math.floor(windows as number), 1), MAX_ACTIVITY_WINDOWS)
+      : 1;
+    const now = Date.now();
     const activityDays =
       ACTIVITY_PERIOD_DAYS[(period as ActivityPeriod) ?? 'week'] ??
       ACTIVITY_PERIOD_DAYS.week;
-    const activitySince = new Date(Date.now() - activityDays * 24 * 60 * 60 * 1000);
+    const periodMs = activityDays * 24 * 60 * 60 * 1000;
+    // Stat cards always cover just the selected period.
+    const activitySince = new Date(now - periodMs);
+    const listSince = new Date(now - windowCount * periodMs);
 
     const [
       totalProperties,
@@ -63,15 +76,17 @@ export class UserDashboardService {
           tracked_agencies: trackedAgencies,
         },
         activity: [],
+        activity_total: 0,
+        as_of: new Date(now),
       };
     }
 
     const historyBase = {
-      property_id: { in: propertyIds },
+      property: { user_property_copies: { some: { user_id: userId } } },
       created_at: { gte: activitySince },
     };
 
-    const [propertiesUpdatedThisWeek, propertiesRemovedThisWeek, recentHistory] =
+    const [propertiesUpdatedThisWeek, propertiesRemovedThisWeek, recentGroups] =
       await Promise.all([
         this.prisma.propertyHistory
           .groupBy({
@@ -91,13 +106,26 @@ export class UserDashboardService {
             },
           })
           .then((rows) => rows.length),
-        this.prisma.propertyHistory.findMany({
+        // Most recently changed properties in the period (some may turn out to
+        // have only order-only changes, hence the headroom over the limit).
+        this.prisma.propertyHistory.groupBy({
+          by: ['property_id'],
+          where: { ...historyBase, created_at: { gte: listSince } },
+          _max: { created_at: true },
+          orderBy: { _max: { created_at: 'desc' } },
+        }),
+      ]);
+
+    const recentPropertyIds = recentGroups
+      .slice(0, ACTIVITY_PROPERTY_LIMIT)
+      .map((g) => g.property_id);
+    const recentHistory = recentPropertyIds.length
+      ? await this.prisma.propertyHistory.findMany({
           where: {
-            property_id: { in: propertyIds },
-            created_at: { gte: activitySince },
+            property_id: { in: recentPropertyIds },
+            created_at: { gte: listSince },
           },
           orderBy: { created_at: 'desc' },
-          take: RECENT_ACTIVITY_LIMIT,
           include: {
             property: {
               select: {
@@ -114,8 +142,8 @@ export class UserDashboardService {
               },
             },
           },
-        }),
-      ]);
+        })
+      : [];
 
     return {
       stats: {
@@ -126,7 +154,7 @@ export class UserDashboardService {
         properties_removed_this_week: propertiesRemovedThisWeek,
         tracked_agencies: trackedAgencies,
       },
-      activity: recentHistory.flatMap((entry) => {
+      activity: this.limitProperties(ACTIVITY_PROPERTY_LIMIT, recentHistory.flatMap((entry) => {
         const readable = humanizeHistoryChange(
           entry.field,
           entry.old_value,
@@ -153,7 +181,24 @@ export class UserDashboardService {
             created_at: entry.created_at,
           },
         ];
-      }),
+      })),
+      activity_total: recentGroups.length,
+      as_of: new Date(now),
     };
+  }
+
+  /** Keeps only the first N distinct properties (input is newest-first). */
+  private limitProperties<T extends { property_id: string }>(
+    max: number,
+    items: T[],
+  ): T[] {
+    const seen = new Set<string>();
+    return items.filter((item) => {
+      if (!seen.has(item.property_id)) {
+        if (seen.size >= max) return false;
+        seen.add(item.property_id);
+      }
+      return true;
+    });
   }
 }

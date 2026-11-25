@@ -17,6 +17,17 @@ import { formatDateTime } from "@/lib/date";
 import { Routes } from "@/routes/routes";
 import { ActivityChangeLabel } from "./components/activity-change-label";
 
+const PERIOD_MS: Record<ActivityPeriod, number> = {
+  day: 86_400_000,
+  week: 7 * 86_400_000,
+  month: 30 * 86_400_000,
+};
+const PERIOD_NOUN: Record<ActivityPeriod, string> = { day: "day", week: "week", month: "month" };
+const MAX_WINDOWS = 12;
+
+const formatShortDate = (ms: number) =>
+  new Date(ms).toLocaleDateString(undefined, { month: "short", day: "numeric" });
+
 const PERIOD_OPTIONS: { id: ActivityPeriod; label: string }[] = [
   { id: "day", label: "Last day" },
   { id: "week", label: "Last week" },
@@ -27,6 +38,7 @@ export default function DashboardHome() {
   const { full_name, email } = useAuthStore();
   const displayName = full_name || email || "there";
   const [period, setPeriod] = useState<ActivityPeriod>("week");
+  const [windows, setWindows] = useState(1);
   const clientsModal = useOverlayState();
   const [clientsProperty, setClientsProperty] = useState<{ id: string; title: string } | null>(
     null,
@@ -36,23 +48,43 @@ export default function DashboardHome() {
     clientsModal.open();
   };
   const [activityType, setActivityType] = useState<"all" | "delisted">("all");
-  const { data: dashboard, isPending } = useUserDashboard(period);
+  const { data: dashboard, isPending, isPlaceholderData } = useUserDashboard(period, windows);
   const { data: delistedAlerts = [] } = useDelistedAlerts();
   const acknowledgeAlerts = useAcknowledgeDelistedAlerts();
   const { data: allDelisted = [], isPending: allDelistedPending } = useDelistedAlerts(true);
 
   const periodLabel = PERIOD_OPTIONS.find((o) => o.id === period)?.label.toLowerCase() ?? "last week";
 
-  // One card per property: a crawl can write many history rows for the same property.
-  const groupedActivity = useMemo(() => {
-    const groups = new Map<string, UserDashboardActivityItem[]>();
+  // One section per period window (0 = the selected period, 1 = the one before, ...),
+  // and inside it one card per property: a crawl can write many history rows per property.
+  const sections = useMemo(() => {
+    const asOf = dashboard ? Date.parse(dashboard.as_of) : Date.now();
+    const periodMs = PERIOD_MS[period];
+    const byWindow: Map<string, UserDashboardActivityItem[]>[] = Array.from(
+      { length: windows },
+      () => new Map(),
+    );
     for (const entry of dashboard?.activity ?? []) {
-      const list = groups.get(entry.property_id);
+      const w = Math.min(
+        windows - 1,
+        Math.max(0, Math.floor((asOf - Date.parse(entry.created_at)) / periodMs)),
+      );
+      const list = byWindow[w].get(entry.property_id);
       if (list) list.push(entry);
-      else groups.set(entry.property_id, [entry]);
+      else byWindow[w].set(entry.property_id, [entry]);
     }
-    return [...groups.values()];
-  }, [dashboard?.activity]);
+    return byWindow.map((groups, w) => {
+      const end = asOf - w * periodMs;
+      const start = end - periodMs;
+      const label =
+        w === 0
+          ? (PERIOD_OPTIONS.find((o) => o.id === period)?.label ?? "")
+          : period === "day"
+            ? formatShortDate(start)
+            : `${formatShortDate(start)} – ${formatShortDate(end)}`;
+      return { w, label, groups: [...groups.values()] };
+    });
+  }, [dashboard, period, windows]);
 
   const stats = [
     { label: "Total Properties", value: dashboard?.stats.total_properties, accent: false },
@@ -85,7 +117,12 @@ export default function DashboardHome() {
         </p>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
+      <div
+        className={`grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3 transition-opacity ${
+          isPlaceholderData ? "opacity-50" : ""
+        }`}
+        aria-busy={isPlaceholderData}
+      >
         {stats.map((stat) => (
           <div
             key={stat.label}
@@ -163,13 +200,19 @@ export default function DashboardHome() {
           </Tabs.ListContainer>
         </Tabs>
         <div className="mb-4 flex items-center justify-end gap-3 empty:hidden">
+          {activityType === "all" && isPlaceholderData ? (
+            <span className="text-xs text-muted">Updating…</span>
+          ) : null}
           {activityType === "all" ? (
           <Select
             aria-label="Activity period"
             className="w-36"
             selectedKey={period}
             onSelectionChange={(key) => {
-              if (key != null) setPeriod(String(key) as ActivityPeriod);
+              if (key != null) {
+                setPeriod(String(key) as ActivityPeriod);
+                setWindows(1);
+              }
             }}
           >
             <Select.Trigger>
@@ -206,53 +249,83 @@ export default function DashboardHome() {
               <div key={i} className="h-10 animate-pulse rounded-lg bg-surface-secondary" />
             ))}
           </div>
-        ) : !dashboard || dashboard.activity.length === 0 ? (
+        ) : !dashboard ? (
           <p className="text-sm text-muted">No activity in this period.</p>
         ) : (
-          <ul className="flex max-h-[32rem] flex-col gap-3 overflow-y-auto">
-            {groupedActivity.map((entries) => {
-              const first = entries[0];
-              return (
-                <li
-                  key={first.property_id}
-                  className="flex flex-col gap-1.5 sm:flex-row sm:items-start sm:justify-between sm:gap-3 text-sm border border-border rounded-lg p-3 min-w-0"
-                >
-                  <div className="flex min-w-0 flex-col gap-1">
-                    {first.user_property_id ? (
-                      <Link
-                        to={Routes.dashboard.properties.detail(first.user_property_id)}
-                        className="font-medium text-accent break-words hover:underline"
-                      >
-                        {first.property_title}
-                      </Link>
-                    ) : (
-                      <span className="font-medium text-foreground break-words">
-                        {first.property_title}
-                      </span>
-                    )}
-                    {first.agency_name ? (
-                      <span className="text-xs text-muted break-words">{first.agency_name}</span>
-                    ) : null}
-                    {entries.map((entry) => (
-                      <div key={entry.id} className="flex items-start justify-between gap-3">
-                        <ActivityChangeLabel entry={entry} />
-                        {entries.length > 1 ? (
-                          <span className="text-xs text-muted whitespace-nowrap shrink-0">
-                            {formatDateTime(entry.created_at)}
-                          </span>
-                        ) : null}
-                      </div>
-                    ))}
-                  </div>
-                  {entries.length === 1 ? (
-                    <span className="text-xs text-muted whitespace-nowrap shrink-0">
-                      {formatDateTime(first.created_at)}
-                    </span>
-                  ) : null}
-                </li>
-              );
-            })}
-          </ul>
+          <div
+            className={`flex max-h-[32rem] flex-col gap-4 overflow-y-auto transition-opacity ${
+              isPlaceholderData ? "opacity-50" : ""
+            }`}
+            aria-busy={isPlaceholderData}
+          >
+            {sections.map((section) => (
+              <section key={section.w} className="flex flex-col gap-3">
+                <p className="text-xs font-medium uppercase tracking-wide text-muted">
+                  {section.label} · {section.groups.length}{" "}
+                  {section.groups.length === 1 ? "property" : "properties"}
+                </p>
+                {section.groups.length === 0 ? (
+                  <p className="text-sm text-muted">No changes.</p>
+                ) : (
+                  <ul className="flex flex-col gap-3">
+                    {section.groups.map((entries) => {
+                      const first = entries[0];
+                      return (
+                        <li
+                          key={first.property_id}
+                          className="flex flex-col gap-1.5 sm:flex-row sm:items-start sm:justify-between sm:gap-3 text-sm border border-border rounded-lg p-3 min-w-0"
+                        >
+                          <div className="flex min-w-0 flex-col gap-1">
+                            {first.user_property_id ? (
+                              <Link
+                                to={Routes.dashboard.properties.detail(first.user_property_id)}
+                                className="font-medium text-accent break-words hover:underline"
+                              >
+                                {first.property_title}
+                              </Link>
+                            ) : (
+                              <span className="font-medium text-foreground break-words">
+                                {first.property_title}
+                              </span>
+                            )}
+                            {first.agency_name ? (
+                              <span className="text-xs text-muted break-words">{first.agency_name}</span>
+                            ) : null}
+                            {entries.map((entry) => (
+                              <div key={entry.id} className="flex items-start justify-between gap-3">
+                                <ActivityChangeLabel entry={entry} />
+                                {entries.length > 1 ? (
+                                  <span className="text-xs text-muted whitespace-nowrap shrink-0">
+                                    {formatDateTime(entry.created_at)}
+                                  </span>
+                                ) : null}
+                              </div>
+                            ))}
+                          </div>
+                          {entries.length === 1 ? (
+                            <span className="text-xs text-muted whitespace-nowrap shrink-0">
+                              {formatDateTime(first.created_at)}
+                            </span>
+                          ) : null}
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+              </section>
+            ))}
+            {windows < MAX_WINDOWS ? (
+              <Button
+                size="sm"
+                variant="secondary"
+                className="self-start"
+                isPending={isPlaceholderData}
+                onPress={() => setWindows((n) => n + 1)}
+              >
+                Show previous {PERIOD_NOUN[period]}
+              </Button>
+            ) : null}
+          </div>
         )}
       </div>
       <PropertyClientsModal state={clientsModal} property={clientsProperty} />

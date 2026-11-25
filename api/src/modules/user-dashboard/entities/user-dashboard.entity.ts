@@ -59,4 +59,10 @@ export class UserDashboardResponse {
 
   @ApiProperty({ type: [UserDashboardActivityItem] })
   activity: UserDashboardActivityItem[];
+
+  @ApiProperty({ description: 'Distinct properties with changes in the period (the list may show fewer)' })
+  activity_total: number;
+
+  @ApiProperty({ description: 'Server time the activity windows are measured from' })
+  as_of: Date;
 }

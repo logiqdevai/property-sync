@@ -21,11 +21,17 @@ export class UserDashboardController {
   @Get()
   @ApiOperation({ summary: 'Current user dashboard stats and recent activity' })
   @ApiQuery({ name: 'period', required: false, enum: ['day', 'week', 'month'] })
+  @ApiQuery({ name: 'windows', required: false, description: 'Number of consecutive periods the activity list covers (default 1)' })
   @ApiResponse({ status: 200, type: UserDashboardResponse })
   getDashboard(
     @CurrentUser('id') userId: string,
     @Query('period') period?: string,
+    @Query('windows') windows?: string,
   ) {
-    return this.userDashboardService.getDashboard(userId, period);
+    return this.userDashboardService.getDashboard(
+      userId,
+      period,
+      windows ? Number(windows) : undefined,
+    );
   }
 }

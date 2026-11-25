@@ -25,6 +25,10 @@ export interface UserDashboardActivityItem {
 export interface UserDashboardResponse {
   stats: UserDashboardStats;
   activity: UserDashboardActivityItem[];
+  /** Distinct properties with changes in the period (list may show fewer). */
+  activity_total: number;
+  /** Server time the activity windows are measured from. */
+  as_of: string;
 }
 
 export type ActivityPeriod = "day" | "week" | "month";
