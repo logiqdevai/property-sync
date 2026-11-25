@@ -281,8 +281,11 @@ Notes that aren't obvious from the types alone:
   an arrow icon, `aria-label="Next"`) — never target a specific page number's link text, it breaks once
   that number scrolls out of a windowed pagination widget.
 - Coordinates: the production `DetailEnrichmentService` auto-extracts lat/lng from map embeds, data
-  attributes, and embedded scripts **unconditionally**, regardless of what's in `config` — don't bother
-  adding a coordinates field to the config, it isn't read for that.
+  attributes, embedded scripts and (last resort) a rendered Leaflet map's tiles **unconditionally**,
+  regardless of what's in `config` — don't bother adding a coordinates field to the config, it isn't
+  read for that. But "auto" is not "guaranteed": whenever the listing page shows a map you MUST prove
+  the extractor really returns coordinates for it (§6c), because a site that binds the map position at
+  runtime hides it from every parser and the whole agency is then stored with no coordinates.
 - **Lightbox/gallery detail pages** — a common legacy pattern wraps each gallery thumbnail in
   `<a href="full-size.jpg"><img src="tiny-thumbnail.jpg"></a>` (jQuery Lightbox-style plugins, often
   `rel="lightbox[...]"` on the anchor) where the visible `<img>` is only a small thumbnail and the
@@ -332,7 +335,8 @@ Playwright's locator engine. Write a throwaway script (delete it after, don't co
 - If pagination is configured, fetch page 2 and confirm different content, and fetch one page past the
   last page and confirm graceful termination (§2).
 - Visit one real detail-page URL and check `description_selector`, `price_selector`,
-  `external_id_selector`, and image gallery unique count (no location check: we never configure one).
+  `external_id_selector`, and image gallery unique count (we never configure a *location* selector, but
+  coordinates are still checked whenever the page has a map: §6c).
 - **Never judge "this site has no description" from one page.** Many sites render the prose description
   only on some listings (an optional block that is simply absent from the sample you opened). Fetch
   ~20 detail pages spread across the whole listing set (every Nth id, same-origin fetch from a real
@@ -413,6 +417,42 @@ Practical technique:
 - **Description widgets hide from a one-page or heuristic check.** Find the widget by its stable class
   (e.g. an Elementor/theme "content" widget) and confirm it is non-empty on all (or ~20+ spread)
   pages before trusting or dismissing it.
+
+### 6c. Coordinates: ALWAYS verify when the listing page has a map
+
+If any sampled detail page shows a map (an embedded Google/OSM iframe, a Leaflet/Mapbox/Google Maps
+canvas, a "view on map" block, a framework attribute like `*-lat`/`*-lng`), the agency's properties
+must end up with coordinates. Do not assume the crawler's automatic extraction worked: it only reads
+what is literally in the markup/scripts, and map libraries driven by an SPA framework often receive the
+position as a runtime-bound value that appears nowhere in the HTML. The failure is silent: every
+property is created with null coordinates and nothing errors.
+
+1. **Detect the map** on ~5 detail pages spread across the listing set (different categories too, a
+   category such as land may have no map while apartments do): iframes/links containing `maps`, any
+   `.leaflet-container`, `[data-lat]`/`[data-latitude]`, framework lat/lng bindings, and inline scripts
+   mentioning `lat`/`lng`/`setView`/`LatLng`.
+2. **Run the real extractor, not your own regex.** From `scripts/scraper-generator/`, load a detail
+   page in Playwright (same wait the crawler uses) and call `extractDetailPage` from
+   `api/src/integrations/crawler/utils/page-extractors.ts` in the page context (or run the real
+   `CrawlerService`), then read `latitude`/`longitude` from the result. Record, per sampled page: map
+   present? yes/no; extractor lat/lng.
+3. **Cross-check the values against an independent source**, because plausible-looking wrong
+   coordinates are worse than none: the position the map visibly centres on, the site's own listing
+   JSON API (find it in the site's JS bundle or the browser network panel: the call that loads the
+   listing detail usually returns `Latitude`/`Longitude`), or a Google Maps link on the page. Treat
+   anything over ~50 m apart as a mismatch, and a point that is identical across many unrelated
+   listings (an office/city-centre default) as "no real coordinates".
+4. **If a map is present but the extractor returns null**, the scraper is NOT done. Fix it before
+   writing to the DB: first prefer the site's JSON API (exact), then extend `page-extractors.ts` (keep
+   the extension generic, covering the whole map-library pattern, never one site's selector) and add a
+   test to `page-extractors.spec.ts`. If the API is the only exact source and the crawler cannot be
+   changed yet, say so plainly to the user and plan a one-off backfill of the stored properties.
+5. **After the first real crawl**, confirm it with the database: for the agency's `user_properties`,
+   count rows with `latitude IS NULL OR longitude IS NULL` and report `n of total`. Properties that
+   genuinely have no coordinates on the site (listing with no map at all) are fine; everything else
+   must not be null. A scraper with a map and zero or mostly-null coordinates is a failed scraper.
+6. **Report it** in the final summary: "map present: yes/no, coordinates verified on N pages, M of
+   total properties have coordinates".
 
 ## 7. Write to the DB
 
@@ -580,6 +620,9 @@ freshly enqueued job — it's both safer and less code.
 - Treating `status: TESTING` as "won't run" — it will, if the agency has an enabled tracker.
 - Triggering a real crawl (cost, external CMS push) without checking `remove_watermark`/
   `auto_update_to_crm` first and telling the user.
+- Shipping a scraper for a site whose detail pages show a map without proving the crawler stores
+  coordinates for it (§6c): a runtime-bound map position is invisible to the HTML parsers and the
+  agency ends up with every property at null coordinates, silently.
 - Writing a scraper config without running it through real Playwright first — curl-only "it should work"
   is not verification.
 - Trusting a detail-page selector because it "looks right" without cross-checking its resolved text

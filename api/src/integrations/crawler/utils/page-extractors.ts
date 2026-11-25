@@ -551,6 +551,44 @@ export function extractDetailPage(
     }
   }
 
+  // Last resort: a Leaflet/OpenStreetMap map whose position is bound at runtime
+  // (e.g. an AngularJS directive), so the page has no lat/lng in its markup or
+  // scripts. The listing's map is centred on the property, and the rendered tiles
+  // carry their slippy-map z/x/y in their URLs, so the centre can be recovered
+  // exactly (to a few metres) from where the tiles sit inside the container.
+  if (latitude == null || longitude == null) {
+    const container = document.querySelector('.leaflet-container');
+    if (container) {
+      const cRect = container.getBoundingClientRect();
+      let tile: { z: number; x: number; y: number; rect: DOMRect } | null = null;
+      for (const img of Array.from(
+        container.querySelectorAll('img.leaflet-tile'),
+      )) {
+        const m = (img as HTMLImageElement).src.match(
+          /\/(\d{1,2})\/(\d+)\/(\d+)(?:@2x)?\.(?:png|jpe?g|webp)/,
+        );
+        const rect = img.getBoundingClientRect();
+        if (m && rect.width > 0) {
+          tile = { z: +m[1], x: +m[2], y: +m[3], rect };
+          break;
+        }
+      }
+      if (tile && cRect.width > 0 && cRect.height > 0) {
+        const scale = tile.rect.width / 256;
+        const worldSize = 256 * Math.pow(2, tile.z);
+        const px =
+          tile.x * 256 + (cRect.left + cRect.width / 2 - tile.rect.left) / scale;
+        const py =
+          tile.y * 256 + (cRect.top + cRect.height / 2 - tile.rect.top) / scale;
+        const lng = (px / worldSize) * 360 - 180;
+        const lat =
+          (Math.atan(Math.sinh(Math.PI * (1 - (2 * py) / worldSize))) * 180) /
+          Math.PI;
+        acceptCoords(lat, lng);
+      }
+    }
+  }
+
   return {
     images: [...new Set(images)],
     raw_detail_text: descText,
