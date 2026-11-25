@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { Button, ListBox, Select, Tabs, useOverlayState } from "@heroui/react";
 import { PropertyClientsModal } from "./properties/components/property-clients-modal";
@@ -9,7 +9,10 @@ import {
 } from "@/features/property-clients/hooks/use-property-clients";
 import { useAuthStore } from "@/stores/auth";
 import { useUserDashboard } from "@/features/user-dashboard/hooks/use-user-dashboard";
-import type { ActivityPeriod } from "@/features/user-dashboard/interfaces/user-dashboard.interfaces";
+import type {
+  ActivityPeriod,
+  UserDashboardActivityItem,
+} from "@/features/user-dashboard/interfaces/user-dashboard.interfaces";
 import { formatDateTime } from "@/lib/date";
 import { Routes } from "@/routes/routes";
 import { ActivityChangeLabel } from "./components/activity-change-label";
@@ -38,17 +41,30 @@ export default function DashboardHome() {
   const acknowledgeAlerts = useAcknowledgeDelistedAlerts();
   const { data: allDelisted = [], isPending: allDelistedPending } = useDelistedAlerts(true);
 
+  const periodLabel = PERIOD_OPTIONS.find((o) => o.id === period)?.label.toLowerCase() ?? "last week";
+
+  // One card per property: a crawl can write many history rows for the same property.
+  const groupedActivity = useMemo(() => {
+    const groups = new Map<string, UserDashboardActivityItem[]>();
+    for (const entry of dashboard?.activity ?? []) {
+      const list = groups.get(entry.property_id);
+      if (list) list.push(entry);
+      else groups.set(entry.property_id, [entry]);
+    }
+    return [...groups.values()];
+  }, [dashboard?.activity]);
+
   const stats = [
     { label: "Total Properties", value: dashboard?.stats.total_properties, accent: false },
     { label: "Active Listings", value: dashboard?.stats.active_properties, accent: false },
-    { label: "Added This Week", value: dashboard?.stats.properties_added_this_week, accent: true },
+    { label: `Added (${periodLabel})`, value: dashboard?.stats.properties_added_this_week, accent: true },
     {
-      label: "Updated This Week",
+      label: `Updated (${periodLabel})`,
       value: dashboard?.stats.properties_updated_this_week,
       accent: false,
     },
     {
-      label: "Removed This Week",
+      label: `Removed (${periodLabel})`,
       value: dashboard?.stats.properties_removed_this_week,
       accent: false,
     },
@@ -194,36 +210,48 @@ export default function DashboardHome() {
           <p className="text-sm text-muted">No activity in this period.</p>
         ) : (
           <ul className="flex max-h-[32rem] flex-col gap-3 overflow-y-auto">
-            {dashboard.activity.map((entry) => (
-              <li
-                key={entry.id}
-                className="flex flex-col gap-1.5 sm:flex-row sm:items-start sm:justify-between sm:gap-3 text-sm border border-border rounded-lg p-3 min-w-0"
-              >
-                <div className="flex min-w-0 flex-col gap-1">
-                  {entry.user_property_id ? (
-                    <Link
-                      to={Routes.dashboard.properties.detail(entry.user_property_id)}
-                      className="font-medium text-accent break-words hover:underline"
-                    >
-                      {entry.property_title}
-                    </Link>
-                  ) : (
-                    <span className="font-medium text-foreground break-words">
-                      {entry.property_title}
-                    </span>
-                  )}
-                  {entry.agency_name ? (
-                    <span className="text-xs text-muted break-words">
-                      {entry.agency_name}
+            {groupedActivity.map((entries) => {
+              const first = entries[0];
+              return (
+                <li
+                  key={first.property_id}
+                  className="flex flex-col gap-1.5 sm:flex-row sm:items-start sm:justify-between sm:gap-3 text-sm border border-border rounded-lg p-3 min-w-0"
+                >
+                  <div className="flex min-w-0 flex-col gap-1">
+                    {first.user_property_id ? (
+                      <Link
+                        to={Routes.dashboard.properties.detail(first.user_property_id)}
+                        className="font-medium text-accent break-words hover:underline"
+                      >
+                        {first.property_title}
+                      </Link>
+                    ) : (
+                      <span className="font-medium text-foreground break-words">
+                        {first.property_title}
+                      </span>
+                    )}
+                    {first.agency_name ? (
+                      <span className="text-xs text-muted break-words">{first.agency_name}</span>
+                    ) : null}
+                    {entries.map((entry) => (
+                      <div key={entry.id} className="flex items-start justify-between gap-3">
+                        <ActivityChangeLabel entry={entry} />
+                        {entries.length > 1 ? (
+                          <span className="text-xs text-muted whitespace-nowrap shrink-0">
+                            {formatDateTime(entry.created_at)}
+                          </span>
+                        ) : null}
+                      </div>
+                    ))}
+                  </div>
+                  {entries.length === 1 ? (
+                    <span className="text-xs text-muted whitespace-nowrap shrink-0">
+                      {formatDateTime(first.created_at)}
                     </span>
                   ) : null}
-                  <ActivityChangeLabel entry={entry} />
-                </div>
-                <span className="text-xs text-muted whitespace-nowrap shrink-0">
-                  {formatDateTime(entry.created_at)}
-                </span>
-              </li>
-            ))}
+                </li>
+              );
+            })}
           </ul>
         )}
       </div>

@@ -5,7 +5,8 @@ import { UPDATE_EVENT_TYPES } from '@/modules/properties/utils/property-change-f
 import { humanizeHistoryChange } from '@/modules/properties/utils/cms-fields-history.util';
 import { UserDashboardResponse } from './entities/user-dashboard.entity';
 
-const RECENT_ACTIVITY_LIMIT = 100;
+// Raw history rows fetched; the UI groups them per property.
+const RECENT_ACTIVITY_LIMIT = 1000;
 
 const ACTIVITY_PERIOD_DAYS = { day: 1, week: 7, month: 30 } as const;
 export type ActivityPeriod = keyof typeof ACTIVITY_PERIOD_DAYS;
@@ -22,7 +23,6 @@ export class UserDashboardService {
       ACTIVITY_PERIOD_DAYS[(period as ActivityPeriod) ?? 'week'] ??
       ACTIVITY_PERIOD_DAYS.week;
     const activitySince = new Date(Date.now() - activityDays * 24 * 60 * 60 * 1000);
-    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
 
     const [
       totalProperties,
@@ -36,7 +36,7 @@ export class UserDashboardService {
         where: { user_id: userId, status: PropertyStatus.ACTIVE },
       }),
       this.prisma.userProperty.count({
-        where: { user_id: userId, created_at: { gte: sevenDaysAgo } },
+        where: { user_id: userId, created_at: { gte: activitySince } },
       }),
       this.prisma.userTrackedAgency.count({
         where: { user_id: userId, enabled: true },
@@ -68,7 +68,7 @@ export class UserDashboardService {
 
     const historyBase = {
       property_id: { in: propertyIds },
-      created_at: { gte: sevenDaysAgo },
+      created_at: { gte: activitySince },
     };
 
     const [propertiesUpdatedThisWeek, propertiesRemovedThisWeek, recentHistory] =
